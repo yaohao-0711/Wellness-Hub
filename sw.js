@@ -2,8 +2,7 @@ const CACHE_NAME = 'checkin-app-v1';
 const ASSETS = [
   '/Wellness-Hub/',
   '/Wellness-Hub/index.html',
-  '/Wellness-Hub/manifest.json',
-  '/Wellness-Hub/icon.png'
+  '/Wellness-Hub/manifest.json'
 ];
 
 self.addEventListener('install', e => {
