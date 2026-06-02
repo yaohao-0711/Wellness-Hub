@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>打卡本</title>
+  <style>
+    :root {
+      --bg: #0f0f13;
+      --surface: #1a1a24;
+      --surface2: #22222f;
+      --border: #2e2e42;
+      --accent: #7c6af7;
+      --accent2: #a78bfa;
+      --text: #e8e8f0;
+      --text2: #9090b0;
+      --text3: #5a5a7a;
+      --danger: #f87171;
+      --green: #34d399;
+      --radius: 14px;
+      --radius-sm: 8px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ===== VIEWS ===== */
+    .view { display: none; min-height: 100vh; }
+    .view.active { display: flex; flex-direction: column; }
+
+    /* ===== TOP BAR ===== */
+    .topbar {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding: 0 16px;
+      height: 56px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .topbar h1 { font-size: 18px; font-weight: 700; flex: 1; }
+    .topbar .back-btn {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--surface2); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text); font-size: 18px; transition: background .2s;
+    }
+    .topbar .back-btn:hover { background: var(--border); }
+    .topbar .icon-btn {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--surface2); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--accent2); font-size: 18px; transition: background .2s;
+    }
+    .topbar .icon-btn:hover { background: var(--border); }
+
+    /* ===== SCROLL AREA ===== */
+    .scroll-area {
+      flex: 1; overflow-y: auto; padding: 16px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .scroll-area::-webkit-scrollbar { width: 4px; }
+    .scroll-area::-webkit-scrollbar-track { background: transparent; }
+    .scroll-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* ===== HOME VIEW ===== */
+    .home-header {
+      padding: 24px 16px 16px;
+      display: flex; justify-content: space-between; align-items: flex-end;
+    }
+    .home-header .greeting { font-size: 22px; font-weight: 700; }
+    .home-header .date-label { font-size: 13px; color: var(--text2); margin-top: 4px; }
+    .add-task-btn {
+      background: var(--accent);
+      color: #fff; border: none; border-radius: 50%;
+      width: 44px; height: 44px; font-size: 24px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 20px rgba(124,106,247,0.4);
+      transition: transform .15s, box-shadow .15s;
+      flex-shrink: 0;
+    }
+    .add-task-btn:hover { transform: scale(1.08); box-shadow: 0 6px 24px rgba(124,106,247,0.55); }
+
+    /* Task cards */
+    .tasks-grid {
+      padding: 0 16px 80px;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 12px;
+    }
+    .task-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 14px;
+      cursor: pointer;
+      transition: transform .15s, border-color .15s, box-shadow .15s;
+      position: relative; overflow: hidden;
+    }
+    .task-card::before {
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+      width: 3px; background: var(--accent); border-radius: 3px 0 0 3px;
+    }
+    .task-card:hover { transform: translateY(-2px); border-color: var(--accent); box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+    .task-card .task-name { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+    .task-card .task-stats { font-size: 12px; color: var(--text2); }
+    .task-card .task-total { font-size: 24px; font-weight: 700; color: var(--accent2); }
+    .task-card .task-total-label { font-size: 11px; color: var(--text3); margin-top: 2px; }
+    .task-card .today-dot {
+      position: absolute; top: 12px; right: 12px;
+      width: 8px; height: 8px; border-radius: 50%; background: var(--green);
+    }
+    .task-card .delete-btn {
+      position: absolute; bottom: 10px; right: 10px;
+      width: 24px; height: 24px; border-radius: 50%;
+      background: rgba(248,113,113,0.1); border: 1px solid var(--danger);
+      color: var(--danger); font-size: 12px; cursor: pointer;
+      display: none; align-items: center; justify-content: center;
+      transition: background .2s;
+    }
+    .task-card:hover .delete-btn { display: flex; }
+    .task-card .delete-btn:hover { background: var(--danger); color: #fff; }
+
+    .empty-state {
+      text-align: center; padding: 60px 20px;
+      color: var(--text3);
+    }
+    .empty-state .emoji { font-size: 48px; margin-bottom: 16px; }
+    .empty-state p { font-size: 15px; line-height: 1.6; }
+
+    /* ===== MODAL ===== */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,.6); backdrop-filter: blur(4px);
+      align-items: flex-end; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-sheet {
+      background: var(--surface);
+      border-radius: var(--radius) var(--radius) 0 0;
+      padding: 20px 20px 32px;
+      width: 100%; max-width: 520px;
+      animation: slideUp .25s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    .modal-sheet h2 { font-size: 17px; margin-bottom: 16px; }
+    .input-field {
+      width: 100%; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      color: var(--text); font-size: 15px; padding: 12px 14px;
+      outline: none; transition: border-color .2s;
+      font-family: inherit;
+    }
+    .input-field:focus { border-color: var(--accent); }
+    .modal-actions { display: flex; gap: 10px; margin-top: 14px; }
+    .btn {
+      flex: 1; padding: 12px; border-radius: var(--radius-sm);
+      border: none; cursor: pointer; font-size: 15px; font-weight: 600;
+      font-family: inherit; transition: opacity .15s;
+    }
+    .btn:hover { opacity: .85; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-ghost { background: var(--surface2); color: var(--text2); }
+
+    /* ===== TASK DETAIL VIEW ===== */
+    .records-list {
+      display: flex; flex-direction: column-reverse;
+      gap: 10px; padding-bottom: 16px;
+    }
+    .record-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      position: relative;
+    }
+    .record-item .record-time {
+      font-size: 11px; color: var(--text3); margin-bottom: 8px;
+    }
+    .record-item .record-content { font-size: 15px; line-height: 1.65; white-space: pre-wrap; word-break: break-word; }
+    .record-item .record-images {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;
+    }
+    .record-item .record-img {
+      width: 80px; height: 80px; object-fit: cover;
+      border-radius: var(--radius-sm); cursor: pointer;
+      border: 1px solid var(--border);
+    }
+    .record-del {
+      position: absolute; top: 10px; right: 10px;
+      background: transparent; border: none; cursor: pointer;
+      color: var(--text3); font-size: 14px; padding: 4px;
+      transition: color .2s;
+    }
+    .record-del:hover { color: var(--danger); }
+
+    /* Add record area */
+    .add-record-area {
+      position: sticky; bottom: 0; z-index: 10;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      padding: 10px 16px 16px;
+    }
+    .add-record-textarea {
+      width: 100%; background: var(--surface);
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      color: var(--text); font-size: 15px; padding: 10px 12px;
+      outline: none; resize: none; font-family: inherit;
+      transition: border-color .2s; min-height: 72px; max-height: 180px;
+    }
+    .add-record-textarea:focus { border-color: var(--accent); }
+    .add-record-controls {
+      display: flex; align-items: center; gap: 10px; margin-top: 8px;
+    }
+    .img-upload-label {
+      display: flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px; border-radius: var(--radius-sm);
+      background: var(--surface2); border: 1px solid var(--border);
+      cursor: pointer; color: var(--accent2); font-size: 18px;
+      transition: background .2s;
+    }
+    .img-upload-label:hover { background: var(--border); }
+    #img-input { display: none; }
+    .img-previews {
+      display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;
+    }
+    .img-preview-wrap {
+      position: relative; width: 56px; height: 56px;
+    }
+    .img-preview-wrap img {
+      width: 100%; height: 100%; object-fit: cover;
+      border-radius: var(--radius-sm); border: 1px solid var(--border);
+    }
+    .img-preview-wrap .remove-img {
+      position: absolute; top: -5px; right: -5px;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: var(--danger); color: #fff; border: none;
+      cursor: pointer; font-size: 10px; display: flex;
+      align-items: center; justify-content: center;
+    }
+    .submit-btn {
+      margin-left: auto; background: var(--accent); color: #fff;
+      border: none; border-radius: var(--radius-sm);
+      padding: 8px 18px; font-size: 14px; font-weight: 600;
+      cursor: pointer; font-family: inherit; transition: opacity .15s;
+    }
+    .submit-btn:hover { opacity: .85; }
+    .submit-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* ===== HEATMAP VIEW ===== */
+    .heatmap-container { padding: 16px 16px 40px; }
+    .heatmap-month-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .month-nav-btn {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); font-size: 18px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .month-nav-btn:hover { background: var(--border); }
+    .month-label { font-size: 16px; font-weight: 600; }
+    .heatmap-grid {
+      display: grid; grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+    }
+    .heatmap-dow {
+      text-align: center; font-size: 11px; color: var(--text3);
+      padding-bottom: 4px;
+    }
+    .heatmap-cell {
+      aspect-ratio: 1;
+      border-radius: 5px;
+      background: var(--surface);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; color: var(--text3);
+      position: relative; cursor: default;
+      border: 1px solid transparent;
+      transition: transform .1s;
+    }
+    .heatmap-cell.today { border-color: var(--accent); }
+    .heatmap-cell.empty { background: transparent; }
+    .heatmap-cell[data-level="1"] { background: rgba(124,106,247,0.20); color: var(--text2); }
+    .heatmap-cell[data-level="2"] { background: rgba(124,106,247,0.40); color: var(--text); }
+    .heatmap-cell[data-level="3"] { background: rgba(124,106,247,0.65); color: var(--text); }
+    .heatmap-cell[data-level="4"] { background: rgba(124,106,247,0.90); color: #fff; font-weight: 700; }
+    .heatmap-cell:hover { transform: scale(1.1); }
+    .heatmap-legend {
+      display: flex; align-items: center; gap: 6px;
+      margin-top: 18px; font-size: 12px; color: var(--text3);
+      justify-content: flex-end;
+    }
+    .legend-box {
+      width: 14px; height: 14px; border-radius: 3px;
+    }
+    .heatmap-stats {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px; margin-top: 20px;
+    }
+    .heatmap-stats h3 { font-size: 14px; color: var(--text2); margin-bottom: 12px; }
+    .stat-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+    .stat-row:last-child { margin-bottom: 0; }
+    .stat-label { font-size: 13px; color: var(--text2); }
+    .stat-value { font-size: 15px; font-weight: 700; color: var(--accent2); }
+
+    /* ===== IMAGE LIGHTBOX ===== */
+    .lightbox {
+      display: none; position: fixed; inset: 0; z-index: 300;
+      background: rgba(0,0,0,.92); align-items: center; justify-content: center;
+    }
+    .lightbox.open { display: flex; }
+    .lightbox img { max-width: 95vw; max-height: 90vh; object-fit: contain; border-radius: var(--radius-sm); }
+    .lightbox-close {
+      position: absolute; top: 16px; right: 16px;
+      width: 40px; height: 40px; border-radius: 50%;
+      background: rgba(255,255,255,.1); border: none; cursor: pointer;
+      color: #fff; font-size: 20px; display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ===== TOAST ===== */
+    .toast {
+      position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); padding: 10px 20px; border-radius: 100px;
+      font-size: 14px; z-index: 500; opacity: 0; pointer-events: none;
+      transition: opacity .3s; white-space: nowrap;
+    }
+    .toast.show { opacity: 1; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 400px) {
+      .tasks-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===================== HOME VIEW ===================== -->
+<div id="view-home" class="view active">
+  <div class="home-header">
+    <div>
+      <div class="greeting">我的打卡本 📒</div>
+      <div class="date-label" id="home-date"></div>
+    </div>
+    <button class="add-task-btn" onclick="openNewTaskModal()" title="新建任务">+</button>
+  </div>
+  <div class="tasks-grid" id="tasks-grid"></div>
+</div>
+
+<!-- ===================== TASK DETAIL VIEW ===================== -->
+<div id="view-detail" class="view">
+  <div class="topbar">
+    <button class="back-btn" onclick="goHome()">‹</button>
+    <h1 id="detail-title">任务名称</h1>
+    <button class="icon-btn" onclick="goHeatmap()" title="查看热力图">◫</button>
+  </div>
+  <div class="scroll-area" id="detail-records">
+    <div class="records-list" id="records-list"></div>
+  </div>
+  <div class="add-record-area">
+    <textarea class="add-record-textarea" id="record-text" placeholder="记录今天的想法、感悟…" oninput="autoResize(this)"></textarea>
+    <div class="img-previews" id="img-previews"></div>
+    <div class="add-record-controls">
+      <label class="img-upload-label" for="img-input" title="添加图片">🖼</label>
+      <input type="file" id="img-input" accept="image/*" multiple onchange="handleImages(this)" />
+      <button class="submit-btn" id="submit-btn" onclick="submitRecord()">记录</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== HEATMAP VIEW ===================== -->
+<div id="view-heatmap" class="view">
+  <div class="topbar">
+    <button class="back-btn" onclick="goDetail()">‹</button>
+    <h1 id="heatmap-title">热力图</h1>
+  </div>
+  <div class="scroll-area">
+    <div class="heatmap-container">
+      <div class="heatmap-month-nav">
+        <button class="month-nav-btn" onclick="changeMonth(-1)">‹</button>
+        <div class="month-label" id="heatmap-month-label"></div>
+        <button class="month-nav-btn" onclick="changeMonth(1)">›</button>
+      </div>
+      <div class="heatmap-grid" id="heatmap-grid"></div>
+      <div class="heatmap-legend">
+        少
+        <div class="legend-box" style="background:var(--surface);border:1px solid var(--border)"></div>
+        <div class="legend-box" style="background:rgba(124,106,247,0.20)"></div>
+        <div class="legend-box" style="background:rgba(124,106,247,0.45)"></div>
+        <div class="legend-box" style="background:rgba(124,106,247,0.70)"></div>
+        <div class="legend-box" style="background:rgba(124,106,247,0.92)"></div>
+        多
+      </div>
+      <div class="heatmap-stats" id="heatmap-stats"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== NEW TASK MODAL ===================== -->
+<div class="modal-overlay" id="modal-new-task" onclick="closeModalIfBg(event)">
+  <div class="modal-sheet">
+    <h2>✨ 新建任务</h2>
+    <input class="input-field" id="new-task-name" type="text" placeholder="给任务起个名字，如：示弱、冥想…" maxlength="30"
+      onkeydown="if(event.key==='Enter')createTask()" />
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeNewTaskModal()">取消</button>
+      <button class="btn btn-primary" onclick="createTask()">创建</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== LIGHTBOX ===================== -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightbox-img" src="" alt="" />
+</div>
+
+<!-- ===================== TOAST ===================== -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ======================== DATA LAYER ======================== */
+const DB_KEY = 'checkin_app_v1';
+
+function loadDB() {
+  try {
+    return JSON.parse(localStorage.getItem(DB_KEY)) || { tasks: [] };
+  } catch { return { tasks: [] }; }
+}
+
+function saveDB(db) {
+  localStorage.setItem(DB_KEY, JSON.stringify(db));
+}
+
+function getDB() { return loadDB(); }
+
+/* ======================== STATE ======================== */
+let currentTaskId = null;
+let pendingImages = []; // [{dataUrl, name}]
+let heatmapYear = new Date().getFullYear();
+let heatmapMonth = new Date().getMonth(); // 0-indexed
+
+/* ======================== UTILS ======================== */
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+}
+
+function formatDate(ts) {
+  const d = new Date(ts);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function formatDatetime(ts) {
+  const d = new Date(ts);
+  const date = formatDate(ts);
+  const time = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  return `${date} ${time}`;
+}
+
+function todayStr() { return formatDate(Date.now()); }
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function setView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+/* ======================== HOME ======================== */
+function renderHome() {
+  // Date label
+  const now = new Date();
+  const weekdays = ['日','一','二','三','四','五','六'];
+  document.getElementById('home-date').textContent =
+    `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 · 星期${weekdays[now.getDay()]}`;
+
+  const db = getDB();
+  const grid = document.getElementById('tasks-grid');
+  grid.innerHTML = '';
+
+  if (db.tasks.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1">
+        <div class="emoji">🌱</div>
+        <p>还没有任务<br>点右上角 <b>+</b> 创建第一个吧</p>
+      </div>`;
+    return;
+  }
+
+  const today = todayStr();
+  db.tasks.forEach(task => {
+    const total = task.records.length;
+    const todayCount = task.records.filter(r => formatDate(r.ts) === today).length;
+    const card = document.createElement('div');
+    card.className = 'task-card';
+    card.innerHTML = `
+      ${todayCount > 0 ? '<div class="today-dot" title="今日已打卡"></div>' : ''}
+      <div class="task-name">${escapeHtml(task.name)}</div>
+      <div class="task-total">${total}</div>
+      <div class="task-total-label">总记录数</div>
+      <div class="task-stats" style="margin-top:6px">今日 ${todayCount} 条</div>
+      <button class="delete-btn" title="删除任务" onclick="event.stopPropagation();deleteTask('${task.id}')">✕</button>
+    `;
+    card.addEventListener('click', () => openTask(task.id));
+    grid.appendChild(card);
+  });
+}
+
+function openNewTaskModal() {
+  document.getElementById('modal-new-task').classList.add('open');
+  setTimeout(() => document.getElementById('new-task-name').focus(), 100);
+}
+
+function closeNewTaskModal() {
+  document.getElementById('modal-new-task').classList.remove('open');
+  document.getElementById('new-task-name').value = '';
+}
+
+function closeModalIfBg(e) {
+  if (e.target === e.currentTarget) closeNewTaskModal();
+}
+
+function createTask() {
+  const name = document.getElementById('new-task-name').value.trim();
+  if (!name) { showToast('请输入任务名称'); return; }
+  const db = getDB();
+  db.tasks.push({ id: uid(), name, records: [], createdAt: Date.now() });
+  saveDB(db);
+  closeNewTaskModal();
+  renderHome();
+  showToast('✅ 任务已创建');
+}
+
+function deleteTask(id) {
+  if (!confirm('确定要删除这个任务及所有记录吗？')) return;
+  const db = getDB();
+  db.tasks = db.tasks.filter(t => t.id !== id);
+  saveDB(db);
+  renderHome();
+  showToast('任务已删除');
+}
+
+/* ======================== TASK DETAIL ======================== */
+function openTask(id) {
+  currentTaskId = id;
+  pendingImages = [];
+  const db = getDB();
+  const task = db.tasks.find(t => t.id === id);
+  if (!task) return;
+  document.getElementById('detail-title').textContent = task.name;
+  document.getElementById('record-text').value = '';
+  document.getElementById('img-previews').innerHTML = '';
+  renderRecords(task);
+  setView('view-detail');
+  // Scroll to bottom (newest)
+  setTimeout(() => {
+    const sa = document.getElementById('detail-records');
+    sa.scrollTop = sa.scrollHeight;
+  }, 50);
+}
+
+function renderRecords(task) {
+  const list = document.getElementById('records-list');
+  list.innerHTML = '';
+
+  if (task.records.length === 0) {
+    list.innerHTML = `<div style="text-align:center;color:var(--text3);padding:40px 0;font-size:14px;">还没有记录，快写下今天的第一条吧 ✍️</div>`;
+    return;
+  }
+
+  // Sort oldest→newest (column-reverse makes newest appear at bottom visually)
+  const sorted = [...task.records].sort((a, b) => a.ts - b.ts);
+
+  sorted.forEach(r => {
+    const item = document.createElement('div');
+    item.className = 'record-item';
+    const imgs = (r.images || []).map(src =>
+      `<img class="record-img" src="${src}" alt="" onclick="openLightbox('${src}')" />`
+    ).join('');
+    item.innerHTML = `
+      <button class="record-del" onclick="deleteRecord('${r.id}')" title="删除">✕</button>
+      <div class="record-time">${formatDatetime(r.ts)}</div>
+      ${r.text ? `<div class="record-content">${escapeHtml(r.text)}</div>` : ''}
+      ${imgs ? `<div class="record-images">${imgs}</div>` : ''}
+    `;
+    list.appendChild(item);
+  });
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 180) + 'px';
+}
+
+function handleImages(input) {
+  const files = Array.from(input.files);
+  if (pendingImages.length + files.length > 9) {
+    showToast('最多添加9张图片'); return;
+  }
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      pendingImages.push(e.target.result);
+      renderImagePreviews();
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
+
+function renderImagePreviews() {
+  const container = document.getElementById('img-previews');
+  container.innerHTML = '';
+  pendingImages.forEach((src, i) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'img-preview-wrap';
+    wrap.innerHTML = `
+      <img src="${src}" alt="" />
+      <button class="remove-img" onclick="removePendingImg(${i})">✕</button>
+    `;
+    container.appendChild(wrap);
+  });
+}
+
+function removePendingImg(i) {
+  pendingImages.splice(i, 1);
+  renderImagePreviews();
+}
+
+function submitRecord() {
+  const text = document.getElementById('record-text').value.trim();
+  if (!text && pendingImages.length === 0) {
+    showToast('请输入内容或添加图片');
+    return;
+  }
+  const db = getDB();
+  const task = db.tasks.find(t => t.id === currentTaskId);
+  if (!task) return;
+  task.records.push({
+    id: uid(),
+    ts: Date.now(),
+    text,
+    images: [...pendingImages]
+  });
+  saveDB(db);
+  document.getElementById('record-text').value = '';
+  document.getElementById('record-text').style.height = 'auto';
+  pendingImages = [];
+  renderImagePreviews();
+  renderRecords(task);
+  showToast('✅ 记录已保存');
+  setTimeout(() => {
+    const sa = document.getElementById('detail-records');
+    sa.scrollTop = sa.scrollHeight;
+  }, 50);
+}
+
+function deleteRecord(rid) {
+  if (!confirm('删除这条记录？')) return;
+  const db = getDB();
+  const task = db.tasks.find(t => t.id === currentTaskId);
+  if (!task) return;
+  task.records = task.records.filter(r => r.id !== rid);
+  saveDB(db);
+  renderRecords(task);
+  showToast('记录已删除');
+}
+
+/* ======================== HEATMAP ======================== */
+function goHeatmap() {
+  heatmapYear = new Date().getFullYear();
+  heatmapMonth = new Date().getMonth();
+  const db = getDB();
+  const task = db.tasks.find(t => t.id === currentTaskId);
+  if (!task) return;
+  document.getElementById('heatmap-title').textContent = task.name + ' · 热力图';
+  renderHeatmap(task);
+  setView('view-heatmap');
+}
+
+function changeMonth(delta) {
+  heatmapMonth += delta;
+  if (heatmapMonth < 0) { heatmapMonth = 11; heatmapYear--; }
+  if (heatmapMonth > 11) { heatmapMonth = 0; heatmapYear++; }
+  const db = getDB();
+  const task = db.tasks.find(t => t.id === currentTaskId);
+  if (task) renderHeatmap(task);
+}
+
+function renderHeatmap(task) {
+  const y = heatmapYear, m = heatmapMonth;
+  document.getElementById('heatmap-month-label').textContent = `${y}年${m+1}月`;
+
+  // Count records per day this month
+  const countMap = {};
+  task.records.forEach(r => {
+    const d = new Date(r.ts);
+    if (d.getFullYear() === y && d.getMonth() === m) {
+      const key = String(d.getDate());
+      countMap[key] = (countMap[key] || 0) + 1;
+    }
+  });
+
+  const maxCount = Math.max(1, ...Object.values(countMap));
+
+  function getLevel(count) {
+    if (!count) return 0;
+    const ratio = count / maxCount;
+    if (ratio <= 0.25) return 1;
+    if (ratio <= 0.5) return 2;
+    if (ratio <= 0.75) return 3;
+    return 4;
+  }
+
+  const grid = document.getElementById('heatmap-grid');
+  grid.innerHTML = '';
+
+  // Day of week headers
+  ['日','一','二','三','四','五','六'].forEach(d => {
+    const el = document.createElement('div');
+    el.className = 'heatmap-dow';
+    el.textContent = d;
+    grid.appendChild(el);
+  });
+
+  const firstDay = new Date(y, m, 1).getDay(); // 0=Sun
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const today = new Date();
+  const todayStr2 = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+
+  // Empty cells before first day
+  for (let i = 0; i < firstDay; i++) {
+    const el = document.createElement('div');
+    el.className = 'heatmap-cell empty';
+    grid.appendChild(el);
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const count = countMap[String(day)] || 0;
+    const level = getLevel(count);
+    const el = document.createElement('div');
+    el.className = 'heatmap-cell';
+    if (level > 0) el.dataset.level = level;
+    el.textContent = day;
+
+    // Mark today
+    const isTodayCell = `${y}-${m}-${day}` === todayStr2;
+    if (isTodayCell) el.classList.add('today');
+
+    if (count > 0) el.title = `${y}年${m+1}月${day}日：${count} 条记录`;
+    grid.appendChild(el);
+  }
+
+  // Stats
+  const totalThisMonth = Object.values(countMap).reduce((a,b)=>a+b,0);
+  const activeDays = Object.keys(countMap).length;
+  const maxDay = Object.entries(countMap).sort((a,b)=>b[1]-a[1])[0];
+  const totalAll = task.records.length;
+
+  document.getElementById('heatmap-stats').innerHTML = `
+    <h3>📊 统计</h3>
+    <div class="stat-row"><span class="stat-label">本月记录</span><span class="stat-value">${totalThisMonth} 条</span></div>
+    <div class="stat-row"><span class="stat-label">本月打卡天数</span><span class="stat-value">${activeDays} 天</span></div>
+    <div class="stat-row"><span class="stat-label">本月最多单日</span><span class="stat-value">${maxDay ? maxDay[1]+' 条 ('+maxDay[0]+'日)' : '—'}</span></div>
+    <div class="stat-row"><span class="stat-label">全部记录</span><span class="stat-value">${totalAll} 条</span></div>
+  `;
+}
+
+/* ======================== NAVIGATION ======================== */
+function goHome() {
+  renderHome();
+  setView('view-home');
+}
+
+function goDetail() {
+  const db = getDB();
+  const task = db.tasks.find(t => t.id === currentTaskId);
+  if (task) renderRecords(task);
+  setView('view-detail');
+}
+
+/* ======================== LIGHTBOX ======================== */
+function openLightbox(src) {
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+}
+
+/* ======================== ESCAPE HTML ======================== */
+function escapeHtml(str) {
+  return str
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+/* ======================== KEYBOARD ======================== */
+document.addEventListener('keydown', e => {
+  // Ctrl+Enter in record textarea
+  if (e.ctrlKey && e.key === 'Enter') {
+    const active = document.querySelector('.view.active');
+    if (active && active.id === 'view-detail') submitRecord();
+  }
+  // Escape closes modals/lightbox
+  if (e.key === 'Escape') {
+    closeLightbox();
+    closeNewTaskModal();
+  }
+});
+
+/* ======================== INIT ======================== */
+renderHome();
+</script>
+</body>
+</html>
