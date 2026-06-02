@@ -15,7 +15,7 @@
       --text: #e8e8f0;
       --text2: #9090b0;
       --text3: #5a5a7a;
-      --danger: #f87171; 
+      --danger: #f87171;
       --green: #34d399;
       --radius: 14px;
       --radius-sm: 8px;
@@ -338,6 +338,32 @@
     }
     .toast.show { opacity: 1; }
 
+    /* ===== LOADING ===== */
+    .loading-overlay {
+      position: fixed; inset: 0; z-index: 400;
+      background: rgba(15,15,19,0.8); backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 12px;
+    }
+    .spinner {
+      width: 36px; height: 36px; border: 3px solid var(--border);
+      border-top-color: var(--accent); border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { font-size: 13px; color: var(--text2); }
+
+    /* ===== SYNC BADGE ===== */
+    .sync-badge {
+      position: fixed; top: 60px; right: 12px; z-index: 150;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 100px; padding: 4px 10px;
+      font-size: 11px; color: var(--text3);
+      display: none; align-items: center; gap: 4px;
+    }
+    .sync-badge.active { display: flex; }
+    .sync-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+
     /* ===== RESPONSIVE ===== */
     @media (max-width: 400px) {
       .tasks-grid { grid-template-columns: repeat(2, 1fr); }
@@ -346,8 +372,19 @@
 </head>
 <body>
 
+<!-- ===================== LOADING ===================== -->
+<div class="loading-overlay" id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text">连接云端…</div>
+</div>
+
+<!-- ===================== SYNC BADGE ===================== -->
+<div class="sync-badge" id="sync-badge">
+  <div class="dot"></div>云端同步
+</div>
+
 <!-- ===================== HOME VIEW ===================== -->
-<div id="view-home" class="view active">
+<div id="view-home" class="view">
   <div class="home-header">
     <div>
       <div class="greeting">我的打卡本 📒</div>
@@ -430,32 +467,95 @@
 <div class="toast" id="toast"></div>
 
 <script>
-/* ======================== DATA LAYER ======================== */
-const DB_KEY = 'checkin_app_v1';
+/* ======================== SUPABASE CONFIG ======================== */
+const SUPABASE_URL = 'https://raorwfllxyydlolusisk.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_e4i8RtEv7fjEuko_yLTsDw_TU4r19Q4';
+const API = SUPABASE_URL + '/rest/v1';
 
-function loadDB() {
-  try {
-    return JSON.parse(localStorage.getItem(DB_KEY)) || { tasks: [] };
-  } catch { return { tasks: [] }; }
+const headers = {
+  'apikey': SUPABASE_KEY,
+  'Authorization': 'Bearer ' + SUPABASE_KEY,
+  'Content-Type': 'application/json',
+  'Prefer': 'return=representation'
+};
+
+/* ======================== API LAYER ======================== */
+async function apiFetch(table, method, body, query) {
+  let url = API + '/' + table;
+  if (query) url += '?' + query;
+  const opts = {
+    method,
+    headers: { ...headers }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(url, opts);
+  if (!res.ok) {
+    const err = await res.text();
+    console.error('API Error:', res.status, err);
+    throw new Error('API error ' + res.status);
+  }
+  if (res.status === 204) return null;
+  return res.json();
 }
 
-function saveDB(db) {
-  localStorage.setItem(DB_KEY, JSON.stringify(db));
+/* ======================== DATA LAYER (Supabase) ======================== */
+let tasksCache = []; // local cache for current session
+
+async function loadTasks() {
+  const tasks = await apiFetch('tasks', 'GET', null, 'select=*&order=created_at.asc');
+  for (const t of tasks) {
+    const records = await apiFetch('records', 'GET', null, 'task_id=eq.' + t.id + '&order=created_at.asc');
+    t.records = records || [];
+  }
+  tasksCache = tasks;
+  return tasks;
 }
 
-function getDB() { return loadDB(); }
+async function createTaskDB(name) {
+  const result = await apiFetch('tasks', 'POST', { name });
+  const task = Array.isArray(result) ? result[0] : result;
+  task.records = [];
+  tasksCache.push(task);
+  return task;
+}
+
+async function deleteTaskDB(id) {
+  await apiFetch('records', 'DELETE', null, 'task_id=eq.' + id);
+  await apiFetch('tasks', 'DELETE', null, 'id=eq.' + id);
+  tasksCache = tasksCache.filter(t => t.id !== id);
+}
+
+async function createRecordDB(taskId, text, images) {
+  const result = await apiFetch('records', 'POST', {
+    task_id: taskId,
+    text: text || '',
+    images: images || []
+  });
+  const record = Array.isArray(result) ? result[0] : result;
+  const task = tasksCache.find(t => t.id === taskId);
+  if (task) task.records.push(record);
+  return record;
+}
+
+async function deleteRecordDB(id) {
+  await apiFetch('records', 'DELETE', null, 'id=eq.' + id);
+  // Remove from cache
+  for (const t of tasksCache) {
+    t.records = t.records.filter(r => r.id !== id);
+  }
+}
+
+function getTaskFromCache(id) {
+  return tasksCache.find(t => t.id === id);
+}
 
 /* ======================== STATE ======================== */
 let currentTaskId = null;
-let pendingImages = []; // [{dataUrl, name}]
+let pendingImages = [];
 let heatmapYear = new Date().getFullYear();
-let heatmapMonth = new Date().getMonth(); // 0-indexed
+let heatmapMonth = new Date().getMonth();
 
 /* ======================== UTILS ======================== */
-function uid() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2,6);
-}
-
 function formatDate(ts) {
   const d = new Date(ts);
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -483,19 +583,49 @@ function setView(id) {
   window.scrollTo(0, 0);
 }
 
+function showLoading(msg) {
+  document.getElementById('loading').querySelector('.loading-text').textContent = msg || '加载中…';
+  document.getElementById('loading').style.display = 'flex';
+}
+
+function hideLoading() {
+  document.getElementById('loading').style.display = 'none';
+}
+
+function showSyncBadge() {
+  document.getElementById('sync-badge').classList.add('active');
+  setTimeout(() => document.getElementById('sync-badge').classList.remove('active'), 2000);
+}
+
+/* ======================== IMAGE COMPRESSION ======================== */
+function compressImage(dataUrl, maxWidth, quality) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let w = img.width, h = img.height;
+      if (w > maxWidth) { h = h * maxWidth / w; w = maxWidth; }
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src = dataUrl;
+  });
+}
+
 /* ======================== HOME ======================== */
-function renderHome() {
-  // Date label
+async function renderHome() {
   const now = new Date();
   const weekdays = ['日','一','二','三','四','五','六'];
   document.getElementById('home-date').textContent =
     `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 · 星期${weekdays[now.getDay()]}`;
 
-  const db = getDB();
   const grid = document.getElementById('tasks-grid');
   grid.innerHTML = '';
 
-  if (db.tasks.length === 0) {
+  if (tasksCache.length === 0) {
     grid.innerHTML = `
       <div class="empty-state" style="grid-column:1/-1">
         <div class="emoji">🌱</div>
@@ -505,9 +635,12 @@ function renderHome() {
   }
 
   const today = todayStr();
-  db.tasks.forEach(task => {
-    const total = task.records.length;
-    const todayCount = task.records.filter(r => formatDate(r.ts) === today).length;
+  tasksCache.forEach(task => {
+    const total = (task.records || []).length;
+    const todayCount = (task.records || []).filter(r => {
+      const ts = r.created_at || r.ts;
+      return formatDate(ts) === today;
+    }).length;
     const card = document.createElement('div');
     card.className = 'task-card';
     card.innerHTML = `
@@ -537,39 +670,49 @@ function closeModalIfBg(e) {
   if (e.target === e.currentTarget) closeNewTaskModal();
 }
 
-function createTask() {
+async function createTask() {
   const name = document.getElementById('new-task-name').value.trim();
   if (!name) { showToast('请输入任务名称'); return; }
-  const db = getDB();
-  db.tasks.push({ id: uid(), name, records: [], createdAt: Date.now() });
-  saveDB(db);
-  closeNewTaskModal();
-  renderHome();
-  showToast('✅ 任务已创建');
+  try {
+    showLoading('创建中…');
+    await createTaskDB(name);
+    closeNewTaskModal();
+    await renderHome();
+    hideLoading();
+    showToast('✅ 任务已创建');
+  } catch (e) {
+    hideLoading();
+    showToast('❌ 创建失败，请检查网络');
+    console.error(e);
+  }
 }
 
-function deleteTask(id) {
+async function deleteTask(id) {
   if (!confirm('确定要删除这个任务及所有记录吗？')) return;
-  const db = getDB();
-  db.tasks = db.tasks.filter(t => t.id !== id);
-  saveDB(db);
-  renderHome();
-  showToast('任务已删除');
+  try {
+    showLoading('删除中…');
+    await deleteTaskDB(id);
+    await renderHome();
+    hideLoading();
+    showToast('任务已删除');
+  } catch (e) {
+    hideLoading();
+    showToast('❌ 删除失败');
+    console.error(e);
+  }
 }
 
 /* ======================== TASK DETAIL ======================== */
-function openTask(id) {
+async function openTask(id) {
   currentTaskId = id;
   pendingImages = [];
-  const db = getDB();
-  const task = db.tasks.find(t => t.id === id);
+  const task = getTaskFromCache(id);
   if (!task) return;
   document.getElementById('detail-title').textContent = task.name;
   document.getElementById('record-text').value = '';
   document.getElementById('img-previews').innerHTML = '';
   renderRecords(task);
   setView('view-detail');
-  // Scroll to bottom (newest)
   setTimeout(() => {
     const sa = document.getElementById('detail-records');
     sa.scrollTop = sa.scrollHeight;
@@ -580,23 +723,28 @@ function renderRecords(task) {
   const list = document.getElementById('records-list');
   list.innerHTML = '';
 
-  if (task.records.length === 0) {
+  const records = task.records || [];
+  if (records.length === 0) {
     list.innerHTML = `<div style="text-align:center;color:var(--text3);padding:40px 0;font-size:14px;">还没有记录，快写下今天的第一条吧 ✍️</div>`;
     return;
   }
 
-  // Sort oldest→newest (column-reverse makes newest appear at bottom visually)
-  const sorted = [...task.records].sort((a, b) => a.ts - b.ts);
+  const sorted = [...records].sort((a, b) => {
+    const ta = new Date(a.created_at || a.ts).getTime();
+    const tb = new Date(b.created_at || b.ts).getTime();
+    return ta - tb;
+  });
 
   sorted.forEach(r => {
+    const ts = r.created_at || r.ts;
     const item = document.createElement('div');
     item.className = 'record-item';
     const imgs = (r.images || []).map(src =>
-      `<img class="record-img" src="${src}" alt="" onclick="openLightbox('${src}')" />`
+      `<img class="record-img" src="${src}" alt="" onclick="openLightbox(this.src)" />`
     ).join('');
     item.innerHTML = `
       <button class="record-del" onclick="deleteRecord('${r.id}')" title="删除">✕</button>
-      <div class="record-time">${formatDatetime(r.ts)}</div>
+      <div class="record-time">${formatDatetime(ts)}</div>
       ${r.text ? `<div class="record-content">${escapeHtml(r.text)}</div>` : ''}
       ${imgs ? `<div class="record-images">${imgs}</div>` : ''}
     `;
@@ -644,51 +792,67 @@ function removePendingImg(i) {
   renderImagePreviews();
 }
 
-function submitRecord() {
+async function submitRecord() {
   const text = document.getElementById('record-text').value.trim();
   if (!text && pendingImages.length === 0) {
     showToast('请输入内容或添加图片');
     return;
   }
-  const db = getDB();
-  const task = db.tasks.find(t => t.id === currentTaskId);
-  if (!task) return;
-  task.records.push({
-    id: uid(),
-    ts: Date.now(),
-    text,
-    images: [...pendingImages]
-  });
-  saveDB(db);
-  document.getElementById('record-text').value = '';
-  document.getElementById('record-text').style.height = 'auto';
-  pendingImages = [];
-  renderImagePreviews();
-  renderRecords(task);
-  showToast('✅ 记录已保存');
-  setTimeout(() => {
-    const sa = document.getElementById('detail-records');
-    sa.scrollTop = sa.scrollHeight;
-  }, 50);
+  try {
+    showLoading('保存中…');
+
+    // Compress images
+    const compressedImages = [];
+    for (const img of pendingImages) {
+      const compressed = await compressImage(img, 800, 0.7);
+      compressedImages.push(compressed);
+    }
+
+    const record = await createRecordDB(currentTaskId, text, compressedImages);
+    document.getElementById('record-text').value = '';
+    document.getElementById('record-text').style.height = 'auto';
+    pendingImages = [];
+    renderImagePreviews();
+
+    const task = getTaskFromCache(currentTaskId);
+    if (task) renderRecords(task);
+
+    hideLoading();
+    showToast('✅ 记录已保存');
+    showSyncBadge();
+
+    setTimeout(() => {
+      const sa = document.getElementById('detail-records');
+      sa.scrollTop = sa.scrollHeight;
+    }, 50);
+  } catch (e) {
+    hideLoading();
+    showToast('❌ 保存失败，请检查网络');
+    console.error(e);
+  }
 }
 
-function deleteRecord(rid) {
+async function deleteRecord(rid) {
   if (!confirm('删除这条记录？')) return;
-  const db = getDB();
-  const task = db.tasks.find(t => t.id === currentTaskId);
-  if (!task) return;
-  task.records = task.records.filter(r => r.id !== rid);
-  saveDB(db);
-  renderRecords(task);
-  showToast('记录已删除');
+  try {
+    showLoading('删除中…');
+    await deleteRecordDB(rid);
+    const task = getTaskFromCache(currentTaskId);
+    if (task) renderRecords(task);
+    hideLoading();
+    showToast('记录已删除');
+  } catch (e) {
+    hideLoading();
+    showToast('❌ 删除失败');
+    console.error(e);
+  }
 }
 
 /* ======================== HEATMAP ======================== */
-function goHeatmap() {
+async function goHeatmap() {
   heatmapYear = new Date().getFullYear();
   heatmapMonth = new Date().getMonth();
-  const db = getDB();
-  const task = db.tasks.find(t => t.id === currentTaskId);
+  const task = getTaskFromCache(currentTaskId);
   if (!task) return;
   document.getElementById('heatmap-title').textContent = task.name + ' · 热力图';
   renderHeatmap(task);
@@ -699,8 +863,7 @@ function changeMonth(delta) {
   heatmapMonth += delta;
   if (heatmapMonth < 0) { heatmapMonth = 11; heatmapYear--; }
   if (heatmapMonth > 11) { heatmapMonth = 0; heatmapYear++; }
-  const db = getDB();
-  const task = db.tasks.find(t => t.id === currentTaskId);
+  const task = getTaskFromCache(currentTaskId);
   if (task) renderHeatmap(task);
 }
 
@@ -708,10 +871,9 @@ function renderHeatmap(task) {
   const y = heatmapYear, m = heatmapMonth;
   document.getElementById('heatmap-month-label').textContent = `${y}年${m+1}月`;
 
-  // Count records per day this month
   const countMap = {};
-  task.records.forEach(r => {
-    const d = new Date(r.ts);
+  (task.records || []).forEach(r => {
+    const d = new Date(r.created_at || r.ts);
     if (d.getFullYear() === y && d.getMonth() === m) {
       const key = String(d.getDate());
       countMap[key] = (countMap[key] || 0) + 1;
@@ -732,7 +894,6 @@ function renderHeatmap(task) {
   const grid = document.getElementById('heatmap-grid');
   grid.innerHTML = '';
 
-  // Day of week headers
   ['日','一','二','三','四','五','六'].forEach(d => {
     const el = document.createElement('div');
     el.className = 'heatmap-dow';
@@ -740,12 +901,11 @@ function renderHeatmap(task) {
     grid.appendChild(el);
   });
 
-  const firstDay = new Date(y, m, 1).getDay(); // 0=Sun
+  const firstDay = new Date(y, m, 1).getDay();
   const daysInMonth = new Date(y, m + 1, 0).getDate();
   const today = new Date();
   const todayStr2 = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
 
-  // Empty cells before first day
   for (let i = 0; i < firstDay; i++) {
     const el = document.createElement('div');
     el.className = 'heatmap-cell empty';
@@ -759,20 +919,16 @@ function renderHeatmap(task) {
     el.className = 'heatmap-cell';
     if (level > 0) el.dataset.level = level;
     el.textContent = day;
-
-    // Mark today
     const isTodayCell = `${y}-${m}-${day}` === todayStr2;
     if (isTodayCell) el.classList.add('today');
-
     if (count > 0) el.title = `${y}年${m+1}月${day}日：${count} 条记录`;
     grid.appendChild(el);
   }
 
-  // Stats
   const totalThisMonth = Object.values(countMap).reduce((a,b)=>a+b,0);
   const activeDays = Object.keys(countMap).length;
   const maxDay = Object.entries(countMap).sort((a,b)=>b[1]-a[1])[0];
-  const totalAll = task.records.length;
+  const totalAll = (task.records || []).length;
 
   document.getElementById('heatmap-stats').innerHTML = `
     <h3>📊 统计</h3>
@@ -784,14 +940,22 @@ function renderHeatmap(task) {
 }
 
 /* ======================== NAVIGATION ======================== */
-function goHome() {
-  renderHome();
+async function goHome() {
+  try {
+    showLoading('同步中…');
+    await loadTasks();
+    await renderHome();
+    hideLoading();
+  } catch (e) {
+    hideLoading();
+    await renderHome();
+    console.error(e);
+  }
   setView('view-home');
 }
 
 function goDetail() {
-  const db = getDB();
-  const task = db.tasks.find(t => t.id === currentTaskId);
+  const task = getTaskFromCache(currentTaskId);
   if (task) renderRecords(task);
   setView('view-detail');
 }
@@ -816,12 +980,10 @@ function escapeHtml(str) {
 
 /* ======================== KEYBOARD ======================== */
 document.addEventListener('keydown', e => {
-  // Ctrl+Enter in record textarea
   if (e.ctrlKey && e.key === 'Enter') {
     const active = document.querySelector('.view.active');
     if (active && active.id === 'view-detail') submitRecord();
   }
-  // Escape closes modals/lightbox
   if (e.key === 'Escape') {
     closeLightbox();
     closeNewTaskModal();
@@ -829,7 +991,21 @@ document.addEventListener('keydown', e => {
 });
 
 /* ======================== INIT ======================== */
-renderHome();
+(async function init() {
+  try {
+    await loadTasks();
+    await renderHome();
+    hideLoading();
+    showSyncBadge();
+  } catch (e) {
+    hideLoading();
+    showToast('⚠️ 连接云端失败，请刷新重试');
+    console.error('Init error:', e);
+    // Fallback: show empty state
+    tasksCache = [];
+    renderHome();
+  }
+})();
 </script>
 </body>
 </html>
