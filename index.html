@@ -4,6 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <title>打卡本</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#7c6af7" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="打卡本" />
+  <link rel="apple-touch-icon" href="icon.png" />
   <style>
     :root {
       --bg: #0f0f13;
@@ -1088,6 +1094,15 @@ document.addEventListener('keydown', e => {
 });
 
 /* ======================== INIT ======================== */
+// Register Service Worker for PWA
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').then(() => {
+    console.log('Service Worker registered');
+  }).catch(err => {
+    console.log('SW registration failed:', err);
+  });
+}
+
 (async function init() {
   // First load local data immediately (no loading screen!)
   const localData = loadLocalData();
