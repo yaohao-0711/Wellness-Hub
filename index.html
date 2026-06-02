@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="打卡本" />
-  <link rel="apple-touch-icon" href="icon.png" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%237c6af7'/%3E%3Crect x='44' y='36' width='104' height='120' rx='12' fill='%23fff' opacity='0.15'/%3E%3Crect x='52' y='44' width='88' height='104' rx='8' fill='none' stroke='%23fff' stroke-width='6'/%3E%3Cpath d='M76 92l12 12 28-28' stroke='%23fff' stroke-width='8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cline x1='68' y1='120' x2='124' y2='120' stroke='%23fff' stroke-width='4' stroke-linecap='round' opacity='0.5'/%3E%3C/svg%3E" />
   <style>
     :root {
       --bg: #0f0f13;
@@ -357,13 +357,106 @@
     .sync-badge .dot.green { background: var(--green); }
     .sync-badge .dot.yellow { background: #fbbf24; }
 
+    /* ===== WELCOME OVERLAY ===== */
+    .welcome-overlay {
+      position: fixed; inset: 0; z-index: 400;
+      background: var(--bg);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 40px 24px;
+      transition: opacity .5s, transform .5s;
+    }
+    .welcome-overlay.hiding {
+      opacity: 0; transform: scale(1.05);
+      pointer-events: none;
+    }
+    .welcome-overlay .welcome-icon {
+      font-size: 56px; margin-bottom: 24px;
+      animation: welcomePulse 2s ease-in-out infinite;
+    }
+    @keyframes welcomePulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+    .welcome-overlay .welcome-quote {
+      font-size: 22px; font-weight: 700;
+      color: var(--accent2);
+      margin-bottom: 8px;
+      letter-spacing: 2px;
+    }
+    .welcome-overlay .welcome-sub {
+      font-size: 13px; color: var(--text3);
+      margin-bottom: 36px;
+    }
+    .welcome-overlay .mood-label {
+      font-size: 14px; color: var(--text2);
+      margin-bottom: 16px;
+    }
+    .mood-options {
+      display: flex; gap: 16px;
+    }
+    .mood-btn {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 8px;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      cursor: pointer;
+      transition: transform .15s, border-color .15s, background .15s;
+      color: var(--text);
+      font-family: inherit;
+    }
+    .mood-btn:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent);
+      background: var(--surface2);
+    }
+    .mood-btn:active {
+      transform: scale(0.95);
+    }
+    .mood-btn .mood-emoji {
+      font-size: 36px;
+    }
+    .mood-btn .mood-text {
+      font-size: 12px; color: var(--text2);
+    }
+
     /* ===== RESPONSIVE ===== */
     @media (max-width: 400px) {
       .tasks-grid { grid-template-columns: repeat(2, 1fr); }
+      .mood-btn { padding: 12px 14px; }
+      .mood-btn .mood-emoji { font-size: 28px; }
     }
   </style>
 </head>
 <body>
+
+<!-- ===================== WELCOME OVERLAY ===================== -->
+<div class="welcome-overlay" id="welcome-overlay">
+  <div class="welcome-icon">🌟</div>
+  <div class="welcome-quote">坚持就是胜利</div>
+  <div class="welcome-sub">每一天的努力，都算数</div>
+  <div class="mood-label">今天的你心情怎么样？</div>
+  <div class="mood-options">
+    <button class="mood-btn" onclick="selectMood('great')">
+      <span class="mood-emoji">😄</span>
+      <span class="mood-text">很棒</span>
+    </button>
+    <button class="mood-btn" onclick="selectMood('good')">
+      <span class="mood-emoji">🙂</span>
+      <span class="mood-text">还行</span>
+    </button>
+    <button class="mood-btn" onclick="selectMood('meh')">
+      <span class="mood-emoji">😐</span>
+      <span class="mood-text">一般</span>
+    </button>
+    <button class="mood-btn" onclick="selectMood('bad')">
+      <span class="mood-emoji">😞</span>
+      <span class="mood-text">不好</span>
+    </button>
+  </div>
+</div>
 
 <!-- ===================== SYNC BADGE ===================== -->
 <div class="sync-badge" id="sync-badge">
@@ -683,6 +776,34 @@ let currentTaskId = null;
 let pendingImages = [];
 let heatmapYear = new Date().getFullYear();
 let heatmapMonth = new Date().getMonth();
+
+/* ======================== WELCOME / MOOD ======================== */
+const MOOD_KEY = 'checkin_mood_today';
+const moodEmojiMap = { great: '😄', good: '🙂', meh: '😐', bad: '😞' };
+const moodTextMap = { great: '很棒', good: '还行', meh: '一般', bad: '不好' };
+
+function selectMood(mood) {
+  const today = todayStr();
+  const moodData = JSON.parse(localStorage.getItem(MOOD_KEY) || '{}');
+  moodData[today] = mood;
+  localStorage.setItem(MOOD_KEY, JSON.stringify(moodData));
+
+  // Animate out the welcome overlay
+  const overlay = document.getElementById('welcome-overlay');
+  overlay.classList.add('hiding');
+  setTimeout(() => {
+    overlay.style.display = 'none';
+  }, 500);
+
+  showToast(moodEmojiMap[mood] + ' ' + moodTextMap[mood] + '！加油');
+}
+
+function shouldShowWelcome() {
+  const today = todayStr();
+  const moodData = JSON.parse(localStorage.getItem(MOOD_KEY) || '{}');
+  // Only show if no mood selected today
+  return !moodData[today];
+}
 
 /* ======================== UTILS ======================== */
 function formatDate(ts) {
@@ -1104,6 +1225,13 @@ if ('serviceWorker' in navigator) {
 }
 
 (async function init() {
+  // Show welcome overlay if no mood selected today
+  if (shouldShowWelcome()) {
+    document.getElementById('welcome-overlay').style.display = 'flex';
+  } else {
+    document.getElementById('welcome-overlay').style.display = 'none';
+  }
+
   // First load local data immediately (no loading screen!)
   const localData = loadLocalData();
   tasksCache = localData.tasks || [];
