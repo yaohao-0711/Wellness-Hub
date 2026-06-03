@@ -12,20 +12,24 @@
   <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%23a0845c'/%3E%3Ccircle cx='96' cy='78' r='28' fill='none' stroke='%23fff' stroke-width='5'/%3E%3Cpath d='M96 106 L96 130' stroke='%23fff' stroke-width='5' stroke-linecap='round'/%3E%3Cpath d='M80 96 Q96 116 112 96' fill='none' stroke='%23fff' stroke-width='4' stroke-linecap='round'/%3E%3Cellipse cx='86' cy='74' rx='4' ry='5' fill='%23fff'/%3E%3Cellipse cx='106' cy='74' rx='4' ry='5' fill='%23fff'/%3E%3Crect x='80' y='136' width='32' height='4' rx='2' fill='%23fff' opacity='0.5'/%3E%3Crect x='74' y='144' width='44' height='4' rx='2' fill='%23fff' opacity='0.3'/%3E%3C/svg%3E" />
   <style>
     :root {
-      --bg: #faf6f0;
-      --surface: #fffcf7;
-      --surface2: #f5efe6;
-      --border: #e8ddd0;
-      --accent: #a0845c;
+      --bg: #f8f4ee;
+      --surface: #fffdf9;
+      --surface2: #f3ede4;
+      --border: #e5d9cc;
+      --accent: #9a7d54;
       --accent2: #8fa67a;
       --accent3: #c4956a;
-      --text: #3d3426;
-      --text2: #8c7e6a;
-      --text3: #b5a99a;
+      --accent-light: rgba(154,125,84,0.08);
+      --text: #3a3125;
+      --text2: #8a7c68;
+      --text3: #b8a998;
       --danger: #c0392b;
       --green: #8fa67a;
       --radius: 16px;
       --radius-sm: 10px;
+      --shadow-sm: 0 2px 8px rgba(154,125,84,0.06);
+      --shadow-md: 0 4px 16px rgba(154,125,84,0.10);
+      --shadow-lg: 0 8px 32px rgba(154,125,84,0.14);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -36,6 +40,7 @@
       font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
       min-height: 100vh;
       overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
     }
 
     /* ===== VIEWS ===== */
@@ -45,7 +50,9 @@
     /* ===== TOP BAR ===== */
     .topbar {
       position: sticky; top: 0; z-index: 100;
-      background: var(--bg);
+      background: rgba(248,244,238,0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
       padding: 0 16px;
       height: 56px;
@@ -79,20 +86,32 @@
     /* ===== HOME VIEW ===== */
     .home-header {
       padding: 28px 16px 16px;
-      display: flex; justify-content: space-between; align-items: flex-end;
+      display: flex; justify-content: center; align-items: center;
+      position: relative;
     }
-    .home-header .greeting { font-size: 22px; font-weight: 700; color: var(--accent); }
-    .home-header .date-label { font-size: 13px; color: var(--text2); margin-top: 4px; }
+    .home-header .greeting {
+      font-size: 22px; font-weight: 700; color: var(--accent);
+      text-align: center; width: 100%;
+      letter-spacing: 2px;
+    }
+    .home-header .date-label {
+      font-size: 13px; color: var(--text2); margin-top: 4px;
+      text-align: center; width: 100%;
+    }
+    .home-header-text { text-align: center; flex: 1; }
+    .home-header .add-task-btn {
+      position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+    }
     .add-task-btn {
-      background: var(--accent);
+      background: linear-gradient(135deg, var(--accent3), var(--accent));
       color: #fff; border: none; border-radius: 50%;
       width: 44px; height: 44px; font-size: 24px; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 16px rgba(160,132,92,0.35);
+      box-shadow: 0 4px 16px rgba(154,125,84,0.35);
       transition: transform .15s, box-shadow .15s;
       flex-shrink: 0;
     }
-    .add-task-btn:hover { transform: scale(1.08); box-shadow: 0 6px 20px rgba(160,132,92,0.5); }
+    .add-task-btn:hover { transform: scale(1.08); box-shadow: 0 6px 20px rgba(154,125,84,0.5); }
 
     /* Task cards */
     .tasks-grid {
@@ -106,14 +125,15 @@
       border-radius: var(--radius);
       padding: 16px 14px;
       cursor: pointer;
-      transition: transform .15s, border-color .15s, box-shadow .15s;
+      transition: transform .2s, border-color .2s, box-shadow .2s;
       position: relative; overflow: hidden;
+      box-shadow: var(--shadow-sm);
     }
     .task-card::before {
       content: ''; position: absolute; left: 0; top: 0; bottom: 0;
-      width: 3px; background: var(--accent3); border-radius: 3px 0 0 3px;
+      width: 3px; background: linear-gradient(180deg, var(--accent3), var(--accent)); border-radius: 3px 0 0 3px;
     }
-    .task-card:hover { transform: translateY(-2px); border-color: var(--accent3); box-shadow: 0 8px 24px rgba(160,132,92,.12); }
+    .task-card:hover { transform: translateY(-3px); border-color: var(--accent3); box-shadow: var(--shadow-lg); }
     .task-card .task-name { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
     .task-card .task-stats { font-size: 12px; color: var(--text2); }
     .task-card .task-total { font-size: 24px; font-weight: 700; color: var(--accent); }
@@ -153,6 +173,7 @@
       padding: 20px 20px 32px;
       width: 100%; max-width: 520px;
       animation: slideUp .25s ease;
+      box-shadow: 0 -4px 24px rgba(154,125,84,0.12);
     }
     @keyframes slideUp {
       from { transform: translateY(100%); }
@@ -171,13 +192,14 @@
       border-radius: var(--radius-sm);
       padding: 14px 12px;
       cursor: pointer;
-      transition: transform .15s, border-color .15s, background .15s;
+      transition: transform .2s, border-color .2s, background .2s, box-shadow .2s;
       text-align: center;
     }
     .template-card:hover {
       transform: translateY(-2px);
       border-color: var(--accent);
       background: var(--surface);
+      box-shadow: var(--shadow-md);
     }
     .template-card:active {
       transform: scale(0.97);
@@ -220,7 +242,7 @@
       font-family: inherit; transition: opacity .15s;
     }
     .btn:hover { opacity: .85; }
-    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary { background: linear-gradient(135deg, var(--accent3), var(--accent)); color: #fff; }
     .btn-ghost { background: var(--surface2); color: var(--text2); }
 
     /* ===== TASK DETAIL VIEW ===== */
@@ -234,6 +256,7 @@
       border-radius: var(--radius);
       padding: 14px;
       position: relative;
+      box-shadow: var(--shadow-sm);
     }
     .record-item .record-time {
       font-size: 11px; color: var(--text3); margin-bottom: 8px;
@@ -300,12 +323,12 @@
       align-items: center; justify-content: center;
     }
     .submit-btn {
-      margin-left: auto; background: var(--accent); color: #fff;
+      margin-left: auto; background: linear-gradient(135deg, var(--accent3), var(--accent)); color: #fff;
       border: none; border-radius: var(--radius-sm);
       padding: 8px 18px; font-size: 14px; font-weight: 600;
-      cursor: pointer; font-family: inherit; transition: opacity .15s;
+      cursor: pointer; font-family: inherit; transition: opacity .15s, transform .15s;
     }
-    .submit-btn:hover { opacity: .85; }
+    .submit-btn:hover { opacity: .85; transform: translateY(-1px); }
     .submit-btn:disabled { opacity: .4; cursor: not-allowed; }
 
     /* ===== HEATMAP VIEW ===== */
@@ -340,10 +363,10 @@
       border: 1px solid transparent;
       transition: transform .1s;
     }
-    .heatmap-cell.today { border-color: var(--accent); }
+    .heatmap-cell.today { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
     .heatmap-cell.empty { background: transparent; }
-    .heatmap-cell[data-level="1"] { background: rgba(160,132,92,0.20); color: var(--text2); }
-    .heatmap-cell[data-level="2"] { background: rgba(160,132,92,0.65); color: #fff; font-weight: 600; }
+    .heatmap-cell[data-level="1"] { background: rgba(154,125,84,0.18); color: var(--text2); }
+    .heatmap-cell[data-level="2"] { background: rgba(154,125,84,0.55); color: #fff; font-weight: 600; }
     .heatmap-cell:hover { transform: scale(1.1); }
     .heatmap-legend {
       display: flex; align-items: center; gap: 6px;
@@ -358,6 +381,7 @@
       border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 16px; margin-top: 20px;
+      box-shadow: var(--shadow-sm);
     }
     .heatmap-stats h3 { font-size: 14px; color: var(--text2); margin-bottom: 12px; }
     .stat-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
@@ -373,11 +397,13 @@
       border: 1px solid var(--border);
       border-radius: var(--radius);
       cursor: pointer;
-      transition: background .2s, border-color .2s;
+      transition: background .2s, border-color .2s, box-shadow .2s;
+      box-shadow: var(--shadow-sm);
     }
     .anni-section:hover {
       border-color: var(--accent3);
-      background: rgba(160,132,92,0.04);
+      background: rgba(154,125,84,0.04);
+      box-shadow: var(--shadow-md);
     }
     .anni-section-header {
       display: flex; align-items: center; justify-content: space-between;
@@ -415,8 +441,10 @@
       background: var(--surface); border: 1px solid var(--border);
       border-radius: var(--radius); padding: 14px 16px;
       display: flex; align-items: center; justify-content: space-between;
-      position: relative;
+      position: relative; box-shadow: var(--shadow-sm);
+      cursor: pointer; transition: transform .15s, box-shadow .15s;
     }
+    .anni-card:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
     .anni-card-info { flex: 1; }
     .anni-card-name { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
     .anni-card-date { font-size: 12px; color: var(--text3); }
@@ -446,6 +474,63 @@
       color: var(--text3); font-size: 14px;
     }
     .anni-empty-icon { font-size: 36px; margin-bottom: 8px; }
+
+    /* ===== ANNIVERSARY SINGLE DETAIL ===== */
+    .anni-single-page {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      min-height: 60vh; padding: 40px 24px;
+      text-align: center;
+      background-size: cover; background-position: center;
+      position: relative;
+    }
+    .anni-single-page.has-bg .anni-single-name,
+    .anni-single-page.has-bg .anni-single-suffix,
+    .anni-single-page.has-bg .anni-single-unit,
+    .anni-single-page.has-bg .anni-single-date {
+      color: #fff;
+      text-shadow: 0 1px 6px rgba(0,0,0,.5);
+    }
+    .anni-single-page.has-bg .anni-single-num {
+      color: #fff;
+      text-shadow: 0 2px 20px rgba(0,0,0,.4);
+    }
+    .anni-single-page.has-bg .anni-single-date {
+      background: rgba(0,0,0,.25);
+      border-color: rgba(255,255,255,.2);
+      backdrop-filter: blur(4px);
+    }
+    .anni-single-name {
+      font-size: 18px; font-weight: 600; color: var(--text);
+      margin-bottom: 4px;
+    }
+    .anni-single-suffix {
+      font-size: 15px; color: var(--text2); margin-bottom: 24px;
+    }
+    .anni-single-num {
+      font-size: 72px; font-weight: 800; color: var(--accent);
+      line-height: 1; margin-bottom: 8px;
+      text-shadow: 0 2px 20px rgba(154,125,84,0.15);
+    }
+    .anni-single-unit {
+      font-size: 20px; font-weight: 600; color: var(--accent);
+      margin-bottom: 36px; opacity: 0.8;
+    }
+    .anni-single-date {
+      font-size: 14px; color: var(--text3);
+      padding: 8px 20px; border-radius: 100px;
+      background: var(--surface2); border: 1px solid var(--border);
+    }
+    .anni-bg-picker-btn {
+      position: absolute; top: 16px; right: 16px; z-index: 10;
+      width: 40px; height: 40px; border-radius: 50%;
+      background: rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.25);
+      color: #fff; font-size: 18px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      backdrop-filter: blur(6px);
+      transition: background .2s;
+    }
+    .anni-bg-picker-btn:hover { background: rgba(0,0,0,.5); }
 
     /* ===== ANNIVERSARY MODAL ===== */
     .anni-form-row { margin-bottom: 14px; }
@@ -600,11 +685,13 @@
     /* ===== BOTTOM TAB BAR ===== */
     .tab-bar {
       position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
-      background: var(--surface);
+      background: rgba(255,253,249,0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border-top: 1px solid var(--border);
       display: flex; align-items: stretch;
       height: 56px; padding-bottom: env(safe-area-inset-bottom, 0);
-      box-shadow: 0 -2px 12px rgba(160,132,92,0.06);
+      box-shadow: 0 -2px 12px rgba(154,125,84,0.06);
     }
     .tab-bar.hidden { display: none; }
     .tab-item {
@@ -645,10 +732,10 @@
     .sun-btn {
       width:min(33vw,180px); height:min(33vw,180px);
       border-radius:50%;
-      background:radial-gradient(circle at 38% 38%,#f5d89a,#d4a54a,#a0845c);
+      background:radial-gradient(circle at 35% 35%,#f7dfa0,#d9b35e,#9a7d54);
       display:flex; align-items:center; justify-content:center;
       font-size:min(15vw,80px); cursor:pointer;
-      box-shadow:0 0 40px rgba(212,165,74,.4),0 0 80px rgba(212,165,74,.15);
+      box-shadow:0 0 50px rgba(217,179,94,.35),0 0 100px rgba(217,179,94,.10);
       transition:transform .15s,box-shadow .15s;
       user-select:none; -webkit-tap-highlight-color:transparent;
       animation:sunPulse 3s ease-in-out infinite;
@@ -693,10 +780,10 @@
     }
     .emotion-chip:hover { transform:translateY(-2px); border-color:var(--accent); }
     .emotion-chip:active { transform:scale(.95); }
-    .emotion-chip.selected { background:var(--accent); color:#fff; border-color:var(--accent); transform:translateY(-2px); }
+    .emotion-chip.selected { background:var(--accent); color:#fff; border-color:var(--accent); transform:translateY(-2px); box-shadow: 0 3px 10px rgba(154,125,84,0.3); }
     .picker-nav { display:flex; align-items:center; justify-content:flex-end; margin-top:8px; }
     .picker-nav-btn {
-      background:var(--accent); color:#fff; border:none; border-radius:100px;
+      background: linear-gradient(135deg, var(--accent3), var(--accent)); color: #fff; border:none; border-radius:100px;
       padding:10px 24px; font-size:14px; font-weight:600; cursor:pointer;
       font-family:inherit; transition:opacity .15s,transform .15s;
       display:flex; align-items:center; gap:6px;
@@ -743,17 +830,18 @@
       border-radius:20px; padding:24px 20px 20px;
       max-width:360px; width:100%; text-align:center;
       animation:cardPop .5s cubic-bezier(.2,.9,.3,1.1) .2s both;
+      box-shadow: var(--shadow-lg);
     }
     .advice-mood-tags { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin-bottom:16px; }
     .advice-mood-tag {
-      background:rgba(160,132,92,.1); border-radius:100px;
+      background:rgba(154,125,84,.1); border-radius:100px;
       padding:4px 12px; font-size:12px; color:var(--accent);
     }
     .advice-title { font-size:18px; font-weight:700; color:var(--text); margin-bottom:12px; line-height:1.4; }
     .advice-text { font-size:14px; color:var(--text2); line-height:1.8; margin-bottom:8px; text-align:left; }
     .advice-strategy {
       font-size:13px; color:var(--accent); line-height:1.7; text-align:left;
-      background:rgba(160,132,92,.06); border-radius:var(--radius-sm);
+      background:rgba(154,125,84,.06); border-radius:var(--radius-sm);
       padding:12px 14px; margin-top:12px;
     }
     .advice-nav { display:flex; justify-content:flex-end; margin-top:16px; }
@@ -773,17 +861,237 @@
     .wheel-container canvas {
       width:100%; height:100%; border-radius:50%;
       border:3px solid var(--accent);
-      box-shadow:0 0 30px rgba(160,132,92,.2);
+      box-shadow:0 0 30px rgba(154,125,84,.2);
       cursor:pointer;
     }
     .wheel-result { font-size:32px; font-weight:700; color:var(--accent); text-align:center; min-height:40px; }
     .wheel-result-label { font-size:13px; color:var(--text3); text-align:center; }
     .wheel-done-btn {
-      margin-top:8px; background:var(--accent); color:#fff; border:none;
+      margin-top:8px; background: linear-gradient(135deg, var(--accent3), var(--accent)); color:#fff; border:none;
       border-radius:100px; padding:10px 32px; font-size:14px; font-weight:600;
-      cursor:pointer; font-family:inherit; transition:opacity .15s;
+      cursor:pointer; font-family:inherit; transition:opacity .15s, transform .15s;
     }
+    .wheel-done-btn:hover { opacity:.85; transform:translateY(-1px); }
     .wheel-done-btn:hover { opacity:.85; }
+
+    /* ===== MOOD WHEEL OVERLAY ===== */
+    .mood-wheel-overlay {
+      position: fixed; inset: 0; z-index: 180;
+      background: var(--bg);
+      display: none; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 40px 20px 80px; gap: 20px;
+    }
+    .mood-wheel-overlay.active { display: flex; }
+
+    /* ===== MOOD CLINIC ON HOME ===== */
+    .mood-clinic-section {
+      margin: 24px 16px 80px;
+      padding: 24px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+    }
+    .mood-clinic-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 16px;
+      letter-spacing: 1px;
+    }
+    .mood-clinic-sun {
+      width: min(28vw, 140px);
+      height: min(28vw, 140px);
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #f7dfa0, #d9b35e, #9a7d54);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: min(12vw, 56px);
+      cursor: pointer;
+      box-shadow: 0 0 40px rgba(217,179,94,.3), 0 0 80px rgba(217,179,94,.08);
+      transition: transform .15s, box-shadow .15s;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      animation: sunPulse 3s ease-in-out infinite;
+      margin: 0 auto;
+    }
+    .mood-clinic-sun:active { transform: scale(.95); box-shadow: 0 0 16px rgba(212,165,74,.3); animation: none; }
+    .mood-clinic-sun.pressing { transform: scale(1.08); box-shadow: 0 0 50px rgba(212,165,74,.5), 0 0 100px rgba(212,165,74,.2); animation: none; }
+    .mood-clinic-hint {
+      font-size: 12px;
+      color: var(--text3);
+      margin-top: 12px;
+    }
+
+    /* ===== TODO PAGE ===== */
+    .todo-page { padding: 0 16px 80px; }
+    .todo-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      padding: 16px 0 12px;
+    }
+    .todo-header-title {
+      font-size: 22px; font-weight: 700;
+      color: var(--text);
+    }
+    .todo-header-count {
+      font-size: 13px; color: var(--text3);
+    }
+    .todo-filters {
+      display: flex; gap: 8px;
+      padding-bottom: 12px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .todo-filters::-webkit-scrollbar { display: none; }
+    .todo-filter {
+      padding: 6px 14px;
+      border-radius: 100px;
+      font-size: 13px; font-weight: 500;
+      background: var(--surface2);
+      color: var(--text2);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all .2s;
+      font-family: inherit;
+    }
+    .todo-filter.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    .todo-fab {
+      position: fixed;
+      bottom: 80px; right: 16px;
+      width: 56px; height: 56px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--accent3), var(--accent));
+      color: #fff; border: none;
+      font-size: 28px; font-weight: 300;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 16px rgba(154,125,84,.35);
+      transition: transform .15s, box-shadow .15s;
+      z-index: 120;
+      font-family: inherit;
+    }
+    .todo-fab:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(154,125,84,.45); }
+    .todo-fab:active { transform: scale(.95); }
+    .todo-list { display: flex; flex-direction: column; gap: 8px; }
+    .todo-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: background .2s, opacity .2s, transform .2s;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+    }
+    .todo-item:active { transform: scale(.995); }
+    .todo-item.completed {
+      background: var(--surface2);
+      opacity: 0.5;
+    }
+    .todo-item.completed .todo-text {
+      text-decoration: line-through;
+      color: var(--text3);
+    }
+    .todo-text {
+      flex: 1;
+      font-size: 15px;
+      color: var(--text);
+      word-break: break-word;
+    }
+    .todo-check {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      border: 2px solid var(--accent);
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background .2s, border-color .2s;
+      font-size: 12px;
+      color: #fff;
+      margin-left: 4px;
+    }
+    .todo-check:hover { background: rgba(154,125,84,0.1); }
+    .todo-check.checked {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    .todo-thumb {
+      width: 48px; height: 48px;
+      border-radius: var(--radius-sm);
+      object-fit: cover;
+      flex-shrink: 0;
+      border: 1px solid var(--border);
+    }
+    .todo-empty {
+      text-align: center; padding: 60px 20px;
+      color: var(--text3); font-size: 14px;
+    }
+
+    /* ===== TODO MODAL ===== */
+    .todo-photo-preview {
+      width: 100%; max-height: 160px;
+      border-radius: var(--radius-sm);
+      object-fit: cover;
+      margin-top: 10px;
+      border: 1px solid var(--border);
+      display: none;
+    }
+    .todo-photo-preview.show { display: block; }
+    .todo-photo-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 14px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text2);
+      font-size: 13px; cursor: pointer;
+      font-family: inherit;
+      margin-top: 8px;
+      transition: all .2s;
+    }
+    .todo-photo-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ===== TODO DETAIL PAGE ===== */
+    .todo-detail-page {
+      padding: 16px 16px 80px;
+      min-height: 60vh;
+    }
+    .todo-detail-img {
+      width: 100%; max-height: 280px;
+      border-radius: var(--radius);
+      object-fit: cover;
+      border: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+    .todo-detail-text {
+      font-size: 17px; color: var(--text);
+      line-height: 1.7;
+      word-break: break-word;
+    }
+    .todo-detail-status {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 13px; color: var(--text3);
+      margin-top: 12px;
+      padding: 6px 12px;
+      background: var(--surface2);
+      border-radius: 100px;
+      border: 1px solid var(--border);
+    }
 
     /* ===== CALENDAR TAB ===== */
     .cal-page { padding:16px 16px 80px; }
@@ -822,10 +1130,10 @@
     }
     .cal-cell.empty { background:transparent; }
     .cal-cell.today {
-      border-color:var(--accent); background:rgba(160,132,92,0.08);
+      border-color:var(--accent); background:rgba(154,125,84,0.08);
     }
     .cal-cell.today .cal-day-num { color:var(--accent); font-weight:700; }
-    .cal-cell[data-mood="yes"] { background:rgba(160,132,92,0.06); }
+    .cal-cell[data-mood="yes"] { background:rgba(154,125,84,0.06); }
     .cal-cell[data-mood="yes"] .cal-day-num { color:var(--accent); font-weight:600; }
     .cal-day-num { font-size:14px; line-height:1; }
     .cal-day-mood { font-size:9px; color:var(--accent); line-height:1; }
@@ -852,6 +1160,7 @@
     .me-mood-curve {
       background:var(--surface); border:1px solid var(--border);
       border-radius:var(--radius); padding:16px; margin-bottom:14px;
+      box-shadow: var(--shadow-sm);
     }
     .me-curve-chart {
       height:90px; display:flex; align-items:flex-end;
@@ -905,34 +1214,70 @@
 <!-- ===================== TAB 1: 记录 ===================== -->
 <div id="view-tab-record" class="tab-view active">
   <div class="home-header">
-    <div>
+    <div class="home-header-text">
       <div class="greeting">心理小屋 🏠</div>
       <div class="date-label" id="home-date"></div>
     </div>
     <button class="add-task-btn" onclick="openNewTaskModal()" title="新建任务">+</button>
   </div>
   <div class="tasks-grid" id="tasks-grid"></div>
+
+  <!-- 情绪诊所 -->
+  <div class="mood-clinic-section">
+    <div class="mood-clinic-title">🌤 情绪诊所</div>
+    <div class="mood-clinic-sun" id="home-sun-btn">☀️</div>
+    <div class="mood-clinic-hint">长按太阳，测一测今天的心情 ✦</div>
+  </div>
 </div>
 
-<!-- ===================== TAB 2: 情绪 ===================== -->
+<!-- ===================== TAB 2: 待办 ===================== -->
 <div id="view-tab-mood" class="tab-view">
-  <div id="mood-main" class="mood-sun-page">
-    <div class="sun-btn" id="sun-btn">☀️</div>
-    <div class="sun-prompt">
-      <div class="prompt-line1">你现在是否充满情绪</div>
-      <div class="prompt-line2">测一测吧</div>
+  <div class="todo-page">
+    <div class="todo-header">
+      <div class="todo-header-title">待办</div>
+      <div class="todo-header-count" id="todo-header-count">共 0 条</div>
     </div>
-    <div class="sun-hint">长按太阳开始 ✦</div>
+    <div class="todo-filters">
+      <button class="todo-filter active" onclick="setTodoFilter('all')" id="todo-filter-all">全部</button>
+      <button class="todo-filter" onclick="setTodoFilter('active')" id="todo-filter-active">进行中</button>
+      <button class="todo-filter" onclick="setTodoFilter('completed')" id="todo-filter-completed">已完成</button>
+    </div>
+    <div id="todo-list" class="todo-list"></div>
   </div>
-  <div id="mood-wheel-page" class="mood-wheel-page">
-    <div class="wheel-title">🌤 心情温度</div>
-    <div class="wheel-hint">点击轮盘，选择你的温度</div>
-    <div class="wheel-container" id="wheel-container">
-      <canvas id="wheel-canvas" width="560" height="560"></canvas>
+  <button class="todo-fab" onclick="openTodoModal()">+</button>
+</div>
+
+<!-- ===================== TODO CREATE MODAL ===================== -->
+<div class="modal-overlay" id="modal-todo" onclick="closeModalIfBg(event)">
+  <div class="modal-sheet">
+    <h2>新建待办</h2>
+    <div class="anni-form-row">
+      <label>内容</label>
+      <input class="input-field" id="todo-new-text" type="text" placeholder="输入待办事项…" maxlength="60"
+        onkeydown="if(event.key==='Enter')createTodo()" />
     </div>
-    <div class="wheel-result" id="wheel-result"></div>
-    <div class="wheel-result-label" id="wheel-result-label"></div>
-    <button class="wheel-done-btn" id="wheel-done-btn" style="display:none" onclick="wheelDone()">完成 ✦</button>
+    <div class="anni-form-row">
+      <button class="todo-photo-btn" onclick="document.getElementById('todo-photo-input').click()">
+        📎 添加照片
+      </button>
+      <input type="file" id="todo-photo-input" accept="image/*" style="display:none" onchange="onTodoPhotoSelect(this)" />
+      <img class="todo-photo-preview" id="todo-photo-preview" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeTodoModal()">取消</button>
+      <button class="btn btn-primary" onclick="createTodo()">创建</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== TODO DETAIL PAGE ===================== -->
+<div id="view-todo-detail" class="view">
+  <div class="topbar">
+    <button class="back-btn" onclick="goBackToTodoTab()">‹</button>
+    <h1>待办详情</h1>
+  </div>
+  <div class="scroll-area">
+    <div class="todo-detail-page" id="todo-detail-page"></div>
   </div>
 </div>
 
@@ -1051,6 +1396,20 @@
   </div>
 </div>
 
+<!-- ===================== ANNIVERSARY SINGLE DETAIL ===================== -->
+<div id="view-anni-detail" class="view">
+  <div class="topbar">
+    <button class="back-btn" onclick="goAnniList()">‹</button>
+    <h1>纪念日</h1>
+  </div>
+  <div class="scroll-area">
+    <div class="anni-single-page" id="anni-single-page">
+      <button class="anni-bg-picker-btn" onclick="document.getElementById('anni-bg-input').click()" title="更换背景">🖼</button>
+      <input type="file" id="anni-bg-input" accept="image/*" style="display:none" onchange="onAnniBgSelect(this)" />
+    </div>
+  </div>
+</div>
+
 <!-- ===================== ANNIVERSARY MODAL ===================== -->
 <div class="modal-overlay" id="modal-anni" onclick="closeModalIfBg(event)">
   <div class="modal-sheet">
@@ -1078,8 +1437,8 @@
     <span>记录</span>
   </button>
   <button class="tab-item" onclick="switchTab('mood')" id="tab-mood">
-    <span class="tab-icon">🌤</span>
-    <span>情绪</span>
+    <span class="tab-icon">✅</span>
+    <span>待办</span>
   </button>
   <button class="tab-item" onclick="switchTab('calendar')" id="tab-calendar">
     <span class="tab-icon">📅</span>
@@ -1121,6 +1480,18 @@
       <button class="picker-nav-btn" onclick="goToWheel()">下一步 →</button>
     </div>
   </div>
+</div>
+
+<!-- ===================== MOOD WHEEL OVERLAY ===================== -->
+<div id="mood-wheel-overlay" class="mood-wheel-overlay">
+  <div class="wheel-title">🌤 心情温度</div>
+  <div class="wheel-hint">点击轮盘，选择你的温度</div>
+  <div class="wheel-container" id="wheel-container">
+    <canvas id="wheel-canvas" width="560" height="560"></canvas>
+  </div>
+  <div class="wheel-result" id="wheel-result"></div>
+  <div class="wheel-result-label" id="wheel-result-label"></div>
+  <button class="wheel-done-btn" id="wheel-done-btn" style="display:none" onclick="wheelDone()">完成 ✦</button>
 </div>
 
 <!-- ===================== LIGHTBOX ===================== -->
@@ -1477,7 +1848,7 @@ function saveMoodData(data) {
 
 /* --- Sun button long press --- */
 function initSunButton() {
-  const sun = document.getElementById('sun-btn');
+  const sun = document.getElementById('home-sun-btn');
   if (!sun) return;
   function startPress(e) {
     e.preventDefault();
@@ -1612,9 +1983,8 @@ let wheelSelected = -1;
 
 function goToWheel() {
   document.getElementById('mood-reveal-overlay').classList.remove('open');
-  document.getElementById('mood-main').style.display = 'none';
-  const wp = document.getElementById('mood-wheel-page');
-  wp.classList.add('active');
+  const wo = document.getElementById('mood-wheel-overlay');
+  wo.classList.add('active');
   wheelSelected = -1;
   drawWheel();
   document.getElementById('wheel-result').textContent = '';
@@ -1752,8 +2122,7 @@ function onWheelResult(num) {
 }
 
 function wheelDone() {
-  document.getElementById('mood-wheel-page').classList.remove('active');
-  document.getElementById('mood-main').style.display = '';
+  document.getElementById('mood-wheel-overlay').classList.remove('active');
   wheelSelected = -1;
 }
 
@@ -1911,7 +2280,7 @@ function setView(id) {
   document.getElementById(id).classList.add('active');
   // Hide tab bar when entering sub-views (detail, heatmap, anniversary)
   const tabBar = document.getElementById('tab-bar');
-  if (id === 'view-detail' || id === 'view-heatmap' || id === 'view-anniversary') {
+  if (id === 'view-detail' || id === 'view-heatmap' || id === 'view-anniversary' || id === 'view-anni-detail' || id === 'view-todo-detail') {
     tabBar.classList.add('hidden');
   } else {
     tabBar.classList.remove('hidden');
@@ -1936,9 +2305,7 @@ function switchTab(tabName) {
 
   // Tab-specific init
   if (tabName === 'mood') {
-    // Ensure sun page is visible, wheel hidden
-    document.getElementById('mood-main').style.display = '';
-    document.getElementById('mood-wheel-page').classList.remove('active');
+    renderTodos();
   }
   if (tabName === 'calendar') {
     calYear = new Date().getFullYear();
@@ -2322,12 +2689,11 @@ function renderAnniPreview() {
 
   sorted.forEach(item => {
     const days = computeAnniDays(item.date);
-    const label = days >= 0 ? `+${days}` : `${days}`;
     const el = document.createElement('div');
     el.className = 'anni-preview-item';
     el.innerHTML = `
       <span class="anni-preview-name">${escapeHtml(item.name)}</span>
-      <span class="anni-preview-days">${label}</span>
+      <span class="anni-preview-days">${Math.abs(days)}</span>
     `;
     listEl.appendChild(el);
   });
@@ -2340,6 +2706,59 @@ function goAnniversary() {
 
 function goCalendarTab() {
   switchTab('calendar');
+}
+
+function goAnniList() {
+  renderAnniList();
+  setView('view-anniversary');
+}
+
+let currentAnniId = null;
+
+function openAnniDetail(id) {
+  currentAnniId = id;
+  const list = loadAnnis();
+  const item = list.find(a => a.id === id);
+  if (!item) return;
+  const days = computeAnniDays(item.date);
+  const absDays = Math.abs(days);
+  const isFuture = days < 0;
+  const suffix = isFuture ? '还有' : '已经';
+  const unit = isFuture ? '天后' : '天';
+  const page = document.getElementById('anni-single-page');
+  page.className = 'anni-single-page' + (item.bgImage ? ' has-bg' : '');
+  if (item.bgImage) {
+    page.style.backgroundImage = `url(${item.bgImage})`;
+  } else {
+    page.style.backgroundImage = '';
+  }
+  page.innerHTML = `
+    <button class="anni-bg-picker-btn" onclick="document.getElementById('anni-bg-input').click()" title="更换背景">🖼</button>
+    <input type="file" id="anni-bg-input" accept="image/*" style="display:none" onchange="onAnniBgSelect(this)" />
+    <div class="anni-single-name">${escapeHtml(item.name)}${suffix}</div>
+    <div class="anni-single-num">${absDays}</div>
+    <div class="anni-single-unit">${unit}</div>
+    <div class="anni-single-date">${item.date}</div>
+  `;
+  setView('view-anni-detail');
+}
+
+function onAnniBgSelect(input) {
+  const file = input.files[0];
+  if (!file || !currentAnniId) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const list = loadAnnis();
+    const item = list.find(a => a.id === currentAnniId);
+    if (item) {
+      item.bgImage = e.target.result;
+      saveAnnis(list);
+      openAnniDetail(currentAnniId);
+      showToast('背景已更新');
+    }
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
 }
 
 function renderAnniList() {
@@ -2364,19 +2783,20 @@ function renderAnniList() {
   });
   sorted.forEach(item => {
     const days = computeAnniDays(item.date);
-    const isPast = days >= 0;
+    const absDays = Math.abs(days);
     const el = document.createElement('div');
     el.className = 'anni-card';
+    el.onclick = () => openAnniDetail(item.id);
     el.innerHTML = `
       <div class="anni-card-info">
         <div class="anni-card-name">${escapeHtml(item.name)}</div>
         <div class="anni-card-date">${item.date}</div>
       </div>
       <div class="anni-card-days">
-        <div class="anni-card-num">${isPast ? '+' + days : days}</div>
-        <div class="anni-card-label">${isPast ? '天' : '天后'}</div>
+        <div class="anni-card-num">${absDays}</div>
+        <div class="anni-card-label">${days >= 0 ? '天' : '天后'}</div>
       </div>
-      <button class="anni-card-delete" onclick="deleteAnni('${item.id}')">✕</button>
+      <button class="anni-card-delete" onclick="event.stopPropagation();deleteAnni('${item.id}')">✕</button>
     `;
     container.appendChild(el);
   });
@@ -2419,6 +2839,139 @@ function deleteAnni(id) {
   renderAnniList();
   renderAnniPreview();
   showToast('已删除');
+}
+
+/* ======================== TODO ======================== */
+const TODO_KEY = 'wellness_todos';
+let todoFilter = 'all';
+let todoPhotoData = null;
+
+function loadTodos() {
+  try {
+    const raw = localStorage.getItem(TODO_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) { return []; }
+}
+function saveTodos(list) {
+  localStorage.setItem(TODO_KEY, JSON.stringify(list));
+}
+
+function openTodoModal() {
+  document.getElementById('todo-new-text').value = '';
+  todoPhotoData = null;
+  const preview = document.getElementById('todo-photo-preview');
+  preview.src = ''; preview.classList.remove('show');
+  document.getElementById('modal-todo').classList.add('open');
+  setTimeout(() => document.getElementById('todo-new-text').focus(), 100);
+}
+function closeTodoModal() {
+  document.getElementById('modal-todo').classList.remove('open');
+}
+
+function onTodoPhotoSelect(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    todoPhotoData = e.target.result;
+    const preview = document.getElementById('todo-photo-preview');
+    preview.src = todoPhotoData;
+    preview.classList.add('show');
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+function createTodo() {
+  const text = document.getElementById('todo-new-text').value.trim();
+  if (!text) { showToast('请输入待办内容'); return; }
+  const list = loadTodos();
+  list.unshift({
+    id: 'todo_' + Date.now(),
+    text,
+    completed: false,
+    createdAt: Date.now(),
+    photo: todoPhotoData || null
+  });
+  saveTodos(list);
+  closeTodoModal();
+  renderTodos();
+  showToast('已添加');
+}
+
+function setTodoFilter(filter) {
+  todoFilter = filter;
+  document.querySelectorAll('.todo-filter').forEach(el => el.classList.remove('active'));
+  document.getElementById('todo-filter-' + filter).classList.add('active');
+  renderTodos();
+}
+
+function toggleTodo(id, event) {
+  if (event) event.stopPropagation();
+  const list = loadTodos();
+  const item = list.find(t => t.id === id);
+  if (item) {
+    item.completed = !item.completed;
+    saveTodos(list);
+    renderTodos();
+  }
+}
+
+function deleteTodo(id) {
+  const list = loadTodos().filter(t => t.id !== id);
+  saveTodos(list);
+  renderTodos();
+  showToast('已删除');
+}
+
+function openTodoDetail(id) {
+  const list = loadTodos();
+  const item = list.find(t => t.id === id);
+  if (!item) return;
+  const page = document.getElementById('todo-detail-page');
+  const statusText = item.completed ? '已完成' : '进行中';
+  const statusIcon = item.completed ? '✓' : '○';
+  page.innerHTML = `
+    ${item.photo ? `<img class="todo-detail-img" src="${item.photo}" onclick="openLightbox('${item.photo}')" />` : ''}
+    <div class="todo-detail-text">${escapeHtml(item.text)}</div>
+    <div class="todo-detail-status">${statusIcon} ${statusText} · ${new Date(item.createdAt).toLocaleDateString('zh-CN')}</div>
+    <div style="margin-top:24px;display:flex;gap:10px;">
+      <button class="btn btn-primary" onclick="toggleTodo('${item.id}');openTodoDetail('${item.id}')">${item.completed ? '标记为未完成' : '标记为已完成'}</button>
+      <button class="btn btn-ghost" style="color:var(--danger);border-color:var(--danger);" onclick="if(confirm('删除这条待办？')){deleteTodo('${item.id}');goBackToTodoTab();}">删除</button>
+    </div>
+  `;
+  setView('view-todo-detail');
+}
+
+function goBackToTodoTab() {
+  switchTab('mood');
+}
+
+function renderTodos() {
+  const list = loadTodos();
+  const countEl = document.getElementById('todo-header-count');
+  if (countEl) countEl.textContent = `共 ${list.length} 条`;
+
+  let displayList = list;
+  if (todoFilter === 'active') displayList = list.filter(t => !t.completed);
+  if (todoFilter === 'completed') displayList = list.filter(t => t.completed);
+
+  const container = document.getElementById('todo-list');
+  if (!container) return;
+
+  if (displayList.length === 0) {
+    const emptyMap = { all: '暂无待办事项', active: '暂无进行中待办', completed: '暂无已完成待办' };
+    container.innerHTML = `<div class="todo-empty">${emptyMap[todoFilter] || '暂无待办事项'}<br><span style="font-size:12px">点击右下角 + 添加</span></div>`;
+    return;
+  }
+
+  container.innerHTML = displayList.map(t => `
+    <div class="todo-item ${t.completed ? 'completed' : ''}" onclick="openTodoDetail('${t.id}')">
+      ${t.photo ? `<img class="todo-thumb" src="${t.photo}" onclick="event.stopPropagation();openLightbox('${t.photo}')" />` : ''}
+      <div class="todo-text">${escapeHtml(t.text)}</div>
+      <div class="todo-check ${t.completed ? 'checked' : ''}" onclick="toggleTodo('${t.id}', event)">${t.completed ? '✓' : ''}</div>
+    </div>
+  `).join('');
 }
 
 /* ======================== NAVIGATION ======================== */
