@@ -96,7 +96,7 @@
 
     /* Task cards */
     .tasks-grid {
-      padding: 0 16px 80px;
+      padding: 0 16px 16px;
       display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
       gap: 12px;
     }
@@ -493,7 +493,7 @@
       transform: scale(0.95);
     }
     .welcome-skip {
-      display: block; margin-top: 20px;
+      display: block; margin: 20px auto 0;
       font-size: 12px; color: var(--text3);
       text-align: center; cursor: pointer;
       border: none; background: none;
@@ -504,12 +504,253 @@
       color: var(--text2);
     }
 
+    /* ===== BOTTOM TAB BAR ===== */
+    .tab-bar {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex; align-items: stretch;
+      height: 56px; padding-bottom: env(safe-area-inset-bottom, 0);
+      box-shadow: 0 -2px 12px rgba(160,132,92,0.06);
+    }
+    .tab-bar.hidden { display: none; }
+    .tab-item {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 3px; cursor: pointer; border: none;
+      background: transparent; color: var(--text3);
+      font-family: inherit; font-size: 10px; font-weight: 500;
+      transition: color .2s;
+      padding: 6px 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .tab-item .tab-icon { font-size: 22px; line-height: 1; transition: transform .15s; }
+    .tab-item.active { color: var(--accent); }
+    .tab-item.active .tab-icon { transform: scale(1.1); }
+    .tab-item:active .tab-icon { transform: scale(0.9); }
+
+    /* Tab views */
+    .tab-view { display: none; min-height: 100vh; padding-bottom: 72px; }
+    .tab-view.active { display: flex; flex-direction: column; }
+
+    /* Placeholder page center text */
+    .placeholder-page {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      color: var(--text3); gap: 12px; padding: 40px 20px;
+    }
+    .placeholder-page .ph-icon { font-size: 56px; opacity: .6; }
+    .placeholder-page .ph-text { font-size: 20px; font-weight: 600; letter-spacing: 2px; }
+    .placeholder-page .ph-sub { font-size: 13px; color: var(--text3); }
+
+    /* ===== MOOD TAB ===== */
+    .mood-sun-page {
+      flex:1; display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      padding:40px 20px 80px; gap:20px;
+    }
+    .sun-btn {
+      width:min(33vw,180px); height:min(33vw,180px);
+      border-radius:50%;
+      background:radial-gradient(circle at 38% 38%,#f5d89a,#d4a54a,#a0845c);
+      display:flex; align-items:center; justify-content:center;
+      font-size:min(15vw,80px); cursor:pointer;
+      box-shadow:0 0 40px rgba(212,165,74,.4),0 0 80px rgba(212,165,74,.15);
+      transition:transform .15s,box-shadow .15s;
+      user-select:none; -webkit-tap-highlight-color:transparent;
+      animation:sunPulse 3s ease-in-out infinite;
+    }
+    .sun-btn:active { transform:scale(.95); box-shadow:0 0 20px rgba(212,165,74,.3); animation:none; }
+    .sun-btn.pressing { transform:scale(1.08); box-shadow:0 0 60px rgba(212,165,74,.6),0 0 120px rgba(212,165,74,.25); animation:none; }
+    @keyframes sunPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.03)} }
+
+    .sun-prompt { text-align:center; line-height:1.8; }
+    .sun-prompt .prompt-line1 { font-size:16px; font-weight:600; color:var(--text2); letter-spacing:2px; }
+    .sun-prompt .prompt-line2 { font-size:14px; color:var(--text3); letter-spacing:3px; }
+    .sun-hint { font-size:12px; color:var(--text3); margin-top:8px; }
+
+    /* Mood overlay (picker + reveal) */
+    .mood-overlay {
+      position:fixed; inset:0; z-index:200;
+      background:rgba(61,52,38,.45); backdrop-filter:blur(8px);
+      display:none; align-items:center; justify-content:center;
+      padding:24px;
+    }
+    .mood-overlay.open { display:flex; }
+
+    /* Picker card */
+    .picker-card {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:24px; padding:28px 20px 20px;
+      max-width:360px; width:100%; text-align:center;
+      animation:cardPop .35s cubic-bezier(.2,.9,.3,1.1);
+    }
+    .picker-round { font-size:12px; color:var(--text3); margin-bottom:16px; letter-spacing:1px; }
+    .picker-emotions {
+      display:flex; flex-wrap:wrap; gap:10px;
+      justify-content:center; margin-bottom:20px;
+    }
+    .emotion-chip {
+      background:var(--surface2); border:1.5px solid var(--border);
+      border-radius:100px; padding:8px 20px; cursor:pointer;
+      transition:transform .15s,border-color .15s,background .15s;
+      color:var(--text2); font-family:inherit;
+      font-size:14px; font-weight:500; letter-spacing:1px;
+      user-select:none; -webkit-tap-highlight-color:transparent;
+    }
+    .emotion-chip:hover { transform:translateY(-2px); border-color:var(--accent); }
+    .emotion-chip:active { transform:scale(.95); }
+    .emotion-chip.selected { background:var(--accent); color:#fff; border-color:var(--accent); transform:translateY(-2px); }
+    .picker-nav { display:flex; align-items:center; justify-content:flex-end; margin-top:8px; }
+    .picker-nav-btn {
+      background:var(--accent); color:#fff; border:none; border-radius:100px;
+      padding:10px 24px; font-size:14px; font-weight:600; cursor:pointer;
+      font-family:inherit; transition:opacity .15s,transform .15s;
+      display:flex; align-items:center; gap:6px;
+    }
+    .picker-nav-btn:hover { opacity:.85; }
+    .picker-nav-btn:active { transform:scale(.95); }
+
+    /* Reveal animation */
+    .reveal-container { text-align:center; animation:cardPop .5s cubic-bezier(.2,.9,.3,1.1); }
+    .reveal-stars { position:relative; width:200px; height:200px; margin:0 auto 24px; }
+    .reveal-orb {
+      width:160px; height:160px; border-radius:50%;
+      background:radial-gradient(circle,rgba(212,165,74,.5),rgba(160,132,92,.15),transparent);
+      position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+      animation:orbGlow 2s ease-in-out infinite;
+    }
+    @keyframes orbGlow {
+      0%,100%{ opacity:.4; transform:translate(-50%,-50%) scale(1); }
+      50%{ opacity:1; transform:translate(-50%,-50%) scale(1.2); }
+    }
+    .reveal-icon {
+      font-size:64px; position:absolute; top:50%; left:50%;
+      transform:translate(-50%,-50%);
+      animation:revealBounce .8s cubic-bezier(.2,.9,.3,1.1) forwards;
+      opacity:0;
+    }
+    @keyframes revealBounce {
+      0%{ opacity:0; transform:translate(-50%,-50%) scale(.3); }
+      60%{ opacity:1; transform:translate(-50%,-50%) scale(1.2); }
+      100%{ opacity:1; transform:translate(-50%,-50%) scale(1); }
+    }
+    .star-particle {
+      position:absolute; font-size:14px;
+      animation:starFloat 1.5s ease-out forwards; opacity:0;
+    }
+    @keyframes starFloat {
+      0%{ opacity:1; transform:translate(0,0) scale(1); }
+      100%{ opacity:0; transform:translate(var(--dx),var(--dy)) scale(0); }
+    }
+
+    /* Advice card */
+    .advice-card {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:20px; padding:24px 20px 20px;
+      max-width:360px; width:100%; text-align:center;
+      animation:cardPop .5s cubic-bezier(.2,.9,.3,1.1) .2s both;
+    }
+    .advice-mood-tags { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin-bottom:16px; }
+    .advice-mood-tag {
+      background:rgba(160,132,92,.1); border-radius:100px;
+      padding:4px 12px; font-size:12px; color:var(--accent);
+    }
+    .advice-title { font-size:18px; font-weight:700; color:var(--text); margin-bottom:12px; line-height:1.4; }
+    .advice-text { font-size:14px; color:var(--text2); line-height:1.8; margin-bottom:8px; text-align:left; }
+    .advice-strategy {
+      font-size:13px; color:var(--accent); line-height:1.7; text-align:left;
+      background:rgba(160,132,92,.06); border-radius:var(--radius-sm);
+      padding:12px 14px; margin-top:12px;
+    }
+    .advice-nav { display:flex; justify-content:flex-end; margin-top:16px; }
+
+    /* Wheel page */
+    .mood-wheel-page {
+      flex:1; display:none; flex-direction:column;
+      align-items:center; justify-content:center;
+      padding:40px 20px 80px; gap:20px;
+    }
+    .mood-wheel-page.active { display:flex; }
+    .wheel-title { font-size:16px; font-weight:600; color:var(--text2); letter-spacing:2px; }
+    .wheel-container {
+      position:relative; width:min(75vw,280px); height:min(75vw,280px);
+    }
+    .wheel-container canvas {
+      width:100%; height:100%; border-radius:50%;
+      border:3px solid var(--accent);
+      box-shadow:0 0 30px rgba(160,132,92,.2);
+    }
+    .wheel-pointer {
+      position:absolute; top:-14px; left:50%; transform:translateX(-50%);
+      font-size:22px; z-index:5;
+      filter:drop-shadow(0 2px 4px rgba(0,0,0,.2)); color:var(--accent);
+    }
+    .wheel-center-btn {
+      position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+      width:56px; height:56px; border-radius:50%;
+      background:var(--accent); color:#fff; border:3px solid var(--surface);
+      font-size:13px; font-weight:700; cursor:pointer; font-family:inherit;
+      box-shadow:0 4px 16px rgba(160,132,92,.4);
+      transition:transform .15s; z-index:5;
+    }
+    .wheel-center-btn:active { transform:translate(-50%,-50%) scale(.9); }
+    .wheel-center-btn:disabled { opacity:.5; cursor:not-allowed; }
+    .wheel-result { font-size:32px; font-weight:700; color:var(--accent); text-align:center; min-height:40px; }
+    .wheel-result-label { font-size:13px; color:var(--text3); text-align:center; }
+    .wheel-done-btn {
+      margin-top:8px; background:var(--accent); color:#fff; border:none;
+      border-radius:100px; padding:10px 32px; font-size:14px; font-weight:600;
+      cursor:pointer; font-family:inherit; transition:opacity .15s;
+    }
+    .wheel-done-btn:hover { opacity:.85; }
+
+    /* ===== ME TAB ===== */
+    .me-page { padding:20px 16px 80px; }
+    .me-header { font-size:22px; font-weight:700; color:var(--accent); margin-bottom:16px; }
+    .curve-toggle {
+      display:flex; gap:0; margin-bottom:14px;
+      background:var(--surface2); border-radius:100px;
+      padding:3px; border:1px solid var(--border);
+    }
+    .curve-toggle-btn {
+      flex:1; padding:7px 0; border:none; background:transparent;
+      color:var(--text3); font-family:inherit; font-size:12px; font-weight:500;
+      cursor:pointer; border-radius:100px; transition:background .2s,color .2s;
+    }
+    .curve-toggle-btn.active { background:var(--accent); color:#fff; }
+    .me-mood-curve {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--radius); padding:16px; margin-bottom:14px;
+    }
+    .me-curve-chart {
+      height:90px; display:flex; align-items:flex-end;
+      justify-content:space-between; gap:3px; padding:0 2px 18px;
+    }
+    .me-curve-bar {
+      flex:1; background:var(--border); border-radius:4px 4px 0 0;
+      min-height:4px; position:relative; transition:background .3s;
+    }
+    .me-curve-bar.filled { background:var(--accent); }
+    .me-curve-bar-label {
+      position:absolute; bottom:-16px; left:50%; transform:translateX(-50%);
+      font-size:9px; color:var(--text3); white-space:nowrap;
+    }
+    .me-curve-bar-value {
+      position:absolute; top:-15px; left:50%; transform:translateX(-50%);
+      font-size:10px; font-weight:600; color:var(--accent);
+    }
+
     /* ===== RESPONSIVE ===== */
     @media (max-width: 400px) {
       .tasks-grid { grid-template-columns: repeat(2, 1fr); }
       .mood-btn { padding: 6px 12px; font-size: 12px; }
       .welcome-card { padding: 28px 20px 20px; }
       .template-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+      .tab-item { font-size: 9px; }
+      .tab-item .tab-icon { font-size: 20px; }
+      .emotion-chip { padding:6px 14px; font-size:12px; }
+      .wheel-container { width:min(70vw,250px); height:min(70vw,250px); }
     }
   </style>
 </head>
@@ -522,8 +763,6 @@
     <div class="welcome-app-name">心理小屋</div>
     <div class="welcome-quote" id="welcome-quote">坚持就是胜利</div>
     <div class="welcome-sub">每一天的努力，都算数</div>
-    <div class="mood-label">今天的你心情怎么样？</div>
-    <div class="mood-options" id="mood-options"></div>
     <button class="welcome-skip" onclick="skipWelcome()">跳过</button>
   </div>
 </div>
@@ -533,8 +772,8 @@
   <div class="dot" id="sync-dot"></div><span id="sync-text">本地存储</span>
 </div>
 
-<!-- ===================== HOME VIEW ===================== -->
-<div id="view-home" class="view active">
+<!-- ===================== TAB 1: 记录 ===================== -->
+<div id="view-tab-record" class="tab-view active">
   <div class="home-header">
     <div>
       <div class="greeting">心理小屋 🏠</div>
@@ -543,6 +782,52 @@
     <button class="add-task-btn" onclick="openNewTaskModal()" title="新建任务">+</button>
   </div>
   <div class="tasks-grid" id="tasks-grid"></div>
+</div>
+
+<!-- ===================== TAB 2: 情绪 ===================== -->
+<div id="view-tab-mood" class="tab-view">
+  <div id="mood-main" class="mood-sun-page">
+    <div class="sun-btn" id="sun-btn">☀️</div>
+    <div class="sun-prompt">
+      <div class="prompt-line1">你现在是否充满情绪</div>
+      <div class="prompt-line2">测一测吧</div>
+    </div>
+    <div class="sun-hint">长按太阳开始 ✦</div>
+  </div>
+  <div id="mood-wheel-page" class="mood-wheel-page">
+    <div class="wheel-title">🌤 心情温度</div>
+    <div class="wheel-container" id="wheel-container">
+      <div class="wheel-pointer">▼</div>
+      <canvas id="wheel-canvas" width="560" height="560"></canvas>
+      <button class="wheel-center-btn" id="wheel-spin-btn" onclick="spinWheel()">旋转</button>
+    </div>
+    <div class="wheel-result" id="wheel-result"></div>
+    <div class="wheel-result-label" id="wheel-result-label"></div>
+    <button class="wheel-done-btn" id="wheel-done-btn" style="display:none" onclick="wheelDone()">完成 ✦</button>
+  </div>
+</div>
+
+<!-- ===================== TAB 3: 日历 ===================== -->
+<div id="view-tab-calendar" class="tab-view">
+  <div class="placeholder-page">
+    <div class="ph-icon">📅</div>
+    <div class="ph-text">日历</div>
+    <div class="ph-sub">回顾每一天的足迹</div>
+  </div>
+</div>
+
+<!-- ===================== TAB 4: 我 ===================== -->
+<div id="view-tab-me" class="tab-view">
+  <div class="me-page">
+    <div class="me-header">🧑 我</div>
+    <div class="curve-toggle" id="curve-toggle">
+      <button class="curve-toggle-btn active" onclick="setCurveRange(7)">近7天</button>
+      <button class="curve-toggle-btn" onclick="setCurveRange(30)">近30天</button>
+    </div>
+    <div class="me-mood-curve">
+      <div class="me-curve-chart" id="me-curve-chart"></div>
+    </div>
+  </div>
 </div>
 
 <!-- ===================== TASK DETAIL VIEW ===================== -->
@@ -607,6 +892,58 @@
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeNewTaskModal()">取消</button>
       <button class="btn btn-primary" onclick="createTask()">创建</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== BOTTOM TAB BAR ===================== -->
+<div class="tab-bar" id="tab-bar">
+  <button class="tab-item active" onclick="switchTab('record')" id="tab-record">
+    <span class="tab-icon">📝</span>
+    <span>记录</span>
+  </button>
+  <button class="tab-item" onclick="switchTab('mood')" id="tab-mood">
+    <span class="tab-icon">🌤</span>
+    <span>情绪</span>
+  </button>
+  <button class="tab-item" onclick="switchTab('calendar')" id="tab-calendar">
+    <span class="tab-icon">📅</span>
+    <span>日历</span>
+  </button>
+  <button class="tab-item" onclick="switchTab('me')" id="tab-me">
+    <span class="tab-icon">🧑</span>
+    <span>我</span>
+  </button>
+</div>
+
+<!-- ===================== MOOD PICKER OVERLAY ===================== -->
+<div class="mood-overlay" id="mood-picker-overlay">
+  <div class="picker-card">
+    <div class="picker-round" id="picker-round">第 1/3 轮</div>
+    <div class="picker-emotions" id="picker-emotions"></div>
+    <div class="picker-nav">
+      <button class="picker-nav-btn" id="picker-next-btn" onclick="pickerNext()">
+        <span id="picker-next-text">下一组</span> →
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MOOD REVEAL OVERLAY ===================== -->
+<div class="mood-overlay" id="mood-reveal-overlay">
+  <div class="reveal-container" id="reveal-container">
+    <div class="reveal-stars" id="reveal-stars">
+      <div class="reveal-orb"></div>
+      <div class="reveal-icon" id="reveal-icon">🔮</div>
+    </div>
+  </div>
+  <div class="advice-card" id="advice-card" style="display:none">
+    <div class="advice-mood-tags" id="advice-mood-tags"></div>
+    <div class="advice-title" id="advice-title"></div>
+    <div class="advice-text" id="advice-text"></div>
+    <div class="advice-strategy" id="advice-strategy"></div>
+    <div class="advice-nav">
+      <button class="picker-nav-btn" onclick="goToWheel()">下一步 →</button>
     </div>
   </div>
 </div>
@@ -832,6 +1169,7 @@ let currentTaskId = null;
 let pendingImages = [];
 let heatmapYear = new Date().getFullYear();
 let heatmapMonth = new Date().getMonth();
+let currentTab = 'record';
 
 /* ======================== TASK TEMPLATES ======================== */
 const TASK_TEMPLATES = [
@@ -947,6 +1285,338 @@ function skipWelcome() {
   closeWelcomeCard();
 }
 
+/* ======================== MOOD TAB ======================== */
+const MOOD_DATA_KEY = 'mood_records';
+let moodSession = { round:0, selected:[], roundWords:[] };
+let sunPressTimer = null;
+let wheelRotation = 0;
+let wheelSpinning = false;
+let curveRange = 7;
+
+/* --- Data --- */
+function loadMoodData() {
+  try { return JSON.parse(localStorage.getItem(MOOD_DATA_KEY) || '{}'); }
+  catch(e) { return {}; }
+}
+function saveMoodData(data) {
+  localStorage.setItem(MOOD_DATA_KEY, JSON.stringify(data));
+}
+
+/* --- Sun button long press --- */
+function initSunButton() {
+  const sun = document.getElementById('sun-btn');
+  if (!sun) return;
+  function startPress(e) {
+    e.preventDefault();
+    sun.classList.add('pressing');
+    sunPressTimer = setTimeout(() => {
+      sun.classList.remove('pressing');
+      sunPressTimer = null;
+      startMoodSession();
+    }, 1000);
+  }
+  function endPress(e) {
+    e.preventDefault();
+    sun.classList.remove('pressing');
+    if (sunPressTimer) { clearTimeout(sunPressTimer); sunPressTimer = null; }
+  }
+  sun.addEventListener('mousedown', startPress);
+  sun.addEventListener('mouseup', endPress);
+  sun.addEventListener('mouseleave', endPress);
+  sun.addEventListener('touchstart', startPress, {passive:false});
+  sun.addEventListener('touchend', endPress);
+  sun.addEventListener('touchcancel', endPress);
+}
+
+/* --- Mood session: 3 rounds of 5 emotions --- */
+function startMoodSession() {
+  moodSession = { round:1, selected:[], roundWords:[] };
+  showPickerRound();
+  document.getElementById('mood-picker-overlay').classList.add('open');
+}
+
+function showPickerRound() {
+  const shuffled = [...MOOD_WORDS].sort(() => Math.random() - 0.5);
+  const picks = shuffled.slice(0, 5);
+  moodSession.roundWords = picks;
+  document.getElementById('picker-round').textContent = `第 ${moodSession.round}/3 轮`;
+  const container = document.getElementById('picker-emotions');
+  container.innerHTML = picks.map(w =>
+    `<button class="emotion-chip" onclick="toggleEmotion(this,'${w}')">${w}</button>`
+  ).join('');
+  const nextText = document.getElementById('picker-next-text');
+  nextText.textContent = moodSession.round < 3 ? '下一组' : '揭晓 ✦';
+}
+
+function toggleEmotion(btn, word) {
+  btn.classList.toggle('selected');
+  if (btn.classList.contains('selected')) {
+    if (!moodSession.selected.includes(word)) moodSession.selected.push(word);
+  } else {
+    moodSession.selected = moodSession.selected.filter(w => w !== word);
+  }
+}
+
+function pickerNext() {
+  if (moodSession.round < 3) {
+    moodSession.round++;
+    showPickerRound();
+  } else {
+    document.getElementById('mood-picker-overlay').classList.remove('open');
+    showReveal();
+  }
+}
+
+/* --- Reveal: 占星术 animation + advice --- */
+function showReveal() {
+  const overlay = document.getElementById('mood-reveal-overlay');
+  const adviceCard = document.getElementById('advice-card');
+  const revealContainer = document.getElementById('reveal-container');
+  adviceCard.style.display = 'none';
+  revealContainer.style.display = '';
+  overlay.classList.add('open');
+
+  // Spawn star particles
+  const starsEl = document.getElementById('reveal-stars');
+  const emojis = ['✦','✧','⋆','⊹','✵','⟡','★'];
+  for (let i = 0; i < 12; i++) {
+    const p = document.createElement('span');
+    p.className = 'star-particle';
+    p.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+    const angle = (i / 12) * Math.PI * 2;
+    const dist = 60 + Math.random() * 40;
+    p.style.cssText = `left:50%;top:50%;--dx:${Math.cos(angle)*dist}px;--dy:${Math.sin(angle)*dist}px;animation-delay:${i*0.08}s;font-size:${12+Math.random()*10}px;`;
+    starsEl.appendChild(p);
+  }
+
+  // Pick main icon based on dominant emotion
+  const icon = moodSession.selected.length > 0
+    ? (MOOD_ADVICE[moodSession.selected[moodSession.selected.length-1]]?.icon || '🔮')
+    : '🔮';
+  document.getElementById('reveal-icon').textContent = icon;
+
+  // After animation, show advice
+  setTimeout(() => {
+    revealContainer.style.display = 'none';
+    // Clean up particles
+    starsEl.querySelectorAll('.star-particle').forEach(p => p.remove());
+    renderAdvice();
+    adviceCard.style.display = '';
+  }, 2800);
+}
+
+function renderAdvice() {
+  const selected = moodSession.selected;
+  const tagsEl = document.getElementById('advice-mood-tags');
+  tagsEl.innerHTML = selected.length > 0
+    ? selected.map(w => `<span class="advice-mood-tag">${w}</span>`).join('')
+    : '<span class="advice-mood-tag">平静</span>';
+
+  if (selected.length === 0) {
+    document.getElementById('advice-title').textContent = '今天的你，不需要被定义';
+    document.getElementById('advice-text').textContent = '有时候，不想被归类本身就是一种智慧。不是所有时刻都需要情绪标签，此刻的空白，也许正是你和自己最诚实的距离。';
+    document.getElementById('advice-strategy').textContent = '💡 不必强求觉察。今天允许自己"没有感觉"——这本身就是一种深层的自我照顾。当你准备好了，情绪会来找你。';
+    return;
+  }
+
+  // Find the most "needy" emotion (prioritize negative)
+  const negativeOrder = ['崩溃','压抑','惶恐','愤懑','羞耻','愧疚','嫉恨','孤独','空虚','焦虑','迷茫','倦怠','委屈','怅然','执念'];
+  let mainEmotion = selected[0];
+  for (const neg of negativeOrder) {
+    if (selected.includes(neg)) { mainEmotion = neg; break; }
+  }
+
+  const advice = MOOD_ADVICE[mainEmotion];
+  if (advice) {
+    document.getElementById('advice-title').textContent = advice.title;
+    document.getElementById('advice-text').textContent = advice.text;
+    document.getElementById('advice-strategy').textContent = advice.strategy;
+  }
+}
+
+/* --- Wheel page --- */
+function goToWheel() {
+  document.getElementById('mood-reveal-overlay').classList.remove('open');
+  document.getElementById('mood-main').style.display = 'none';
+  const wp = document.getElementById('mood-wheel-page');
+  wp.classList.add('active');
+  drawWheel();
+  document.getElementById('wheel-result').textContent = '';
+  document.getElementById('wheel-result-label').textContent = '点击旋转，测测心情温度';
+  document.getElementById('wheel-done-btn').style.display = 'none';
+  document.getElementById('wheel-spin-btn').disabled = false;
+}
+
+function drawWheel() {
+  const canvas = document.getElementById('wheel-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  const cx = w/2, cy = h/2, r = w/2 - 10;
+  const n = 11;
+  const segAngle = 2 * Math.PI / n;
+
+  const colors = [
+    '#7b7d8e','#87808a','#93837e','#9f8973','#a9916a',
+    '#a0845c',
+    '#8fa67a','#80b47a','#6ec48a','#5dd49e','#4de4b2'
+  ];
+
+  ctx.clearRect(0, 0, w, h);
+  for (let i = 0; i < n; i++) {
+    const start = i * segAngle - Math.PI/2;
+    const end = start + segAngle;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, start, end);
+    ctx.closePath();
+    ctx.fillStyle = colors[i];
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    const mid = start + segAngle / 2;
+    const tr = r * 0.72;
+    const tx = cx + tr * Math.cos(mid);
+    const ty = cy + tr * Math.sin(mid);
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 26px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(String(i), tx, ty);
+  }
+
+  // Center circle
+  ctx.beginPath();
+  ctx.arc(cx, cy, 38, 0, 2*Math.PI);
+  ctx.fillStyle = '#faf6f0';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(160,132,92,0.3)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+}
+
+function spinWheel() {
+  if (wheelSpinning) return;
+  wheelSpinning = true;
+  const btn = document.getElementById('wheel-spin-btn');
+  btn.disabled = true;
+  const canvas = document.getElementById('wheel-canvas');
+
+  const extraSpins = 5 + Math.floor(Math.random() * 5);
+  const randomOffset = Math.random() * 360;
+  const spinAmount = extraSpins * 360 + randomOffset;
+  wheelRotation += spinAmount;
+
+  canvas.style.transition = 'transform 4.5s cubic-bezier(0.15, 0.6, 0.08, 1)';
+  canvas.style.transform = `rotate(${wheelRotation}deg)`;
+
+  function onEnd() {
+    canvas.removeEventListener('transitionend', onEnd);
+    wheelSpinning = false;
+    const segAngle = 360 / 11;
+    const eff = ((wheelRotation % 360) + 360) % 360;
+    const result = Math.round(eff / segAngle) % 11;
+    onWheelResult(result);
+  }
+  canvas.addEventListener('transitionend', onEnd);
+}
+
+function onWheelResult(num) {
+  document.getElementById('wheel-result').textContent = num;
+  const labels = ['冰点','很低','低','偏低','中等','还行','不错','挺好','很好','很棒','满格'];
+  document.getElementById('wheel-result-label').textContent = `心情温度 ${num}/10 · ${labels[num]}`;
+  document.getElementById('wheel-done-btn').style.display = '';
+
+  // Save
+  const now = new Date();
+  const today = todayStr();
+  const data = loadMoodData();
+  if (!data[today]) data[today] = {};
+  data[today].temp = num;
+  data[today].tempTime = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  data[today].words = moodSession.selected;
+  saveMoodData(data);
+}
+
+function wheelDone() {
+  document.getElementById('mood-wheel-page').classList.remove('active');
+  document.getElementById('mood-main').style.display = '';
+  // Reset wheel visual
+  const canvas = document.getElementById('wheel-canvas');
+  canvas.style.transition = 'none';
+  canvas.style.transform = 'rotate(0deg)';
+  wheelRotation = 0;
+}
+
+/* --- Me page: mood curve --- */
+function renderMeCurve() {
+  const data = loadMoodData();
+  const days = [];
+  for (let i = curveRange - 1; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const key = formatDate(d);
+    days.push({ date: d, key, temp: data[key]?.temp ?? null });
+  }
+  const container = document.getElementById('me-curve-chart');
+  if (!container) return;
+  const maxTemp = 10;
+  container.innerHTML = days.map(d => {
+    const h = d.temp !== null ? Math.max(6, (d.temp / maxTemp) * 72) : 4;
+    const label = curveRange <= 7
+      ? `${d.date.getMonth()+1}/${d.date.getDate()}`
+      : (d.date.getDate() === 1 || (curveRange - days.indexOf(d) - 1) % 5 === 0
+        ? `${d.date.getMonth()+1}/${d.getDate()}`
+        : '');
+    return `<div class="me-curve-bar ${d.temp !== null ? 'filled' : ''}" style="height:${h}px">
+      ${d.temp !== null ? `<div class="me-curve-bar-value">${d.temp}</div>` : ''}
+      ${label ? `<div class="me-curve-bar-label">${label}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function setCurveRange(n) {
+  curveRange = n;
+  document.querySelectorAll('.curve-toggle-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderMeCurve();
+}
+
+/* --- 30 emotion advice dictionary --- */
+const MOOD_ADVICE = {
+  '欣喜': { icon:'🌟', title:'欣喜是灵魂的烟花', text:'这种纯粹的快乐是内心最真实的回应。欣喜来临时，整个世界都在发亮——请允许自己完全沉浸其中，不必急着做任何事。', strategy:'💡 试试"品味法"：闭眼30秒，感受欣喜在身体哪个位置——胸口、指尖还是嘴角？把注意力停留在这个感觉上。研究表明，主动品味积极情绪能让幸福感持续更久。' },
+  '笃定': { icon:'⛰️', title:'笃定是内心的锚', text:'当你感到笃定，说明你与自己的核心价值对齐了。这种确定感不是固执，而是经历风雨后对方向的信任。', strategy:'💡 记住此刻笃定的来源——是什么让你如此确定？把这个理由写下来。在未来的迷茫时刻，它会成为你的指南针。' },
+  '释然': { icon:'🍃', title:'释然是放下的艺术', text:'释然意味着你终于松开了紧握的拳头。那些曾经让你纠结的事，此刻已不再重要。这份轻盈，是你给自己的礼物。', strategy:'💡 享受这份轻盈。释然不是遗忘，而是与过去和解。如果将来类似的事情再出现，你会发现自己已经不再那么容易被困扰了。' },
+  '热忱': { icon:'🔥', title:'热忱是生命的火焰', text:'热忱让你感到活着。这种发自内心的激情是稀缺资源——请好好珍惜和运用它。', strategy:'💡 热忱是一把双刃剑——可以照亮前路，也可能烧尽精力。给自己设定一个"热忱预算"：今天把这份热情投入在最重要的一件事上，而不是同时点燃所有方向。' },
+  '安宁': { icon:'🪷', title:'安宁是内心的湖泊', text:'在这份安宁中，你的心湖没有波澜。不是麻木，而是通透——你已经与自己达成了某种默契。', strategy:'💡 安宁的时刻是自我修复的黄金时间。试着把这份安宁"装瓶"：用3分钟记住此刻身体的感受、呼吸的节奏。日后焦虑时，打开这瓶记忆，让它帮你回到平静。' },
+  '舒展': { icon:'🌿', title:'舒展是灵魂的伸懒腰', text:'当你感到舒展，说明你不再防御了。身体和心理都松开了紧绷的弦，你允许自己占据更大的空间。', strategy:'💡 配合身体的舒展加深感受：站起来，伸一个大大的懒腰，深呼吸3次。心理的舒展和身体的舒展会相互加强，这是"具身认知"的妙处。' },
+  '畅快': { icon:'🌊', title:'畅快是情绪的清流', text:'畅快意味着情绪在流动，没有淤堵。这是最健康的状态——你允许自己感受、表达、释放。', strategy:'💡 畅快时人的创造力会提升。趁这个状态，去做一件平时觉得难的事。畅快的情绪会给你额外的力量。' },
+  '感恩': { icon:'🙏', title:'感恩是心灵的放大镜', text:'感恩不是因为生活完美，而是你选择了看见美好。这份选择本身就是一种力量。', strategy:'💡 研究表明，每天写下3件感恩的事，6周后幸福感会显著提升。但关键是"具体"——不要只写"家人"，而要写"今天妈妈煮了我爱喝的汤"。越具体，越有力量。' },
+  '陶醉': { icon:'🌙', title:'陶醉是美的沉浸', text:'陶醉让你暂时忘记了时间。你被美深深吸引，与它融为一体。心理学称之为"心流"——这是最高质量的快乐。', strategy:'💡 试着记住是什么让你陶醉，然后有意识地为生活创造更多这样的时刻。心流不靠运气，靠设计。' },
+  '骄傲': { icon:'👑', title:'骄傲是自我认可的勋章', text:'健康的骄傲是对自身价值的确认。你做了值得骄傲的事，你有权为此高兴。', strategy:'💡 区分"健康的骄傲"和"防御性骄傲"：前者是"我做了很棒的事"，后者是"我比你强"。如果是前者，请大胆庆祝。' },
+  '踏实': { icon:'🪨', title:'踏实是双脚踩在大地上', text:'踏实意味着你和现实之间没有断裂。不是没有梦想，而是每一步都踩在实处。', strategy:'💡 踏实感来自"可预期的进展"。如果未来感到不安，试着把大目标拆成今天就能完成的小步骤。每完成一步，踏实感就增加一分。' },
+  '振奋': { icon:'⚡', title:'振奋是内心的发动机', text:'振奋给了你启动的能量。这不是虚幻的亢奋，而是有方向的内在驱动——你知道自己要去哪。', strategy:'💡 振奋的能量有时效性。不要浪费在"准备"上，直接开始行动。哪怕只做5分钟，行动本身会维持这份振奋。' },
+  '温暖': { icon:'☀️', title:'温暖是情感的阳光', text:'温暖说明你正在被爱、被关心，或者正在给予爱。这是一种安全感和连接感的体现。', strategy:'💡 试着把这份温暖传递出去——一条消息、一个拥抱、一句感谢。研究表明，给予温暖的人比接受温暖的人获得更多幸福感。' },
+  '自在': { icon:'🦋', title:'自在是做自己的特权', text:'自在意味着你不活在别人的期待里。此刻的你，不需要扮演任何角色，只需要做你自己。', strategy:'💡 注意这份自在出现在什么情境下——和谁在一起？在做什么？这些信息告诉你，什么环境让你真正放松。然后，有意识地为生活创造更多这样的环境。' },
+  '丰盈': { icon:'🌾', title:'丰盈是内心的富足', text:'丰盈不是拥有很多，而是感到足够。此刻你觉得自己什么都不缺，这种富足感比任何物质都珍贵。', strategy:'💡 丰盈感容易转瞬即逝。试着用"三元法则"锚定它：记录3个让你感到丰盈的具体事物。当匮乏感来袭时，读一遍这个清单。' },
+  '焦虑': { icon:'🌀', title:'焦虑是对未来的过度预演', text:'焦虑不是你的敌人，它是大脑的保护机制——它在努力预警危险。只是有时，这个警报太响了。', strategy:'💡 试试"5-4-3-2-1接地法"：说出5个你看到的、4个能触摸的、3个听到的、2个闻到的、1个尝到的。这能把注意力从"未来"拉回"当下"，打断焦虑的循环。' },
+  '迷茫': { icon:'🌫️', title:'迷茫是成长的必经之路', text:'迷茫不是坏事——它说明旧的路已经走完，新的路还没出现。这个过渡期恰恰是蜕变的开始。', strategy:'💡 迷茫时不要急着找方向。先做一件事：今天能做的最小一步是什么？不需要看清整条路，只需要看见脚下这一步。方向是在走的过程中逐渐清晰的。' },
+  '倦怠': { icon:'😴', title:'倦怠是身体在喊停', text:'倦怠不是懒惰，而是你的身心在请求休息。长期透支后，倦怠是最后一道防线。', strategy:'💡 允许自己休息，不带任何愧疚。设定一个"无产出时间"：2小时内不完成任何任务，只是存在。这不是浪费，是充电。' },
+  '孤独': { icon:'🪶', title:'孤独是一个人的交响乐', text:'孤独不等于没有人陪。有时候，即使身处人群，内心依然感到孤独。这种感觉本身是正常的。', strategy:'💡 区分"独处"和"孤独"：独处是选择，孤独是感受。试试"微连接"——给一个朋友发一条简短的消息，一个表情包也行。连接的质量比时长更重要。' },
+  '愤懑': { icon:'🌋', title:'愤懑是未发出的呐喊', text:'愤懑说明你的边界被侵犯了，或者你的需要被忽视了。这份愤怒是有理由的，不必压抑它。', strategy:'💡 试试"书写宣泄法"：拿一张纸，把所有不满写下来，不需要逻辑，不需要文采。写完后你可以撕掉它。表达本身就释放了。' },
+  '羞耻': { icon:'🎭', title:'羞耻是贴错了的标签', text:'羞耻是最具破坏力的情绪之一，因为它让你觉得"我是坏的"。但请记住：你做了不好的事，不代表你是不好的。', strategy:'💡 布琳·布朗的研究指出：羞耻在沉默中生长，在共情中消亡。试着对信任的人说出你的羞耻感。"我不是我的错误。"对自己说三遍。' },
+  '怅然': { icon:'🍂', title:'怅然是时光留下的回响', text:'怅然是一种温柔的失落——你并没有崩溃，但有些东西悄悄流逝了。这种淡淡的忧伤，恰恰说明你在乎过。', strategy:'💡 允许自己怀旧3分钟，然后做一个"新的小期待"：给明天安排一件让你有点期待的事。怅然说再见，期待说你好。' },
+  '嫉恨': { icon:'🪞', title:'嫉恨是一面扭曲的镜子', text:'嫉恨不是道德缺陷，它指向你内心深处未被满足的渴望。你嫉妒的，往往正是你真正想要的。', strategy:'💡 把嫉恨当作导航仪：问自己"我到底想要什么？"嫉恨的表面是"为什么他有我没有"，但内核是"我也想要那个"。当你把它翻译成渴望，它就从毒药变成了指南针。' },
+  '惶恐': { icon:'⚡', title:'惶恐是站在悬崖边的本能', text:'惶恐比焦虑更强烈——它让你感觉危险就在眼前。但请知道：感受是真实的，危险不一定是。', strategy:'💡 用"4-7-8呼吸法"安抚神经系统：吸气4秒→屏息7秒→呼气8秒。重复3次。这不是逃避，是给大脑一个"我很安全"的生理信号。' },
+  '压抑': { icon:'🧱', title:'压抑是被困住的河流', text:'压抑意味着你的情绪找不到出口。不是没有感受，而是不允许自己感受。这堵墙可能保护了你很久，但现在它也困住了你。', strategy:'💡 找一个不会伤害任何人的方式释放：撕纸、用力握拳再松开、对着枕头大喊、在纸上乱涂。让情绪有一道裂缝流出来，比筑更高的堤坝安全得多。' },
+  '委屈': { icon:'💧', title:'委屈是未被听见的哭声', text:'委屈说明你觉得被不公平地对待了，但又无法表达或改变。这种无力感很真实，你不是"太敏感"。', strategy:'💡 委屈最需要的是"被看见"。拿出纸笔，写下"我觉得委屈是因为……"不需要理性分析，只需要如实写下感受。当你承认了委屈，它就不再独自膨胀了。' },
+  '空虚': { icon:'🕳️', title:'空虚是意义的缺席', text:'空虚不是没有情绪，而是一种"什么都感觉不到"的麻木。它像一层灰色的薄膜，把你和世界隔开了。', strategy:'💡 空虚时不要用刺激填充（刷手机、暴食等），这只会让空虚更严重。试试"微意义法"：做一件小到不可能失败的有意义的事——整理桌面、给植物浇水、做一组拉伸。行动能重新建立与世界的连接。' },
+  '执念': { icon:'🔗', title:'执念是紧握的拳头', text:'执念说明你在极力抓住什么——一个人、一个结果、一个念头。但你越紧握，它越让你痛苦。', strategy:'💡 试试"放手练习"：握紧拳头10秒，感受紧张；然后慢慢松开，感受释放。在心里做同样的事：想象自己慢慢松开手。放手不是放弃，而是不再用力去控制不可控的东西。' },
+  '愧疚': { icon:'🪞', title:'愧疚是良心的低语', text:'愧疚说明你有反思能力，这是好品质。但过度的愧疚会变成自我惩罚——你已经为这件事痛苦过了，不必永远偿还。', strategy:'💡 区分"健康的愧疚"和"有毒的愧疚"：前者指向行为（"我做了一件不好的事"），后者指向人格（"我是个坏人"）。试着把"我不好"改成"我做得不好"，这一字之差，是自我惩罚和自我成长的分界线。' },
+  '崩溃': { icon:'🌊', title:'崩溃不是终点，是重建的起点', text:'崩溃意味着你承受的已经超过了极限。这不是软弱——恰恰相反，你已经撑了很久。现在，请允许自己停下来。', strategy:'💡 崩溃时不需要做任何"有用"的事。你现在唯一需要做的就是：对自己温柔。如果可以，找一个安全的地方，允许自己哭泣。眼泪中含有压力激素——哭泣本身就是一种生理排毒。你不需要立刻好起来，但你会好起来。' }
+};
+
 /* ======================== UTILS ======================== */
 function formatDate(ts) {
   const d = new Date(ts);
@@ -972,7 +1642,40 @@ function showToast(msg) {
 function setView(id) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  // Hide tab bar when entering sub-views (detail, heatmap)
+  const tabBar = document.getElementById('tab-bar');
+  if (id === 'view-detail' || id === 'view-heatmap') {
+    tabBar.classList.add('hidden');
+  } else {
+    tabBar.classList.remove('hidden');
+  }
   window.scrollTo(0, 0);
+}
+
+function switchTab(tabName) {
+  currentTab = tabName;
+  // Hide all tab views
+  document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
+  // Show selected tab
+  document.getElementById('view-tab-' + tabName).classList.add('active');
+  // Update tab bar
+  document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + tabName).classList.add('active');
+  // Show tab bar
+  document.getElementById('tab-bar').classList.remove('hidden');
+  // Hide sub-views
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  window.scrollTo(0, 0);
+
+  // Tab-specific init
+  if (tabName === 'mood') {
+    // Ensure sun page is visible, wheel hidden
+    document.getElementById('mood-main').style.display = '';
+    document.getElementById('mood-wheel-page').classList.remove('active');
+  }
+  if (tabName === 'me') {
+    renderMeCurve();
+  }
 }
 
 /* ======================== IMAGE COMPRESSION ======================== */
@@ -1324,7 +2027,7 @@ async function goHome() {
     } catch(e) { /* keep current cache */ }
   }
   renderHome();
-  setView('view-home');
+  switchTab('record');
 }
 
 function goDetail() {
@@ -1373,10 +2076,12 @@ if ('serviceWorker' in navigator) {
 }
 
 (async function init() {
-  // Show welcome modal every time with rotating quote & random moods
+  // Show welcome modal every time with rotating quote
   document.getElementById('welcome-quote').textContent = getNextQuote();
-  renderMoodButtons();
   document.getElementById('welcome-overlay').style.display = 'flex';
+
+  // Init mood sun button
+  initSunButton();
 
   // First load local data immediately (no loading screen!)
   const localData = loadLocalData();
