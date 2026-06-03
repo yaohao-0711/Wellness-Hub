@@ -3,28 +3,29 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <title>打卡本</title>
+  <title>心理小屋</title>
   <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#7c6af7" />
+  <meta name="theme-color" content="#a0845c" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="打卡本" />
-  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%237c6af7'/%3E%3Crect x='44' y='36' width='104' height='120' rx='12' fill='%23fff' opacity='0.15'/%3E%3Crect x='52' y='44' width='88' height='104' rx='8' fill='none' stroke='%23fff' stroke-width='6'/%3E%3Cpath d='M76 92l12 12 28-28' stroke='%23fff' stroke-width='8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cline x1='68' y1='120' x2='124' y2='120' stroke='%23fff' stroke-width='4' stroke-linecap='round' opacity='0.5'/%3E%3C/svg%3E" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="心理小屋" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%23a0845c'/%3E%3Ccircle cx='96' cy='78' r='28' fill='none' stroke='%23fff' stroke-width='5'/%3E%3Cpath d='M96 106 L96 130' stroke='%23fff' stroke-width='5' stroke-linecap='round'/%3E%3Cpath d='M80 96 Q96 116 112 96' fill='none' stroke='%23fff' stroke-width='4' stroke-linecap='round'/%3E%3Cellipse cx='86' cy='74' rx='4' ry='5' fill='%23fff'/%3E%3Cellipse cx='106' cy='74' rx='4' ry='5' fill='%23fff'/%3E%3Crect x='80' y='136' width='32' height='4' rx='2' fill='%23fff' opacity='0.5'/%3E%3Crect x='74' y='144' width='44' height='4' rx='2' fill='%23fff' opacity='0.3'/%3E%3C/svg%3E" />
   <style>
     :root {
-      --bg: #0f0f13;
-      --surface: #1a1a24;
-      --surface2: #22222f;
-      --border: #2e2e42;
-      --accent: #7c6af7;
-      --accent2: #a78bfa;
-      --text: #e8e8f0;
-      --text2: #9090b0;
-      --text3: #5a5a7a;
-      --danger: #f87171;
-      --green: #34d399;
-      --radius: 14px;
-      --radius-sm: 8px;
+      --bg: #faf6f0;
+      --surface: #fffcf7;
+      --surface2: #f5efe6;
+      --border: #e8ddd0;
+      --accent: #a0845c;
+      --accent2: #8fa67a;
+      --accent3: #c4956a;
+      --text: #3d3426;
+      --text2: #8c7e6a;
+      --text3: #b5a99a;
+      --danger: #c0392b;
+      --green: #8fa67a;
+      --radius: 16px;
+      --radius-sm: 10px;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -62,7 +63,7 @@
       width: 36px; height: 36px; border-radius: 50%;
       background: var(--surface2); border: none; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
-      color: var(--accent2); font-size: 18px; transition: background .2s;
+      color: var(--accent); font-size: 18px; transition: background .2s;
     }
     .topbar .icon-btn:hover { background: var(--border); }
 
@@ -77,21 +78,21 @@
 
     /* ===== HOME VIEW ===== */
     .home-header {
-      padding: 24px 16px 16px;
+      padding: 28px 16px 16px;
       display: flex; justify-content: space-between; align-items: flex-end;
     }
-    .home-header .greeting { font-size: 22px; font-weight: 700; }
+    .home-header .greeting { font-size: 22px; font-weight: 700; color: var(--accent); }
     .home-header .date-label { font-size: 13px; color: var(--text2); margin-top: 4px; }
     .add-task-btn {
       background: var(--accent);
       color: #fff; border: none; border-radius: 50%;
       width: 44px; height: 44px; font-size: 24px; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 20px rgba(124,106,247,0.4);
+      box-shadow: 0 4px 16px rgba(160,132,92,0.35);
       transition: transform .15s, box-shadow .15s;
       flex-shrink: 0;
     }
-    .add-task-btn:hover { transform: scale(1.08); box-shadow: 0 6px 24px rgba(124,106,247,0.55); }
+    .add-task-btn:hover { transform: scale(1.08); box-shadow: 0 6px 20px rgba(160,132,92,0.5); }
 
     /* Task cards */
     .tasks-grid {
@@ -110,12 +111,12 @@
     }
     .task-card::before {
       content: ''; position: absolute; left: 0; top: 0; bottom: 0;
-      width: 3px; background: var(--accent); border-radius: 3px 0 0 3px;
+      width: 3px; background: var(--accent3); border-radius: 3px 0 0 3px;
     }
-    .task-card:hover { transform: translateY(-2px); border-color: var(--accent); box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+    .task-card:hover { transform: translateY(-2px); border-color: var(--accent3); box-shadow: 0 8px 24px rgba(160,132,92,.12); }
     .task-card .task-name { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
     .task-card .task-stats { font-size: 12px; color: var(--text2); }
-    .task-card .task-total { font-size: 24px; font-weight: 700; color: var(--accent2); }
+    .task-card .task-total { font-size: 24px; font-weight: 700; color: var(--accent); }
     .task-card .task-total-label { font-size: 11px; color: var(--text3); margin-top: 2px; }
     .task-card .today-dot {
       position: absolute; top: 12px; right: 12px;
@@ -124,7 +125,7 @@
     .task-card .delete-btn {
       position: absolute; bottom: 10px; right: 10px;
       width: 24px; height: 24px; border-radius: 50%;
-      background: rgba(248,113,113,0.1); border: 1px solid var(--danger);
+      background: rgba(192,57,43,0.08); border: 1px solid var(--danger);
       color: var(--danger); font-size: 12px; cursor: pointer;
       display: none; align-items: center; justify-content: center;
       transition: background .2s;
@@ -142,7 +143,7 @@
     /* ===== MODAL ===== */
     .modal-overlay {
       display: none; position: fixed; inset: 0; z-index: 200;
-      background: rgba(0,0,0,.6); backdrop-filter: blur(4px);
+      background: rgba(61,52,38,.35); backdrop-filter: blur(4px);
       align-items: flex-end; justify-content: center;
     }
     .modal-overlay.open { display: flex; }
@@ -157,7 +158,53 @@
       from { transform: translateY(100%); }
       to { transform: translateY(0); }
     }
-    .modal-sheet h2 { font-size: 17px; margin-bottom: 16px; }
+    .modal-sheet h2 { font-size: 17px; margin-bottom: 16px; color: var(--accent); }
+
+    /* ===== TASK TEMPLATE GRID ===== */
+    .template-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px; margin-bottom: 16px;
+    }
+    .template-card {
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 12px;
+      cursor: pointer;
+      transition: transform .15s, border-color .15s, background .15s;
+      text-align: center;
+    }
+    .template-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+      background: var(--surface);
+    }
+    .template-card:active {
+      transform: scale(0.97);
+    }
+    .template-card .tpl-icon {
+      font-size: 24px; margin-bottom: 6px;
+    }
+    .template-card .tpl-name {
+      font-size: 13px; font-weight: 600; color: var(--text);
+      margin-bottom: 3px;
+    }
+    .template-card .tpl-desc {
+      font-size: 10px; color: var(--text3); line-height: 1.4;
+    }
+    .template-card.selected {
+      border-color: var(--accent);
+      background: rgba(160,132,92,0.08);
+    }
+
+    /* Custom task input */
+    .custom-task-section {
+      border-top: 1px solid var(--border);
+      padding-top: 14px;
+    }
+    .custom-task-section label {
+      font-size: 12px; color: var(--text3); margin-bottom: 8px; display: block;
+    }
     .input-field {
       width: 100%; background: var(--surface2);
       border: 1px solid var(--border); border-radius: var(--radius-sm);
@@ -230,7 +277,7 @@
       display: flex; align-items: center; justify-content: center;
       width: 36px; height: 36px; border-radius: var(--radius-sm);
       background: var(--surface2); border: 1px solid var(--border);
-      cursor: pointer; color: var(--accent2); font-size: 18px;
+      cursor: pointer; color: var(--accent); font-size: 18px;
       transition: background .2s;
     }
     .img-upload-label:hover { background: var(--border); }
@@ -295,10 +342,10 @@
     }
     .heatmap-cell.today { border-color: var(--accent); }
     .heatmap-cell.empty { background: transparent; }
-    .heatmap-cell[data-level="1"] { background: rgba(124,106,247,0.20); color: var(--text2); }
-    .heatmap-cell[data-level="2"] { background: rgba(124,106,247,0.40); color: var(--text); }
-    .heatmap-cell[data-level="3"] { background: rgba(124,106,247,0.65); color: var(--text); }
-    .heatmap-cell[data-level="4"] { background: rgba(124,106,247,0.90); color: #fff; font-weight: 700; }
+    .heatmap-cell[data-level="1"] { background: rgba(160,132,92,0.15); color: var(--text2); }
+    .heatmap-cell[data-level="2"] { background: rgba(160,132,92,0.30); color: var(--text); }
+    .heatmap-cell[data-level="3"] { background: rgba(160,132,92,0.50); color: var(--text); }
+    .heatmap-cell[data-level="4"] { background: rgba(160,132,92,0.75); color: #fff; font-weight: 700; }
     .heatmap-cell:hover { transform: scale(1.1); }
     .heatmap-legend {
       display: flex; align-items: center; gap: 6px;
@@ -318,7 +365,7 @@
     .stat-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
     .stat-row:last-child { margin-bottom: 0; }
     .stat-label { font-size: 13px; color: var(--text2); }
-    .stat-value { font-size: 15px; font-weight: 700; color: var(--accent2); }
+    .stat-value { font-size: 15px; font-weight: 700; color: var(--accent); }
 
     /* ===== IMAGE LIGHTBOX ===== */
     .lightbox {
@@ -341,6 +388,7 @@
       color: var(--text); padding: 10px 20px; border-radius: 100px;
       font-size: 14px; z-index: 500; opacity: 0; pointer-events: none;
       transition: opacity .3s; white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(0,0,0,.08);
     }
     .toast.show { opacity: 1; }
 
@@ -355,106 +403,128 @@
     .sync-badge.active { display: flex; }
     .sync-badge .dot { width: 6px; height: 6px; border-radius: 50%; }
     .sync-badge .dot.green { background: var(--green); }
-    .sync-badge .dot.yellow { background: #fbbf24; }
+    .sync-badge .dot.yellow { background: var(--accent3); }
 
-    /* ===== WELCOME OVERLAY ===== */
-    .welcome-overlay {
+    /* ===== WELCOME MODAL ===== */
+    .welcome-backdrop {
       position: fixed; inset: 0; z-index: 400;
-      background: var(--bg);
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      padding: 40px 24px;
-      transition: opacity .5s, transform .5s;
+      background: rgba(61,52,38,.3); backdrop-filter: blur(6px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+      animation: fadeIn .3s ease;
     }
-    .welcome-overlay.hiding {
-      opacity: 0; transform: scale(1.05);
-      pointer-events: none;
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
-    .welcome-overlay .welcome-icon {
-      font-size: 56px; margin-bottom: 24px;
-      animation: welcomePulse 2s ease-in-out infinite;
+    .welcome-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 36px 28px 24px;
+      max-width: 380px; width: 100%;
+      text-align: center;
+      animation: cardPop .35s cubic-bezier(.2,.9,.3,1.1);
+      position: relative;
+      box-shadow: 0 20px 60px rgba(160,132,92,.15);
     }
-    @keyframes welcomePulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.08); }
+    @keyframes cardPop {
+      from { opacity: 0; transform: scale(.85) translateY(20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
     }
-    .welcome-overlay .welcome-quote {
-      font-size: 22px; font-weight: 700;
-      color: var(--accent2);
-      margin-bottom: 8px;
-      letter-spacing: 2px;
+    .welcome-card.hiding {
+      animation: cardOut .3s ease forwards;
     }
-    .welcome-overlay .welcome-sub {
-      font-size: 13px; color: var(--text3);
-      margin-bottom: 36px;
+    @keyframes cardOut {
+      to { opacity: 0; transform: scale(.9) translateY(10px); }
     }
-    .welcome-overlay .mood-label {
-      font-size: 14px; color: var(--text2);
-      margin-bottom: 16px;
+    .welcome-card .welcome-logo {
+      width: 56px; height: 56px;
+      margin: 0 auto 16px;
+      background: var(--accent);
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px;
+      box-shadow: 0 4px 16px rgba(160,132,92,.3);
+    }
+    .welcome-card .welcome-app-name {
+      font-size: 14px; font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 3px;
+      margin-bottom: 20px;
+    }
+    .welcome-card .welcome-quote {
+      font-size: 16px; font-weight: 500;
+      color: var(--text);
+      margin-bottom: 6px;
+      line-height: 1.6;
+    }
+    .welcome-card .welcome-sub {
+      font-size: 11px; color: var(--text3);
+      margin-bottom: 28px;
+    }
+    .welcome-card .mood-label {
+      font-size: 12px; color: var(--text2);
+      margin-bottom: 12px;
     }
     .mood-options {
-      display: flex; gap: 16px;
+      display: flex; gap: 8px; justify-content: center; flex-wrap: nowrap;
     }
     .mood-btn {
-      display: flex; flex-direction: column;
-      align-items: center; gap: 8px;
-      background: var(--surface);
-      border: 2px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px 20px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 8px 18px;
       cursor: pointer;
       transition: transform .15s, border-color .15s, background .15s;
-      color: var(--text);
+      color: var(--text2);
       font-family: inherit;
+      font-size: 13px; font-weight: 500;
+      letter-spacing: 1px;
+      white-space: nowrap;
     }
     .mood-btn:hover {
-      transform: translateY(-4px);
+      transform: translateY(-2px);
       border-color: var(--accent);
-      background: var(--surface2);
+      background: var(--accent);
+      color: #fff;
     }
     .mood-btn:active {
       transform: scale(0.95);
     }
-    .mood-btn .mood-emoji {
-      font-size: 36px;
+    .welcome-skip {
+      display: block; margin-top: 20px;
+      font-size: 12px; color: var(--text3);
+      text-align: center; cursor: pointer;
+      border: none; background: none;
+      font-family: inherit; padding: 4px 0;
+      transition: color .2s;
     }
-    .mood-btn .mood-text {
-      font-size: 12px; color: var(--text2);
+    .welcome-skip:hover {
+      color: var(--text2);
     }
 
     /* ===== RESPONSIVE ===== */
     @media (max-width: 400px) {
       .tasks-grid { grid-template-columns: repeat(2, 1fr); }
-      .mood-btn { padding: 12px 14px; }
-      .mood-btn .mood-emoji { font-size: 28px; }
+      .mood-btn { padding: 6px 12px; font-size: 12px; }
+      .welcome-card { padding: 28px 20px 20px; }
+      .template-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
     }
   </style>
 </head>
 <body>
 
-<!-- ===================== WELCOME OVERLAY ===================== -->
-<div class="welcome-overlay" id="welcome-overlay">
-  <div class="welcome-icon">🌟</div>
-  <div class="welcome-quote">坚持就是胜利</div>
-  <div class="welcome-sub">每一天的努力，都算数</div>
-  <div class="mood-label">今天的你心情怎么样？</div>
-  <div class="mood-options">
-    <button class="mood-btn" onclick="selectMood('great')">
-      <span class="mood-emoji">😄</span>
-      <span class="mood-text">很棒</span>
-    </button>
-    <button class="mood-btn" onclick="selectMood('good')">
-      <span class="mood-emoji">🙂</span>
-      <span class="mood-text">还行</span>
-    </button>
-    <button class="mood-btn" onclick="selectMood('meh')">
-      <span class="mood-emoji">😐</span>
-      <span class="mood-text">一般</span>
-    </button>
-    <button class="mood-btn" onclick="selectMood('bad')">
-      <span class="mood-emoji">😞</span>
-      <span class="mood-text">不好</span>
-    </button>
+<!-- ===================== WELCOME MODAL ===================== -->
+<div class="welcome-backdrop" id="welcome-overlay">
+  <div class="welcome-card" id="welcome-card">
+    <div class="welcome-logo">🏠</div>
+    <div class="welcome-app-name">心理小屋</div>
+    <div class="welcome-quote" id="welcome-quote">坚持就是胜利</div>
+    <div class="welcome-sub">每一天的努力，都算数</div>
+    <div class="mood-label">今天的你心情怎么样？</div>
+    <div class="mood-options" id="mood-options"></div>
+    <button class="welcome-skip" onclick="skipWelcome()">跳过</button>
   </div>
 </div>
 
@@ -467,7 +537,7 @@
 <div id="view-home" class="view active">
   <div class="home-header">
     <div>
-      <div class="greeting">我的打卡本 📒</div>
+      <div class="greeting">心理小屋 🏠</div>
       <div class="date-label" id="home-date"></div>
     </div>
     <button class="add-task-btn" onclick="openNewTaskModal()" title="新建任务">+</button>
@@ -513,10 +583,10 @@
       <div class="heatmap-legend">
         少
         <div class="legend-box" style="background:var(--surface);border:1px solid var(--border)"></div>
-        <div class="legend-box" style="background:rgba(124,106,247,0.20)"></div>
-        <div class="legend-box" style="background:rgba(124,106,247,0.45)"></div>
-        <div class="legend-box" style="background:rgba(124,106,247,0.70)"></div>
-        <div class="legend-box" style="background:rgba(124,106,247,0.92)"></div>
+        <div class="legend-box" style="background:rgba(160,132,92,0.15)"></div>
+        <div class="legend-box" style="background:rgba(160,132,92,0.35)"></div>
+        <div class="legend-box" style="background:rgba(160,132,92,0.55)"></div>
+        <div class="legend-box" style="background:rgba(160,132,92,0.80)"></div>
         多
       </div>
       <div class="heatmap-stats" id="heatmap-stats"></div>
@@ -527,9 +597,13 @@
 <!-- ===================== NEW TASK MODAL ===================== -->
 <div class="modal-overlay" id="modal-new-task" onclick="closeModalIfBg(event)">
   <div class="modal-sheet">
-    <h2>✨ 新建任务</h2>
-    <input class="input-field" id="new-task-name" type="text" placeholder="给任务起个名字，如：示弱、冥想…" maxlength="30"
-      onkeydown="if(event.key==='Enter')createTask()" />
+    <h2>添加练习</h2>
+    <div class="template-grid" id="template-grid"></div>
+    <div class="custom-task-section">
+      <label>或自定义练习名称</label>
+      <input class="input-field" id="new-task-name" type="text" placeholder="输入自定义名称…" maxlength="30"
+        onkeydown="if(event.key==='Enter')createTask()" />
+    </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeNewTaskModal()">取消</button>
       <button class="btn btn-primary" onclick="createTask()">创建</button>
@@ -560,11 +634,9 @@ const supabaseHeaders = {
 };
 
 /* ======================== DUAL STORAGE ======================== */
-// 模式：'local' = 只用本地, 'cloud' = 云端+本地备份
 let storageMode = 'local';
 let cloudAvailable = false;
 
-// ===== LOCAL STORAGE =====
 const LS_KEY = 'checkin_app_data';
 
 function loadLocalData() {
@@ -580,7 +652,6 @@ function saveLocalData(data) {
   localStorage.setItem(LS_KEY, JSON.stringify(data));
 }
 
-// ===== SUPABASE API =====
 async function apiFetch(table, method, body, query) {
   let url = API + '/' + table;
   if (query) url += '?' + query;
@@ -592,7 +663,6 @@ async function apiFetch(table, method, body, query) {
   return res.json();
 }
 
-// ===== TEST CLOUD =====
 async function testCloudConnection() {
   try {
     await apiFetch('tasks', 'GET', null, 'select=id&limit=1');
@@ -602,13 +672,10 @@ async function testCloudConnection() {
   }
 }
 
-// ===== SYNC: local → cloud =====
 async function syncLocalToCloud() {
   const localData = loadLocalData();
   if (localData.tasks.length === 0) return;
-
   for (const task of localData.tasks) {
-    // Check if task already exists in cloud (by name + created_at)
     try {
       const existing = await apiFetch('tasks', 'GET', null,
         'name=eq.' + encodeURIComponent(task.name));
@@ -619,7 +686,6 @@ async function syncLocalToCloud() {
         const result = await apiFetch('tasks', 'POST', { name: task.name });
         cloudTask = Array.isArray(result) ? result[0] : result;
       }
-      // Sync records
       if (task.records && task.records.length > 0) {
         for (const rec of task.records) {
           try {
@@ -637,13 +703,10 @@ async function syncLocalToCloud() {
   }
 }
 
-// ===== UNIFIED DATA LAYER =====
 let tasksCache = [];
 
 async function loadData() {
-  // Try cloud first
   cloudAvailable = await testCloudConnection();
-
   if (cloudAvailable) {
     storageMode = 'cloud';
     try {
@@ -654,7 +717,6 @@ async function loadData() {
         t.records = records || [];
       }
       tasksCache = tasks;
-      // Backup to local
       saveLocalData({ tasks: tasksCache.map(t => ({
         ...t,
         records: (t.records || []).map(r => ({ text: r.text, images: r.images, created_at: r.created_at }))
@@ -665,8 +727,6 @@ async function loadData() {
       console.error('Cloud load failed, fallback to local:', e);
     }
   }
-
-  // Fallback: local
   storageMode = 'local';
   const localData = loadLocalData();
   tasksCache = localData.tasks || [];
@@ -677,7 +737,6 @@ async function createTaskDB(name) {
   const localId = 'local_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
   const now = new Date().toISOString();
   const task = { id: localId, name, created_at: now, records: [] };
-
   if (cloudAvailable) {
     try {
       const result = await apiFetch('tasks', 'POST', { name });
@@ -687,7 +746,6 @@ async function createTaskDB(name) {
       console.error('Cloud create task failed:', e);
     }
   }
-
   tasksCache.push(task);
   saveToLocal();
   return task;
@@ -710,7 +768,6 @@ async function createRecordDB(taskId, text, images) {
   const localId = 'local_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
   const now = new Date().toISOString();
   const record = { id: localId, task_id: taskId, text: text || '', images: images || [], created_at: now };
-
   if (cloudAvailable) {
     try {
       const result = await apiFetch('records', 'POST', {
@@ -722,7 +779,6 @@ async function createRecordDB(taskId, text, images) {
       console.error('Cloud create record failed:', e);
     }
   }
-
   const task = tasksCache.find(t => t.id === taskId);
   if (task) task.records.push(record);
   saveToLocal();
@@ -777,32 +833,118 @@ let pendingImages = [];
 let heatmapYear = new Date().getFullYear();
 let heatmapMonth = new Date().getMonth();
 
+/* ======================== TASK TEMPLATES ======================== */
+const TASK_TEMPLATES = [
+  { icon: '🌱', name: '示弱时刻', desc: '展露真实的自己' },
+  { icon: '⭐', name: '每日一赞', desc: '发现自己做得好的事' },
+  { icon: '💡', name: '发现光点', desc: '看见自己的优点和特质' },
+  { icon: '🌤', name: '情绪天气', desc: '觉察今天的内心天气' },
+  { icon: '🤝', name: '连接时刻', desc: '记录真实的连接瞬间' },
+  { icon: '🛡️', name: '边界时刻', desc: '维护自己的时刻' },
+  { icon: '🧘', name: '自我对话', desc: '倾听内心的声音' },
+  { icon: '🌙', name: '睡前和解', desc: '和今天的自己和解' }
+];
+
+let selectedTemplate = null;
+
+function renderTemplateGrid() {
+  const grid = document.getElementById('template-grid');
+  grid.innerHTML = TASK_TEMPLATES.map((t, i) =>
+    `<div class="template-card" onclick="selectTemplate(${i})" id="tpl-${i}">
+      <div class="tpl-icon">${t.icon}</div>
+      <div class="tpl-name">${t.name}</div>
+      <div class="tpl-desc">${t.desc}</div>
+    </div>`
+  ).join('');
+}
+
+function selectTemplate(index) {
+  // Deselect previous
+  document.querySelectorAll('.template-card').forEach(c => c.classList.remove('selected'));
+  // Select new
+  const card = document.getElementById('tpl-' + index);
+  card.classList.add('selected');
+  selectedTemplate = TASK_TEMPLATES[index];
+  document.getElementById('new-task-name').value = selectedTemplate.name;
+}
+
 /* ======================== WELCOME / MOOD ======================== */
 const MOOD_KEY = 'checkin_mood_today';
-const moodEmojiMap = { great: '😄', good: '🙂', meh: '😐', bad: '😞' };
-const moodTextMap = { great: '很棒', good: '还行', meh: '一般', bad: '不好' };
+const QUOTE_KEY = 'checkin_quote_index';
+
+const MOOD_WORDS = [
+  '欣喜','笃定','释然','热忱','安宁','舒展','畅快','感恩','陶醉','骄傲',
+  '踏实','振奋','温暖','自在','丰盈',
+  '焦虑','迷茫','倦怠','孤独','愤懑','羞耻','怅然','嫉恨','惶恐','压抑',
+  '委屈','空虚','执念','愧疚','崩溃'
+];
+
+const QUOTES = [
+  '与时间做朋友，而不是与它赛跑。',
+  '你不需要成为更好的人，你只需要成为更真实的人。',
+  '今天的打卡，是给明天的自己写的一封信。',
+  '慢一点，让灵魂跟上脚步。',
+  '允许一切发生，但别停止生长。',
+  '你正在成为那个，自己会为之鼓掌的人。',
+  '不是所有的花都在春天开，你也是。',
+  '记录，是为了看见自己的光。',
+  '累了就休息，但别弄丢那个想变好的自己。',
+  '你已经走了很远，只是还没回头看。',
+  '认识自己，是智慧的开端。 ——苏格拉底',
+  '不是事件本身让我们痛苦，而是我们对事件的看法。 ——埃利斯（ABC理论）',
+  '你所抗拒的，会持续存在；你所接纳的，会改变。 ——卡尔·荣格',
+  '潜意识正在操控你的人生，你却称之为命运。 ——荣格',
+  '人是自己选择的结果。 ——萨特（存在主义心理学）',
+  '真正的自由，是掌控自己的反应，而非控制外界。 ——维克多·弗兰克尔',
+  '行为的改变，始于意识的觉醒。 ——威廉·詹姆斯',
+  '你要允许自己为人，才能成为更好的人。 ——积极心理学',
+  '焦虑是对未来的过度担忧，正念是对当下的全然接纳。 ——乔·卡巴金',
+  '了解自己的阴影，才能拥抱完整的自己。 ——荣格心理学'
+];
+
+function getNextQuote() {
+  let idx = parseInt(localStorage.getItem(QUOTE_KEY) || '0', 10);
+  const quote = QUOTES[idx % QUOTES.length];
+  localStorage.setItem(QUOTE_KEY, String((idx + 1) % QUOTES.length));
+  return quote;
+}
+
+function pickRandomMoods(count) {
+  const shuffled = [...MOOD_WORDS].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count);
+}
+
+function renderMoodButtons() {
+  const moods = pickRandomMoods(4);
+  const container = document.getElementById('mood-options');
+  container.innerHTML = moods.map(m =>
+    `<button class="mood-btn" onclick="selectMood('${m}')">
+      <span class="mood-text">${m}</span>
+    </button>`
+  ).join('');
+}
+
+function closeWelcomeCard() {
+  const card = document.getElementById('welcome-card');
+  const backdrop = document.getElementById('welcome-overlay');
+  card.classList.add('hiding');
+  setTimeout(() => {
+    backdrop.style.display = 'none';
+    card.classList.remove('hiding');
+  }, 300);
+}
 
 function selectMood(mood) {
   const today = todayStr();
   const moodData = JSON.parse(localStorage.getItem(MOOD_KEY) || '{}');
   moodData[today] = mood;
   localStorage.setItem(MOOD_KEY, JSON.stringify(moodData));
-
-  // Animate out the welcome overlay
-  const overlay = document.getElementById('welcome-overlay');
-  overlay.classList.add('hiding');
-  setTimeout(() => {
-    overlay.style.display = 'none';
-  }, 500);
-
-  showToast(moodEmojiMap[mood] + ' ' + moodTextMap[mood] + '！加油');
+  closeWelcomeCard();
+  showToast(mood + '，加油 💪');
 }
 
-function shouldShowWelcome() {
-  const today = todayStr();
-  const moodData = JSON.parse(localStorage.getItem(MOOD_KEY) || '{}');
-  // Only show if no mood selected today
-  return !moodData[today];
+function skipWelcome() {
+  closeWelcomeCard();
 }
 
 /* ======================== UTILS ======================== */
@@ -864,8 +1006,8 @@ function renderHome() {
   if (tasksCache.length === 0) {
     grid.innerHTML = `
       <div class="empty-state" style="grid-column:1/-1">
-        <div class="emoji">🌱</div>
-        <p>还没有任务<br>点右上角 <b>+</b> 创建第一个吧</p>
+        <div class="emoji">🏠</div>
+        <p>还没有练习<br>点右上角 <b>+</b> 添加第一个吧</p>
       </div>`;
     return;
   }
@@ -893,13 +1035,16 @@ function renderHome() {
 }
 
 function openNewTaskModal() {
+  selectedTemplate = null;
+  document.getElementById('new-task-name').value = '';
+  renderTemplateGrid();
   document.getElementById('modal-new-task').classList.add('open');
-  setTimeout(() => document.getElementById('new-task-name').focus(), 100);
 }
 
 function closeNewTaskModal() {
   document.getElementById('modal-new-task').classList.remove('open');
   document.getElementById('new-task-name').value = '';
+  selectedTemplate = null;
 }
 
 function closeModalIfBg(e) {
@@ -908,12 +1053,17 @@ function closeModalIfBg(e) {
 
 async function createTask() {
   const name = document.getElementById('new-task-name').value.trim();
-  if (!name) { showToast('请输入任务名称'); return; }
+  if (!name) { showToast('请选择或输入练习名称'); return; }
+  // Check duplicate
+  if (tasksCache.some(t => t.name === name)) {
+    showToast('这个练习已经存在了');
+    return;
+  }
   try {
     await createTaskDB(name);
     closeNewTaskModal();
     renderHome();
-    showToast('✅ 任务已创建');
+    showToast('✅ 练习已创建');
   } catch (e) {
     showToast('❌ 创建失败');
     console.error(e);
@@ -921,11 +1071,11 @@ async function createTask() {
 }
 
 async function deleteTask(id) {
-  if (!confirm('确定要删除这个任务及所有记录吗？')) return;
+  if (!confirm('确定要删除这个练习及所有记录吗？')) return;
   try {
     await deleteTaskDB(id);
     renderHome();
-    showToast('任务已删除');
+    showToast('练习已删除');
   } catch (e) {
     showToast('❌ 删除失败');
     console.error(e);
@@ -1161,7 +1311,6 @@ function renderHeatmap(task) {
 
 /* ======================== NAVIGATION ======================== */
 async function goHome() {
-  // Try refresh from cloud if available
   if (cloudAvailable) {
     try {
       const tasks = await apiFetch('tasks', 'GET', null, 'select=*&order=created_at.asc');
@@ -1215,7 +1364,6 @@ document.addEventListener('keydown', e => {
 });
 
 /* ======================== INIT ======================== */
-// Register Service Worker for PWA
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').then(() => {
     console.log('Service Worker registered');
@@ -1225,12 +1373,10 @@ if ('serviceWorker' in navigator) {
 }
 
 (async function init() {
-  // Show welcome overlay if no mood selected today
-  if (shouldShowWelcome()) {
-    document.getElementById('welcome-overlay').style.display = 'flex';
-  } else {
-    document.getElementById('welcome-overlay').style.display = 'none';
-  }
+  // Show welcome modal every time with rotating quote & random moods
+  document.getElementById('welcome-quote').textContent = getNextQuote();
+  renderMoodButtons();
+  document.getElementById('welcome-overlay').style.display = 'flex';
 
   // First load local data immediately (no loading screen!)
   const localData = loadLocalData();
@@ -1253,10 +1399,8 @@ if ('serviceWorker' in navigator) {
       renderHome();
       updateSyncBadge('cloud');
 
-      // If local had data but cloud was empty, sync local→cloud
       if (localData.tasks && localData.tasks.length > 0 && tasks.length === 0) {
         await syncLocalToCloud();
-        // Reload
         const reloaded = await apiFetch('tasks', 'GET', null, 'select=*&order=created_at.asc');
         for (const t of reloaded) {
           const recs = await apiFetch('records', 'GET', null,
