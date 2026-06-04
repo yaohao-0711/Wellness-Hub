@@ -1424,11 +1424,7 @@
     <div class="me-topbar">
       <div class="me-avatar-wrap">
         <img class="me-avatar" id="me-avatar-img" src="" alt="头像" onclick="openAvatarLightbox()" />
-        <div class="me-name" id="me-name">访客</div>
-      </div>
-      <div class="me-avatar-actions">
-        <button class="me-avatar-btn" onclick="changeAvatar()" title="更换头像">🖼️</button>
-        <span class="me-avatar-label">相册</span>
+        <div class="me-name" id="me-name" onclick="openNameModal()">访客</div>
       </div>
     </div>
 
@@ -1452,7 +1448,7 @@
 
     <div class="me-section">
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
-        <span style="font-size:14px;font-weight:600;color:var(--text);">🔄 固有思维</span>
+        <span style="font-size:14px;font-weight:600;color:var(--text);">🔍 待探究</span>
         <span style="font-size:11px;color:var(--text3);">点击卡片记录，长按删除</span>
       </div>
       <div class="me-sub-grid" id="me-mindset-grid"></div>
@@ -1462,7 +1458,8 @@
 
 <!-- ===================== AVATAR LIGHTBOX ===================== -->
 <div id="view-avatar-lightbox" class="view" style="background:rgba(0,0,0,0.85);" onclick="closeAvatarLightbox()">
-  <div style="position:absolute;top:16px;right:16px;z-index:10;">
+  <div style="position:absolute;top:16px;right:16px;z-index:10;display:flex;gap:8px;">
+    <button class="btn btn-ghost" style="color:#fff;border-color:rgba(255,255,255,0.3);" onclick="event.stopPropagation();changeAvatar()">🖼️ 更换头像</button>
     <button class="btn btn-ghost" style="color:#fff;border-color:rgba(255,255,255,0.3);" onclick="event.stopPropagation();closeAvatarLightbox()">关闭</button>
   </div>
   <div style="display:flex;align-items:center;justify-content:center;height:100vh;padding:20px;">
@@ -1628,6 +1625,21 @@
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="document.getElementById('modal-mbti').classList.remove('open')">取消</button>
       <button class="btn btn-primary" onclick="saveMbti()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== NAME EDIT MODAL ===================== -->
+<div class="modal-overlay" id="modal-name" onclick="if(event.target===event.currentTarget)this.classList.remove('open')">
+  <div class="modal-sheet">
+    <h2>修改名字</h2>
+    <div class="anni-form-row">
+      <label>你的名字</label>
+      <input class="input-field" id="name-input" type="text" placeholder="输入名字…" maxlength="12" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-name').classList.remove('open')">取消</button>
+      <button class="btn btn-primary" onclick="saveName()">保存</button>
     </div>
   </div>
 </div>
@@ -3393,7 +3405,6 @@ function renderMePage() {
     mbtiSection.innerHTML = `
       <div class="me-card" onclick="openMbtiModal()">
         <div class="me-card-title">🔮 MBTI 类型</div>
-        <div class="me-card-hint">点击记录你的性格类型</div>
         ${p.mbti.type ? `<div class="me-card-value">${escapeHtml(p.mbti.type)}</div>` : ''}
       </div>
     `;
@@ -3489,6 +3500,23 @@ function saveMbti() {
   showToast('已保存');
 }
 
+// Name
+function openNameModal() {
+  const p = loadProfile();
+  document.getElementById('name-input').value = p.name || '';
+  document.getElementById('modal-name').classList.add('open');
+}
+function saveName() {
+  const name = document.getElementById('name-input').value.trim();
+  if (!name) { showToast('名字不能为空'); return; }
+  const p = loadProfile();
+  p.name = name;
+  saveProfile(p);
+  document.getElementById('modal-name').classList.remove('open');
+  renderMePage();
+  showToast('已保存');
+}
+
 // Profile items (confusion / mindset)
 let editingProfileType = '';
 let editingProfileId = '';
@@ -3499,7 +3527,7 @@ function openProfileItem(type, id) {
   if (!item) return;
   editingProfileType = type;
   editingProfileId = id;
-  document.getElementById('profile-item-modal-title').textContent = type === 'confusion' ? '🧠 心理困惑' : '🔄 固有思维';
+  document.getElementById('profile-item-modal-title').textContent = type === 'confusion' ? '🧠 心理困惑' : '🔍 待探究';
   document.getElementById('profile-item-title').value = item.title;
   document.getElementById('profile-item-content').value = item.content;
   document.getElementById('modal-profile-item').classList.add('open');
@@ -3521,7 +3549,7 @@ function saveProfileItem() {
   showToast('已保存');
 }
 function addProfileItem(type) {
-  const title = prompt(type === 'confusion' ? '输入困惑名称：' : '输入思维模式名称：');
+  const title = prompt(type === 'confusion' ? '输入困惑名称：' : '输入待探究概念名称：');
   if (!title || !title.trim()) return;
   const p = loadProfile();
   const arr = type === 'confusion' ? p.confusions : p.mindsets;
