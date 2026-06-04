@@ -1,2783 +1,6 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <title>心理小屋</title>
-  <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#a0845c" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="心理小屋" />
-  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%23a0845c'/%3E%3Ccircle cx='96' cy='78' r='28' fill='none' stroke='%23fff' stroke-width='5'/%3E%3Cpath d='M96 106 L96 130' stroke='%23fff' stroke-width='5' stroke-linecap='round'/%3E%3Cpath d='M80 96 Q96 116 112 96' fill='none' stroke='%23fff' stroke-width='4' stroke-linecap='round'/%3E%3Cellipse cx='86' cy='74' rx='4' ry='5' fill='%23fff'/%3E%3Cellipse cx='106' cy='74' rx='4' ry='5' fill='%23fff'/%3E%3Crect x='80' y='136' width='32' height='4' rx='2' fill='%23fff' opacity='0.5'/%3E%3Crect x='74' y='144' width='44' height='4' rx='2' fill='%23fff' opacity='0.3'/%3E%3C/svg%3E" />
-  <style>
-    :root {
-      --bg: #f8f4ee;
-      --surface: #fffdf9;
-      --surface2: #f3ede4;
-      --border: #e5d9cc;
-      --accent: #9a7d54;
-      --accent2: #8fa67a;
-      --accent3: #c4956a;
-      --accent-light: rgba(154,125,84,0.08);
-      --text: #3a3125;
-      --text2: #8a7c68;
-      --text3: #b8a998;
-      --danger: #c0392b;
-      --green: #8fa67a;
-      --radius: 16px;
-      --radius-sm: 10px;
-      --shadow-sm: 0 2px 8px rgba(154,125,84,0.06);
-      --shadow-md: 0 4px 16px rgba(154,125,84,0.10);
-      --shadow-lg: 0 8px 32px rgba(154,125,84,0.14);
-    }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
-      min-height: 100vh;
-      overflow-x: hidden;
-      -webkit-font-smoothing: antialiased;
-    }
 
-    /* ===== VIEWS ===== */
-    .view { display: none; min-height: 100vh; }
-    .view.active { display: flex; flex-direction: column; }
-
-    /* ===== TOP BAR ===== */
-    .topbar {
-      position: sticky; top: 0; z-index: 100;
-      background: rgba(248,244,238,0.85);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-      padding: 0 16px;
-      height: 56px;
-      display: flex; align-items: center; gap: 12px;
-    }
-    .topbar h1 { font-size: 18px; font-weight: 700; flex: 1; }
-    .topbar .back-btn {
-      width: 36px; height: 36px; border-radius: 50%;
-      background: var(--surface2); border: none; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      color: var(--text); font-size: 18px; transition: background .2s;
-    }
-    .topbar .back-btn:hover { background: var(--border); }
-    .topbar .icon-btn {
-      width: 36px; height: 36px; border-radius: 50%;
-      background: var(--surface2); border: none; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      color: var(--accent); font-size: 18px; transition: background .2s;
-    }
-    .topbar .icon-btn:hover { background: var(--border); }
-
-    /* ===== SCROLL AREA ===== */
-    .scroll-area {
-      flex: 1; overflow-y: auto; padding: 16px;
-      -webkit-overflow-scrolling: touch;
-    }
-    .scroll-area::-webkit-scrollbar { width: 4px; }
-    .scroll-area::-webkit-scrollbar-track { background: transparent; }
-    .scroll-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-    /* ===== HOME VIEW ===== */
-    .home-header {
-      padding: 28px 16px 16px;
-      display: flex; justify-content: center; align-items: center;
-      position: relative;
-    }
-    .home-header .greeting {
-      font-size: 22px; font-weight: 700; color: var(--accent);
-      text-align: center; width: 100%;
-      letter-spacing: 2px;
-    }
-    .home-header .date-label {
-      font-size: 13px; color: var(--text2); margin-top: 4px;
-      text-align: center; width: 100%;
-    }
-    .home-header-text { text-align: center; flex: 1; }
-    .home-header .add-task-btn {
-      position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
-    }
-    .add-task-btn {
-      background: linear-gradient(135deg, var(--accent3), var(--accent));
-      color: #fff; border: none; border-radius: 50%;
-      width: 44px; height: 44px; font-size: 24px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 16px rgba(154,125,84,0.35);
-      transition: transform .15s, box-shadow .15s;
-      flex-shrink: 0;
-    }
-    .add-task-btn:hover { transform: scale(1.08); box-shadow: 0 6px 20px rgba(154,125,84,0.5); }
-
-    /* Task cards */
-    .tasks-grid {
-      padding: 0 16px 16px;
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 12px;
-    }
-    .task-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px 14px;
-      cursor: pointer;
-      transition: transform .2s, border-color .2s, box-shadow .2s;
-      position: relative; overflow: hidden;
-      box-shadow: var(--shadow-sm);
-    }
-    .task-card::before {
-      content: ''; position: absolute; left: 0; top: 0; bottom: 0;
-      width: 3px; background: linear-gradient(180deg, var(--accent3), var(--accent)); border-radius: 3px 0 0 3px;
-    }
-    .task-card:hover { transform: translateY(-3px); border-color: var(--accent3); box-shadow: var(--shadow-lg); }
-    .task-card .task-name { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
-    .task-card .task-stats { font-size: 12px; color: var(--text2); }
-    .task-card .task-total { font-size: 24px; font-weight: 700; color: var(--accent); }
-    .task-card .task-total-label { font-size: 11px; color: var(--text3); margin-top: 2px; }
-    .task-card .today-dot {
-      position: absolute; top: 12px; right: 12px;
-      width: 8px; height: 8px; border-radius: 50%; background: var(--green);
-    }
-    .task-card .delete-btn {
-      position: absolute; bottom: 10px; right: 10px;
-      width: 24px; height: 24px; border-radius: 50%;
-      background: rgba(192,57,43,0.08); border: 1px solid var(--danger);
-      color: var(--danger); font-size: 12px; cursor: pointer;
-      display: none; align-items: center; justify-content: center;
-      transition: background .2s;
-    }
-    .task-card:hover .delete-btn { display: flex; }
-    .task-card .delete-btn:hover { background: var(--danger); color: #fff; }
-
-    .empty-state {
-      text-align: center; padding: 60px 20px;
-      color: var(--text3);
-    }
-    .empty-state .emoji { font-size: 48px; margin-bottom: 16px; }
-    .empty-state p { font-size: 15px; line-height: 1.6; }
-
-    /* ===== MODAL ===== */
-    .modal-overlay {
-      display: none; position: fixed; inset: 0; z-index: 200;
-      background: rgba(61,52,38,.35); backdrop-filter: blur(4px);
-      align-items: flex-end; justify-content: center;
-    }
-    .modal-overlay.open { display: flex; }
-    .modal-sheet {
-      background: var(--surface);
-      border-radius: var(--radius) var(--radius) 0 0;
-      padding: 20px 20px 32px;
-      width: 100%; max-width: 520px;
-      animation: slideUp .25s ease;
-      box-shadow: 0 -4px 24px rgba(154,125,84,0.12);
-    }
-    @keyframes slideUp {
-      from { transform: translateY(100%); }
-      to { transform: translateY(0); }
-    }
-    .modal-sheet h2 { font-size: 17px; margin-bottom: 16px; color: var(--accent); }
-
-    /* ===== TASK TEMPLATE GRID ===== */
-    .template-grid {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 10px; margin-bottom: 16px;
-    }
-    .template-card {
-      background: var(--surface2);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 14px 12px;
-      cursor: pointer;
-      transition: transform .2s, border-color .2s, background .2s, box-shadow .2s;
-      text-align: center;
-    }
-    .template-card:hover {
-      transform: translateY(-2px);
-      border-color: var(--accent);
-      background: var(--surface);
-      box-shadow: var(--shadow-md);
-    }
-    .template-card:active {
-      transform: scale(0.97);
-    }
-    .template-card .tpl-icon {
-      font-size: 24px; margin-bottom: 6px;
-    }
-    .template-card .tpl-name {
-      font-size: 13px; font-weight: 600; color: var(--text);
-      margin-bottom: 3px;
-    }
-    .template-card .tpl-desc {
-      font-size: 10px; color: var(--text3); line-height: 1.4;
-    }
-    .template-card.selected {
-      border-color: var(--accent);
-      background: rgba(160,132,92,0.08);
-    }
-
-    /* Custom task input */
-    .custom-task-section {
-      border-top: 1px solid var(--border);
-      padding-top: 14px;
-    }
-    .custom-task-section label {
-      font-size: 12px; color: var(--text3); margin-bottom: 8px; display: block;
-    }
-    .input-field {
-      width: 100%; background: var(--surface2);
-      border: 1px solid var(--border); border-radius: var(--radius-sm);
-      color: var(--text); font-size: 15px; padding: 12px 14px;
-      outline: none; transition: border-color .2s;
-      font-family: inherit;
-    }
-    .input-field:focus { border-color: var(--accent); }
-    .modal-actions { display: flex; gap: 10px; margin-top: 14px; }
-    .btn {
-      flex: 1; padding: 12px; border-radius: var(--radius-sm);
-      border: none; cursor: pointer; font-size: 15px; font-weight: 600;
-      font-family: inherit; transition: opacity .15s;
-    }
-    .btn:hover { opacity: .85; }
-    .btn-primary { background: linear-gradient(135deg, var(--accent3), var(--accent)); color: #fff; }
-    .btn-ghost { background: var(--surface2); color: var(--text2); }
-
-    /* ===== TASK DETAIL VIEW ===== */
-    .records-list {
-      display: flex; flex-direction: column-reverse;
-      gap: 10px; padding-bottom: 16px;
-    }
-    .record-item {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 14px;
-      position: relative;
-      box-shadow: var(--shadow-sm);
-    }
-    .record-item .record-time {
-      font-size: 11px; color: var(--text3); margin-bottom: 8px;
-    }
-    .record-item .record-content { font-size: 15px; line-height: 1.65; white-space: pre-wrap; word-break: break-word; }
-    .record-item .record-images {
-      display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;
-    }
-    .record-item .record-img {
-      width: 80px; height: 80px; object-fit: cover;
-      border-radius: var(--radius-sm); cursor: pointer;
-      border: 1px solid var(--border);
-    }
-    .record-del {
-      position: absolute; top: 10px; right: 10px;
-      background: transparent; border: none; cursor: pointer;
-      color: var(--text3); font-size: 14px; padding: 4px;
-      transition: color .2s;
-    }
-    .record-del:hover { color: var(--danger); }
-
-    /* Add record area */
-    .add-record-area {
-      position: sticky; bottom: 0; z-index: 10;
-      background: var(--bg);
-      border-top: 1px solid var(--border);
-      padding: 10px 16px 16px;
-    }
-    .add-record-textarea {
-      width: 100%; background: var(--surface);
-      border: 1px solid var(--border); border-radius: var(--radius-sm);
-      color: var(--text); font-size: 15px; padding: 10px 12px;
-      outline: none; resize: none; font-family: inherit;
-      transition: border-color .2s; min-height: 72px; max-height: 180px;
-    }
-    .add-record-textarea:focus { border-color: var(--accent); }
-    .add-record-controls {
-      display: flex; align-items: center; gap: 10px; margin-top: 8px;
-    }
-    .img-upload-label {
-      display: flex; align-items: center; justify-content: center;
-      width: 36px; height: 36px; border-radius: var(--radius-sm);
-      background: var(--surface2); border: 1px solid var(--border);
-      cursor: pointer; color: var(--accent); font-size: 18px;
-      transition: background .2s;
-    }
-    .img-upload-label:hover { background: var(--border); }
-    #img-input { display: none; }
-    .img-previews {
-      display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;
-    }
-    .img-preview-wrap {
-      position: relative; width: 56px; height: 56px;
-    }
-    .img-preview-wrap img {
-      width: 100%; height: 100%; object-fit: cover;
-      border-radius: var(--radius-sm); border: 1px solid var(--border);
-    }
-    .img-preview-wrap .remove-img {
-      position: absolute; top: -5px; right: -5px;
-      width: 18px; height: 18px; border-radius: 50%;
-      background: var(--danger); color: #fff; border: none;
-      cursor: pointer; font-size: 10px; display: flex;
-      align-items: center; justify-content: center;
-    }
-    .submit-btn {
-      margin-left: auto; background: linear-gradient(135deg, var(--accent3), var(--accent)); color: #fff;
-      border: none; border-radius: var(--radius-sm);
-      padding: 8px 18px; font-size: 14px; font-weight: 600;
-      cursor: pointer; font-family: inherit; transition: opacity .15s, transform .15s;
-    }
-    .submit-btn:hover { opacity: .85; transform: translateY(-1px); }
-    .submit-btn:disabled { opacity: .4; cursor: not-allowed; }
-
-    /* ===== HEATMAP VIEW ===== */
-    .heatmap-container { padding: 16px 16px 40px; }
-    .heatmap-month-nav {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 20px;
-    }
-    .month-nav-btn {
-      width: 36px; height: 36px; border-radius: 50%;
-      background: var(--surface2); border: 1px solid var(--border);
-      color: var(--text); font-size: 18px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .month-nav-btn:hover { background: var(--border); }
-    .month-label { font-size: 16px; font-weight: 600; }
-    .heatmap-grid {
-      display: grid; grid-template-columns: repeat(7, 1fr);
-      gap: 5px;
-    }
-    .heatmap-dow {
-      text-align: center; font-size: 11px; color: var(--text3);
-      padding-bottom: 4px;
-    }
-    .heatmap-cell {
-      aspect-ratio: 1;
-      border-radius: 5px;
-      background: var(--surface);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 11px; color: var(--text3);
-      position: relative; cursor: default;
-      border: 1px solid transparent;
-      transition: transform .1s;
-    }
-    .heatmap-cell.today { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
-    .heatmap-cell.empty { background: transparent; }
-    .heatmap-cell[data-level="1"] { background: rgba(154,125,84,0.18); color: var(--text2); }
-    .heatmap-cell[data-level="2"] { background: rgba(154,125,84,0.55); color: #fff; font-weight: 600; }
-    .heatmap-cell:hover { transform: scale(1.1); }
-    .heatmap-legend {
-      display: flex; align-items: center; gap: 6px;
-      margin-top: 18px; font-size: 12px; color: var(--text3);
-      justify-content: flex-end;
-    }
-    .legend-box {
-      width: 14px; height: 14px; border-radius: 3px;
-    }
-    .heatmap-stats {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px; margin-top: 20px;
-      box-shadow: var(--shadow-sm);
-    }
-    .heatmap-stats h3 { font-size: 14px; color: var(--text2); margin-bottom: 12px; }
-    .stat-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
-    .stat-row:last-child { margin-bottom: 0; }
-    .stat-label { font-size: 13px; color: var(--text2); }
-    .stat-value { font-size: 15px; font-weight: 700; color: var(--accent); }
-
-    /* ===== ANNIVERSARY SECTION ===== */
-    .anni-section {
-      margin-top: 24px;
-      padding: 16px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      cursor: pointer;
-      transition: background .2s, border-color .2s, box-shadow .2s;
-      box-shadow: var(--shadow-sm);
-    }
-    .anni-section:hover {
-      border-color: var(--accent3);
-      background: rgba(154,125,84,0.04);
-      box-shadow: var(--shadow-md);
-    }
-    .anni-section-header {
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .anni-section-title {
-      font-size: 15px; font-weight: 600; color: var(--text);
-      display: flex; align-items: center; gap: 6px;
-    }
-    .anni-section-count {
-      font-size: 12px; color: var(--text3);
-      background: var(--surface2); padding: 2px 8px;
-      border-radius: 100px;
-    }
-    .anni-section-hint {
-      font-size: 12px; color: var(--text3); margin-top: 6px;
-    }
-    .anni-preview-list {
-      margin-top: 10px;
-      display: flex; flex-direction: column; gap: 6px;
-    }
-    .anni-preview-item {
-      display: flex; align-items: center; justify-content: space-between;
-      font-size: 13px; padding: 6px 8px;
-      background: rgba(160,132,92,0.04); border-radius: 6px;
-    }
-    .anni-preview-name { color: var(--text2); }
-    .anni-preview-days {
-      font-size: 13px; font-weight: 700; color: var(--accent);
-    }
-
-    /* ===== ANNIVERSARY DETAIL PAGE ===== */
-    .anni-detail-page { padding: 16px 16px 80px; }
-    .anni-list { display: flex; flex-direction: column; gap: 10px; }
-    .anni-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 14px 16px;
-      display: flex; align-items: center; justify-content: space-between;
-      position: relative; box-shadow: var(--shadow-sm);
-      cursor: pointer; transition: transform .15s, box-shadow .15s;
-    }
-    .anni-card:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
-    .anni-card-info { flex: 1; }
-    .anni-card-name { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
-    .anni-card-date { font-size: 12px; color: var(--text3); }
-    .anni-card-days {
-      text-align: right;
-      min-width: 70px;
-    }
-    .anni-card-num {
-      font-size: 22px; font-weight: 700; color: var(--accent);
-      line-height: 1;
-    }
-    .anni-card-label {
-      font-size: 11px; color: var(--text3); margin-top: 2px;
-    }
-    .anni-card-delete {
-      display: none;
-      position: absolute; top: 4px; right: 4px;
-      width: 24px; height: 24px; border-radius: 50%;
-      background: var(--surface2); border: none;
-      color: var(--text3); font-size: 12px; cursor: pointer;
-      align-items: center; justify-content: center;
-    }
-    .anni-card:hover .anni-card-delete { display: flex; }
-    .anni-card-delete:hover { background: var(--danger); color: #fff; }
-    .anni-empty {
-      text-align: center; padding: 40px 20px;
-      color: var(--text3); font-size: 14px;
-    }
-    .anni-empty-icon { font-size: 36px; margin-bottom: 8px; }
-
-    /* ===== ANNIVERSARY SINGLE DETAIL ===== */
-    .anni-single-page {
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      min-height: 60vh; padding: 40px 24px;
-      text-align: center;
-      background-size: cover; background-position: center;
-      position: relative;
-    }
-    .anni-single-page.has-bg .anni-single-name,
-    .anni-single-page.has-bg .anni-single-suffix,
-    .anni-single-page.has-bg .anni-single-unit,
-    .anni-single-page.has-bg .anni-single-date {
-      color: #fff;
-      text-shadow: 0 1px 6px rgba(0,0,0,.5);
-    }
-    .anni-single-page.has-bg .anni-single-num {
-      color: #fff;
-      text-shadow: 0 2px 20px rgba(0,0,0,.4);
-    }
-    .anni-single-page.has-bg .anni-single-date {
-      background: rgba(0,0,0,.25);
-      border-color: rgba(255,255,255,.2);
-      backdrop-filter: blur(4px);
-    }
-    .anni-single-name {
-      font-size: 18px; font-weight: 600; color: var(--text);
-      margin-bottom: 4px;
-    }
-    .anni-single-suffix {
-      font-size: 15px; color: var(--text2); margin-bottom: 24px;
-    }
-    .anni-single-num {
-      font-size: 72px; font-weight: 800; color: var(--accent);
-      line-height: 1; margin-bottom: 8px;
-      text-shadow: 0 2px 20px rgba(154,125,84,0.15);
-    }
-    .anni-single-unit {
-      font-size: 20px; font-weight: 600; color: var(--accent);
-      margin-bottom: 36px; opacity: 0.8;
-    }
-    .anni-single-date {
-      font-size: 14px; color: var(--text3);
-      padding: 8px 20px; border-radius: 100px;
-      background: var(--surface2); border: 1px solid var(--border);
-    }
-    .anni-bg-picker-btn {
-      position: absolute; top: 16px; right: 16px; z-index: 10;
-      width: 40px; height: 40px; border-radius: 50%;
-      background: rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.25);
-      color: #fff; font-size: 18px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      backdrop-filter: blur(6px);
-      transition: background .2s;
-    }
-    .anni-bg-picker-btn:hover { background: rgba(0,0,0,.5); }
-
-    /* ===== ANNIVERSARY MODAL ===== */
-    .anni-form-row { margin-bottom: 14px; }
-    .anni-form-row label {
-      display: block; font-size: 13px; color: var(--text2);
-      margin-bottom: 6px; font-weight: 500;
-    }
-    .anni-form-row input[type="date"] {
-      width: 100%; padding: 10px 12px;
-      border: 1px solid var(--border); border-radius: var(--radius-sm);
-      background: var(--surface); color: var(--text);
-      font-family: inherit; font-size: 14px;
-    }
-
-    /* ===== IMAGE LIGHTBOX ===== */
-    .lightbox {
-      display: none; position: fixed; inset: 0; z-index: 300;
-      background: rgba(0,0,0,.92); align-items: center; justify-content: center;
-    }
-    .lightbox.open { display: flex; }
-    .lightbox img { max-width: 95vw; max-height: 90vh; object-fit: contain; border-radius: var(--radius-sm); }
-    .lightbox-close {
-      position: absolute; top: 16px; right: 16px;
-      width: 40px; height: 40px; border-radius: 50%;
-      background: rgba(255,255,255,.1); border: none; cursor: pointer;
-      color: #fff; font-size: 20px; display: flex; align-items: center; justify-content: center;
-    }
-
-    /* ===== TOAST ===== */
-    .toast {
-      position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
-      background: var(--surface); border: 1px solid var(--border);
-      color: var(--text); padding: 10px 20px; border-radius: 100px;
-      font-size: 14px; z-index: 500; opacity: 0; pointer-events: none;
-      transition: opacity .3s; white-space: nowrap;
-      box-shadow: 0 4px 16px rgba(0,0,0,.08);
-    }
-    .toast.show { opacity: 1; }
-
-    /* ===== SYNC BADGE ===== */
-    .sync-badge {
-      position: fixed; top: 60px; right: 12px; z-index: 150;
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 100px; padding: 4px 10px;
-      font-size: 11px; color: var(--text3);
-      display: none; align-items: center; gap: 4px;
-    }
-    .sync-badge.active { display: flex; }
-    .sync-badge .dot { width: 6px; height: 6px; border-radius: 50%; }
-    .sync-badge .dot.green { background: var(--green); }
-    .sync-badge .dot.yellow { background: var(--accent3); }
-
-    /* ===== WELCOME MODAL ===== */
-    .welcome-backdrop {
-      position: fixed; inset: 0; z-index: 400;
-      background: rgba(61,52,38,.3); backdrop-filter: blur(6px);
-      display: flex; align-items: center; justify-content: center;
-      padding: 24px;
-      animation: fadeIn .3s ease;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    .welcome-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 36px 28px 24px;
-      max-width: 380px; width: 100%;
-      text-align: center;
-      animation: cardPop .35s cubic-bezier(.2,.9,.3,1.1);
-      position: relative;
-      box-shadow: 0 20px 60px rgba(160,132,92,.15);
-    }
-    @keyframes cardPop {
-      from { opacity: 0; transform: scale(.85) translateY(20px); }
-      to { opacity: 1; transform: scale(1) translateY(0); }
-    }
-    .welcome-card.hiding {
-      animation: cardOut .3s ease forwards;
-    }
-    @keyframes cardOut {
-      to { opacity: 0; transform: scale(.9) translateY(10px); }
-    }
-    .welcome-card .welcome-logo {
-      width: 56px; height: 56px;
-      margin: 0 auto 16px;
-      background: var(--accent);
-      border-radius: 16px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 28px;
-      box-shadow: 0 4px 16px rgba(160,132,92,.3);
-    }
-    .welcome-card .welcome-app-name {
-      font-size: 14px; font-weight: 600;
-      color: var(--accent);
-      letter-spacing: 3px;
-      margin-bottom: 20px;
-    }
-    .welcome-card .welcome-quote {
-      font-size: 16px; font-weight: 500;
-      color: var(--text);
-      margin-bottom: 6px;
-      line-height: 1.6;
-    }
-    .welcome-card .welcome-sub {
-      font-size: 11px; color: var(--text3);
-      margin-bottom: 28px;
-    }
-    .welcome-card .mood-label {
-      font-size: 12px; color: var(--text2);
-      margin-bottom: 12px;
-    }
-    .mood-options {
-      display: flex; gap: 8px; justify-content: center; flex-wrap: nowrap;
-    }
-    .mood-btn {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 100px;
-      padding: 8px 18px;
-      cursor: pointer;
-      transition: transform .15s, border-color .15s, background .15s;
-      color: var(--text2);
-      font-family: inherit;
-      font-size: 13px; font-weight: 500;
-      letter-spacing: 1px;
-      white-space: nowrap;
-    }
-    .mood-btn:hover {
-      transform: translateY(-2px);
-      border-color: var(--accent);
-      background: var(--accent);
-      color: #fff;
-    }
-    .mood-btn:active {
-      transform: scale(0.95);
-    }
-    .welcome-skip {
-      display: block; margin: 20px auto 0;
-      font-size: 12px; color: var(--text3);
-      text-align: center; cursor: pointer;
-      border: none; background: none;
-      font-family: inherit; padding: 4px 0;
-      transition: color .2s;
-    }
-    .welcome-skip:hover {
-      color: var(--text2);
-    }
-
-    /* ===== BOTTOM TAB BAR ===== */
-    .tab-bar {
-      position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
-      background: rgba(255,253,249,0.88);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-top: 1px solid var(--border);
-      display: flex; align-items: stretch;
-      height: 56px; padding-bottom: env(safe-area-inset-bottom, 0);
-      box-shadow: 0 -2px 12px rgba(154,125,84,0.06);
-    }
-    .tab-bar.hidden { display: none; }
-    .tab-item {
-      flex: 1; display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 3px; cursor: pointer; border: none;
-      background: transparent; color: var(--text3);
-      font-family: inherit; font-size: 10px; font-weight: 500;
-      transition: color .2s;
-      padding: 6px 0;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .tab-item .tab-icon { font-size: 22px; line-height: 1; transition: transform .15s; }
-    .tab-item.active { color: var(--accent); }
-    .tab-item.active .tab-icon { transform: scale(1.1); }
-    .tab-item:active .tab-icon { transform: scale(0.9); }
-
-    /* Tab views */
-    .tab-view { display: none; min-height: 100vh; padding-bottom: 72px; }
-    .tab-view.active { display: flex; flex-direction: column; }
-
-    /* Placeholder page center text */
-    .placeholder-page {
-      flex: 1; display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      color: var(--text3); gap: 12px; padding: 40px 20px;
-    }
-    .placeholder-page .ph-icon { font-size: 56px; opacity: .6; }
-    .placeholder-page .ph-text { font-size: 20px; font-weight: 600; letter-spacing: 2px; }
-    .placeholder-page .ph-sub { font-size: 13px; color: var(--text3); }
-
-    /* ===== MOOD TAB ===== */
-    .mood-sun-page {
-      flex:1; display:flex; flex-direction:column;
-      align-items:center; justify-content:center;
-      padding:40px 20px 80px; gap:20px;
-    }
-    .sun-btn {
-      width:min(33vw,180px); height:min(33vw,180px);
-      border-radius:50%;
-      background:radial-gradient(circle at 35% 35%,#f7dfa0,#d9b35e,#9a7d54);
-      display:flex; align-items:center; justify-content:center;
-      font-size:min(15vw,80px); cursor:pointer;
-      box-shadow:0 0 50px rgba(217,179,94,.35),0 0 100px rgba(217,179,94,.10);
-      transition:transform .15s,box-shadow .15s;
-      user-select:none; -webkit-tap-highlight-color:transparent;
-      animation:sunPulse 3s ease-in-out infinite;
-    }
-    .sun-btn:active { transform:scale(.95); box-shadow:0 0 20px rgba(212,165,74,.3); animation:none; }
-    .sun-btn.pressing { transform:scale(1.08); box-shadow:0 0 60px rgba(212,165,74,.6),0 0 120px rgba(212,165,74,.25); animation:none; }
-    @keyframes sunPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.03)} }
-
-    .sun-prompt { text-align:center; line-height:1.8; }
-    .sun-prompt .prompt-line1 { font-size:16px; font-weight:600; color:var(--text2); letter-spacing:2px; }
-    .sun-prompt .prompt-line2 { font-size:14px; color:var(--text3); letter-spacing:3px; }
-    .sun-hint { font-size:12px; color:var(--text3); margin-top:8px; }
-
-    /* Mood overlay (picker + reveal) */
-    .mood-overlay {
-      position:fixed; inset:0; z-index:200;
-      background:rgba(61,52,38,.45); backdrop-filter:blur(8px);
-      display:none; align-items:center; justify-content:center;
-      padding:24px;
-    }
-    .mood-overlay.open { display:flex; }
-
-    /* Picker card */
-    .picker-card {
-      background:var(--surface); border:1px solid var(--border);
-      border-radius:24px; padding:28px 20px 20px;
-      max-width:360px; width:100%; text-align:center;
-      animation:cardPop .35s cubic-bezier(.2,.9,.3,1.1);
-    }
-    .picker-round { font-size:12px; color:var(--text3); margin-bottom:16px; letter-spacing:1px; }
-    .picker-emotions {
-      display:flex; flex-wrap:wrap; gap:10px;
-      justify-content:center; margin-bottom:20px;
-    }
-    .emotion-chip {
-      background:var(--surface2); border:1.5px solid var(--border);
-      border-radius:100px; padding:8px 20px; cursor:pointer;
-      transition:transform .15s,border-color .15s,background .15s;
-      color:var(--text2); font-family:inherit;
-      font-size:14px; font-weight:500; letter-spacing:1px;
-      user-select:none; -webkit-tap-highlight-color:transparent;
-    }
-    .emotion-chip:hover { transform:translateY(-2px); border-color:var(--accent); }
-    .emotion-chip:active { transform:scale(.95); }
-    .emotion-chip.selected { background:var(--accent); color:#fff; border-color:var(--accent); transform:translateY(-2px); box-shadow: 0 3px 10px rgba(154,125,84,0.3); }
-    .picker-nav { display:flex; align-items:center; justify-content:flex-end; margin-top:8px; }
-    .picker-nav-btn {
-      background: linear-gradient(135deg, var(--accent3), var(--accent)); color: #fff; border:none; border-radius:100px;
-      padding:10px 24px; font-size:14px; font-weight:600; cursor:pointer;
-      font-family:inherit; transition:opacity .15s,transform .15s;
-      display:flex; align-items:center; gap:6px;
-    }
-    .picker-nav-btn:hover { opacity:.85; }
-    .picker-nav-btn:active { transform:scale(.95); }
-
-    /* Reveal animation */
-    .reveal-container { text-align:center; animation:cardPop .5s cubic-bezier(.2,.9,.3,1.1); }
-    .reveal-stars { position:relative; width:200px; height:200px; margin:0 auto 24px; }
-    .reveal-orb {
-      width:160px; height:160px; border-radius:50%;
-      background:radial-gradient(circle,rgba(212,165,74,.5),rgba(160,132,92,.15),transparent);
-      position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-      animation:orbGlow 2s ease-in-out infinite;
-    }
-    @keyframes orbGlow {
-      0%,100%{ opacity:.4; transform:translate(-50%,-50%) scale(1); }
-      50%{ opacity:1; transform:translate(-50%,-50%) scale(1.2); }
-    }
-    .reveal-icon {
-      font-size:64px; position:absolute; top:50%; left:50%;
-      transform:translate(-50%,-50%);
-      animation:revealBounce .8s cubic-bezier(.2,.9,.3,1.1) forwards;
-      opacity:0;
-    }
-    @keyframes revealBounce {
-      0%{ opacity:0; transform:translate(-50%,-50%) scale(.3); }
-      60%{ opacity:1; transform:translate(-50%,-50%) scale(1.2); }
-      100%{ opacity:1; transform:translate(-50%,-50%) scale(1); }
-    }
-    .star-particle {
-      position:absolute; font-size:14px;
-      animation:starFloat 1.5s ease-out forwards; opacity:0;
-    }
-    @keyframes starFloat {
-      0%{ opacity:1; transform:translate(0,0) scale(1); }
-      100%{ opacity:0; transform:translate(var(--dx),var(--dy)) scale(0); }
-    }
-
-    /* Advice card */
-    .advice-card {
-      background:var(--surface); border:1px solid var(--border);
-      border-radius:20px; padding:24px 20px 20px;
-      max-width:360px; width:100%; text-align:center;
-      animation:cardPop .5s cubic-bezier(.2,.9,.3,1.1) .2s both;
-      box-shadow: var(--shadow-lg);
-    }
-    .advice-mood-tags { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin-bottom:16px; }
-    .advice-mood-tag {
-      background:rgba(154,125,84,.1); border-radius:100px;
-      padding:4px 12px; font-size:12px; color:var(--accent);
-    }
-    .advice-title { font-size:18px; font-weight:700; color:var(--text); margin-bottom:12px; line-height:1.4; }
-    .advice-text { font-size:14px; color:var(--text2); line-height:1.8; margin-bottom:8px; text-align:left; }
-    .advice-strategy {
-      font-size:13px; color:var(--accent); line-height:1.7; text-align:left;
-      background:rgba(154,125,84,.06); border-radius:var(--radius-sm);
-      padding:12px 14px; margin-top:12px;
-    }
-    .advice-nav { display:flex; justify-content:flex-end; margin-top:16px; }
-
-    /* Wheel page */
-    .mood-wheel-page {
-      flex:1; display:none; flex-direction:column;
-      align-items:center; justify-content:center;
-      padding:40px 20px 80px; gap:20px;
-    }
-    .mood-wheel-page.active { display:flex; }
-    .wheel-title { font-size:16px; font-weight:600; color:var(--text2); letter-spacing:2px; }
-    .wheel-hint { font-size:13px; color:var(--text3); margin-top:4px; }
-    .wheel-container {
-      position:relative; width:min(75vw,280px); height:min(75vw,280px);
-    }
-    .wheel-container canvas {
-      width:100%; height:100%; border-radius:50%;
-      border:3px solid var(--accent);
-      box-shadow:0 0 30px rgba(154,125,84,.2);
-      cursor:pointer;
-    }
-    .wheel-result { font-size:32px; font-weight:700; color:var(--accent); text-align:center; min-height:40px; }
-    .wheel-result-label { font-size:13px; color:var(--text3); text-align:center; }
-    .wheel-done-btn {
-      margin-top:8px; background: linear-gradient(135deg, var(--accent3), var(--accent)); color:#fff; border:none;
-      border-radius:100px; padding:10px 32px; font-size:14px; font-weight:600;
-      cursor:pointer; font-family:inherit; transition:opacity .15s, transform .15s;
-    }
-    .wheel-done-btn:hover { opacity:.85; transform:translateY(-1px); }
-    .wheel-done-btn:hover { opacity:.85; }
-
-    /* ===== MOOD WHEEL OVERLAY ===== */
-    .mood-wheel-overlay {
-      position: fixed; inset: 0; z-index: 180;
-      background: var(--bg);
-      display: none; flex-direction: column;
-      align-items: center; justify-content: center;
-      padding: 40px 20px 80px; gap: 20px;
-    }
-    .mood-wheel-overlay.active { display: flex; }
-
-    /* ===== MOOD CLINIC ON HOME ===== */
-    .mood-clinic-section {
-      margin: 24px 16px 80px;
-      padding: 24px 16px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      text-align: center;
-      box-shadow: var(--shadow-sm);
-    }
-    .mood-clinic-title {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 16px;
-      letter-spacing: 1px;
-    }
-    .mood-clinic-sun {
-      width: min(28vw, 140px);
-      height: min(28vw, 140px);
-      border-radius: 50%;
-      background: radial-gradient(circle at 35% 35%, #f7dfa0, #d9b35e, #9a7d54);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: min(12vw, 56px);
-      cursor: pointer;
-      box-shadow: 0 0 40px rgba(217,179,94,.3), 0 0 80px rgba(217,179,94,.08);
-      transition: transform .15s, box-shadow .15s;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-      animation: sunPulse 3s ease-in-out infinite;
-      margin: 0 auto;
-    }
-    .mood-clinic-sun:active { transform: scale(.95); box-shadow: 0 0 16px rgba(212,165,74,.3); animation: none; }
-    .mood-clinic-sun.pressing { transform: scale(1.08); box-shadow: 0 0 50px rgba(212,165,74,.5), 0 0 100px rgba(212,165,74,.2); animation: none; }
-    .mood-clinic-hint {
-      font-size: 12px;
-      color: var(--text3);
-      margin-top: 12px;
-    }
-
-    /* ===== TODO PAGE ===== */
-    .todo-page { padding: 0 16px 80px; }
-    .todo-header {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      padding: 16px 0 12px;
-    }
-    .todo-header-title {
-      font-size: 22px; font-weight: 700;
-      color: var(--text);
-    }
-    .todo-header-count {
-      font-size: 13px; color: var(--text3);
-    }
-    .todo-filters {
-      display: flex; gap: 8px;
-      padding-bottom: 12px;
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-    .todo-filters::-webkit-scrollbar { display: none; }
-    .todo-filter {
-      padding: 6px 14px;
-      border-radius: 100px;
-      font-size: 13px; font-weight: 500;
-      background: var(--surface2);
-      color: var(--text2);
-      border: 1px solid var(--border);
-      cursor: pointer;
-      white-space: nowrap;
-      transition: all .2s;
-      font-family: inherit;
-    }
-    .todo-filter.active {
-      background: var(--accent);
-      color: #fff;
-      border-color: var(--accent);
-    }
-    .todo-fab {
-      position: fixed;
-      bottom: 80px; right: 16px;
-      width: 56px; height: 56px;
-      border-radius: 16px;
-      background: linear-gradient(135deg, var(--accent3), var(--accent));
-      color: #fff; border: none;
-      font-size: 28px; font-weight: 300;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 16px rgba(154,125,84,.35);
-      transition: transform .15s, box-shadow .15s;
-      z-index: 120;
-      font-family: inherit;
-    }
-    .todo-fab:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(154,125,84,.45); }
-    .todo-fab:active { transform: scale(.95); }
-    .todo-list { display: flex; flex-direction: column; gap: 8px; }
-    .todo-item {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 14px 16px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      transition: background .2s, opacity .2s, transform .2s;
-      box-shadow: var(--shadow-sm);
-      cursor: pointer;
-    }
-    .todo-item:active { transform: scale(.995); }
-    .todo-item.completed {
-      background: var(--surface2);
-      opacity: 0.5;
-    }
-    .todo-item.completed .todo-text {
-      text-decoration: line-through;
-      color: var(--text3);
-    }
-    .todo-text {
-      flex: 1;
-      font-size: 15px;
-      color: var(--text);
-      word-break: break-word;
-    }
-    .todo-check {
-      width: 22px; height: 22px;
-      border-radius: 50%;
-      border: 2px solid var(--accent);
-      background: transparent;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      transition: background .2s, border-color .2s;
-      font-size: 12px;
-      color: #fff;
-      margin-left: 4px;
-    }
-    .todo-check:hover { background: rgba(154,125,84,0.1); }
-    .todo-check.checked {
-      background: var(--accent);
-      border-color: var(--accent);
-    }
-    .todo-thumb {
-      width: 48px; height: 48px;
-      border-radius: var(--radius-sm);
-      object-fit: cover;
-      flex-shrink: 0;
-      border: 1px solid var(--border);
-    }
-    .todo-empty {
-      text-align: center; padding: 60px 20px;
-      color: var(--text3); font-size: 14px;
-    }
-
-    /* ===== TODO MODAL ===== */
-    .todo-photo-preview {
-      width: 100%; max-height: 160px;
-      border-radius: var(--radius-sm);
-      object-fit: cover;
-      margin-top: 10px;
-      border: 1px solid var(--border);
-      display: none;
-    }
-    .todo-photo-preview.show { display: block; }
-    .todo-photo-btn {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 8px 14px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      color: var(--text2);
-      font-size: 13px; cursor: pointer;
-      font-family: inherit;
-      margin-top: 8px;
-      transition: all .2s;
-    }
-    .todo-photo-btn:hover { border-color: var(--accent); color: var(--accent); }
-
-    /* ===== TODO DETAIL PAGE ===== */
-    .todo-detail-page {
-      padding: 16px 16px 80px;
-      min-height: 60vh;
-    }
-    .todo-detail-img {
-      width: 100%; max-height: 280px;
-      border-radius: var(--radius);
-      object-fit: cover;
-      border: 1px solid var(--border);
-      margin-bottom: 16px;
-    }
-    .todo-detail-text {
-      font-size: 17px; color: var(--text);
-      line-height: 1.7;
-      word-break: break-word;
-    }
-    .todo-detail-status {
-      display: inline-flex; align-items: center; gap: 6px;
-      font-size: 13px; color: var(--text3);
-      margin-top: 12px;
-      padding: 6px 12px;
-      background: var(--surface2);
-      border-radius: 100px;
-      border: 1px solid var(--border);
-    }
-
-    /* ===== CALENDAR TAB ===== */
-    .cal-page { padding:16px 16px 80px; }
-    .cal-header {
-      display:flex; align-items:center; justify-content:space-between;
-      margin-bottom:18px;
-    }
-    .cal-month-label { font-size:18px; font-weight:700; color:var(--text); }
-    .cal-nav-btn {
-      width:36px; height:36px; border-radius:50%;
-      background:var(--surface2); border:1px solid var(--border);
-      color:var(--text); font-size:18px; cursor:pointer;
-      display:flex; align-items:center; justify-content:center;
-      transition:background .2s;
-    }
-    .cal-nav-btn:hover { background:var(--border); }
-    .cal-weekdays {
-      display:grid; grid-template-columns:repeat(7,1fr);
-      gap:4px; margin-bottom:6px;
-    }
-    .cal-dow {
-      text-align:center; font-size:12px; color:var(--text3);
-      padding:6px 0; font-weight:500;
-    }
-    .cal-grid {
-      display:grid; grid-template-columns:repeat(7,1fr);
-      gap:4px;
-    }
-    .cal-cell {
-      aspect-ratio:1; border-radius:10px;
-      background:var(--surface); display:flex;
-      flex-direction:column; align-items:center; justify-content:center;
-      font-size:14px; color:var(--text2); cursor:default;
-      border:1.5px solid transparent; transition:background .2s,border-color .2s;
-      gap:1px;
-    }
-    .cal-cell.empty { background:transparent; }
-    .cal-cell.today {
-      border-color:var(--accent); background:rgba(154,125,84,0.08);
-    }
-    .cal-cell.today .cal-day-num { color:var(--accent); font-weight:700; }
-    .cal-cell[data-mood="yes"] { background:rgba(154,125,84,0.06); }
-    .cal-cell[data-mood="yes"] .cal-day-num { color:var(--accent); font-weight:600; }
-    .cal-day-num { font-size:14px; line-height:1; }
-    .cal-day-mood { font-size:9px; color:var(--accent); line-height:1; }
-    .cal-today-tag {
-      display:inline-block; font-size:9px; color:#fff;
-      background:var(--accent); border-radius:4px;
-      padding:1px 4px; margin-top:1px;
-    }
-
-    /* ===== ME TAB ===== */
-    .me-page { padding:20px 16px 80px; }
-    .me-header { font-size:22px; font-weight:700; color:var(--accent); margin-bottom:16px; }
-    .curve-toggle {
-      display:flex; gap:0; margin-bottom:14px;
-      background:var(--surface2); border-radius:100px;
-      padding:3px; border:1px solid var(--border);
-    }
-    .curve-toggle-btn {
-      flex:1; padding:7px 0; border:none; background:transparent;
-      color:var(--text3); font-family:inherit; font-size:12px; font-weight:500;
-      cursor:pointer; border-radius:100px; transition:background .2s,color .2s;
-    }
-    .curve-toggle-btn.active { background:var(--accent); color:#fff; }
-    .me-mood-curve {
-      background:var(--surface); border:1px solid var(--border);
-      border-radius:var(--radius); padding:16px; margin-bottom:14px;
-      box-shadow: var(--shadow-sm);
-    }
-    .me-curve-chart {
-      height:90px; display:flex; align-items:flex-end;
-      justify-content:space-between; gap:3px; padding:0 2px 18px;
-    }
-    .me-curve-bar {
-      flex:1; background:var(--border); border-radius:4px 4px 0 0;
-      min-height:4px; position:relative; transition:background .3s;
-    }
-    .me-curve-bar.filled { background:var(--accent); }
-    .me-curve-bar-label {
-      position:absolute; bottom:-16px; left:50%; transform:translateX(-50%);
-      font-size:9px; color:var(--text3); white-space:nowrap;
-    }
-    .me-curve-bar-value {
-      position:absolute; top:-15px; left:50%; transform:translateX(-50%);
-      font-size:10px; font-weight:600; color:var(--accent);
-    }
-
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 400px) {
-      .tasks-grid { grid-template-columns: repeat(2, 1fr); }
-      .mood-btn { padding: 6px 12px; font-size: 12px; }
-      .welcome-card { padding: 28px 20px 20px; }
-      .template-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
-      .tab-item { font-size: 9px; }
-      .tab-item .tab-icon { font-size: 20px; }
-      .emotion-chip { padding:6px 14px; font-size:12px; }
-      .wheel-container { width:min(70vw,250px); height:min(70vw,250px); }
-    }
-  </style>
-</head>
-<body>
-
-<!-- ===================== WELCOME MODAL ===================== -->
-<div class="welcome-backdrop" id="welcome-overlay">
-  <div class="welcome-card" id="welcome-card">
-    <div class="welcome-logo">🏠</div>
-    <div class="welcome-app-name">心理小屋</div>
-    <div class="welcome-quote" id="welcome-quote">坚持就是胜利</div>
-    <div class="welcome-sub">每一天的努力，都算数</div>
-    <button class="welcome-skip" onclick="skipWelcome()">跳过</button>
-  </div>
-</div>
-
-<!-- ===================== SYNC BADGE ===================== -->
-<div class="sync-badge" id="sync-badge">
-  <div class="dot" id="sync-dot"></div><span id="sync-text">本地存储</span>
-</div>
-
-<!-- ===================== TAB 1: 记录 ===================== -->
-<div id="view-tab-record" class="tab-view active">
-  <div class="home-header">
-    <div class="home-header-text">
-      <div class="greeting">心理小屋 🏠</div>
-      <div class="date-label" id="home-date"></div>
-    </div>
-    <button class="add-task-btn" onclick="openNewTaskModal()" title="新建任务">+</button>
-  </div>
-  <div class="tasks-grid" id="tasks-grid"></div>
-
-  <!-- 情绪诊所 -->
-  <div class="mood-clinic-section">
-    <div class="mood-clinic-title">🌤 情绪诊所</div>
-    <div class="mood-clinic-sun" id="home-sun-btn">☀️</div>
-    <div class="mood-clinic-hint">长按太阳，测一测今天的心情 ✦</div>
-  </div>
-</div>
-
-<!-- ===================== TAB 2: 待办 ===================== -->
-<div id="view-tab-mood" class="tab-view">
-  <div class="todo-page">
-    <div class="todo-header">
-      <div class="todo-header-title">待办</div>
-      <div class="todo-header-count" id="todo-header-count">共 0 条</div>
-    </div>
-    <div class="todo-filters">
-      <button class="todo-filter active" onclick="setTodoFilter('all')" id="todo-filter-all">全部</button>
-      <button class="todo-filter" onclick="setTodoFilter('active')" id="todo-filter-active">进行中</button>
-      <button class="todo-filter" onclick="setTodoFilter('completed')" id="todo-filter-completed">已完成</button>
-    </div>
-    <div id="todo-list" class="todo-list"></div>
-  </div>
-  <button class="todo-fab" onclick="openTodoModal()">+</button>
-</div>
-
-<!-- ===================== TODO CREATE MODAL ===================== -->
-<div class="modal-overlay" id="modal-todo" onclick="closeModalIfBg(event)">
-  <div class="modal-sheet">
-    <h2>新建待办</h2>
-    <div class="anni-form-row">
-      <label>内容</label>
-      <input class="input-field" id="todo-new-text" type="text" placeholder="输入待办事项…" maxlength="60"
-        onkeydown="if(event.key==='Enter')createTodo()" />
-    </div>
-    <div class="anni-form-row">
-      <button class="todo-photo-btn" onclick="document.getElementById('todo-photo-input').click()">
-        📎 添加照片
-      </button>
-      <input type="file" id="todo-photo-input" accept="image/*" style="display:none" onchange="onTodoPhotoSelect(this)" />
-      <img class="todo-photo-preview" id="todo-photo-preview" />
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeTodoModal()">取消</button>
-      <button class="btn btn-primary" onclick="createTodo()">创建</button>
-    </div>
-  </div>
-</div>
-
-<!-- ===================== TODO DETAIL PAGE ===================== -->
-<div id="view-todo-detail" class="view">
-  <div class="topbar">
-    <button class="back-btn" onclick="goBackToTodoTab()">‹</button>
-    <h1>待办详情</h1>
-  </div>
-  <div class="scroll-area">
-    <div class="todo-detail-page" id="todo-detail-page"></div>
-  </div>
-</div>
-
-<!-- ===================== TAB 3: 日历 ===================== -->
-<div id="view-tab-calendar" class="tab-view">
-  <div class="cal-page">
-    <div class="cal-header">
-      <button class="cal-nav-btn" onclick="changeCalMonth(-1)">‹</button>
-      <div class="cal-month-label" id="cal-month-label"></div>
-      <button class="cal-nav-btn" onclick="changeCalMonth(1)">›</button>
-    </div>
-    <div class="cal-weekdays" id="cal-weekdays"></div>
-    <div class="cal-grid" id="cal-grid"></div>
-
-    <!-- 纪念&倒数日 -->
-    <div class="anni-section" onclick="goAnniversary()">
-      <div class="anni-section-header">
-        <div class="anni-section-title">📅 纪念 & 倒数日</div>
-        <div class="anni-section-count" id="anni-section-count">0</div>
-      </div>
-      <div class="anni-section-hint" id="anni-section-hint">记录重要的日子</div>
-      <div class="anni-preview-list" id="anni-preview-list"></div>
-    </div>
-  </div>
-</div>
-
-<!-- ===================== TAB 4: 我 ===================== -->
-<div id="view-tab-me" class="tab-view">
-  <div class="me-page">
-    <div class="me-header">🧑 我</div>
-    <div class="curve-toggle" id="curve-toggle">
-      <button class="curve-toggle-btn active" onclick="setCurveRange(7)">近7天</button>
-      <button class="curve-toggle-btn" onclick="setCurveRange(30)">近30天</button>
-    </div>
-    <div class="me-mood-curve">
-      <div class="me-curve-chart" id="me-curve-chart"></div>
-    </div>
-  </div>
-</div>
-
-<!-- ===================== TASK DETAIL VIEW ===================== -->
-<div id="view-detail" class="view">
-  <div class="topbar">
-    <button class="back-btn" onclick="goHome()">‹</button>
-    <h1 id="detail-title">任务名称</h1>
-    <button class="icon-btn" onclick="goHeatmap()" title="查看热力图">◫</button>
-  </div>
-  <div class="scroll-area" id="detail-records">
-    <div class="records-list" id="records-list"></div>
-  </div>
-  <div class="add-record-area">
-    <textarea class="add-record-textarea" id="record-text" placeholder="记录今天的想法、感悟…" oninput="autoResize(this)"></textarea>
-    <div class="img-previews" id="img-previews"></div>
-    <div class="add-record-controls">
-      <label class="img-upload-label" for="img-input" title="添加图片">🖼</label>
-      <input type="file" id="img-input" accept="image/*" multiple onchange="handleImages(this)" />
-      <button class="submit-btn" id="submit-btn" onclick="submitRecord()">记录</button>
-    </div>
-  </div>
-</div>
-
-<!-- ===================== HEATMAP VIEW ===================== -->
-<div id="view-heatmap" class="view">
-  <div class="topbar">
-    <button class="back-btn" onclick="goDetail()">‹</button>
-    <h1 id="heatmap-title">热力图</h1>
-  </div>
-  <div class="scroll-area">
-    <div class="heatmap-container">
-      <div class="heatmap-month-nav">
-        <button class="month-nav-btn" onclick="changeMonth(-1)">‹</button>
-        <div class="month-label" id="heatmap-month-label"></div>
-        <button class="month-nav-btn" onclick="changeMonth(1)">›</button>
-      </div>
-      <div class="heatmap-grid" id="heatmap-grid"></div>
-      <div class="heatmap-legend">
-        少
-        <div class="legend-box" style="background:var(--surface);border:1px solid var(--border)"></div>
-        <div class="legend-box" style="background:rgba(160,132,92,0.20)"></div>
-        <div class="legend-box" style="background:rgba(160,132,92,0.65)"></div>
-        多
-      </div>
-      <div class="heatmap-stats" id="heatmap-stats"></div>
-    </div>
-  </div>
-</div>
-
-<!-- ===================== ANNIVERSARY VIEW ===================== -->
-<div id="view-anniversary" class="view">
-  <div class="topbar">
-    <button class="back-btn" onclick="goCalendarTab()">‹</button>
-    <h1>📅 纪念 & 倒数日</h1>
-    <button class="icon-btn" onclick="openAnniModal()" title="添加">+</button>
-  </div>
-  <div class="scroll-area">
-    <div class="anni-detail-page" id="anni-detail-page">
-      <div class="anni-list" id="anni-list"></div>
-    </div>
-  </div>
-</div>
-
-<!-- ===================== NEW TASK MODAL ===================== -->
-<div class="modal-overlay" id="modal-new-task" onclick="closeModalIfBg(event)">
-  <div class="modal-sheet">
-    <h2>添加练习</h2>
-    <div class="template-grid" id="template-grid"></div>
-    <div class="custom-task-section">
-      <label>或自定义练习名称</label>
-      <input class="input-field" id="new-task-name" type="text" placeholder="输入自定义名称…" maxlength="30"
-        onkeydown="if(event.key==='Enter')createTask()" />
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeNewTaskModal()">取消</button>
-      <button class="btn btn-primary" onclick="createTask()">创建</button>
-    </div>
-  </div>
-</div>
-
-<!-- ===================== ANNIVERSARY SINGLE DETAIL ===================== -->
-<div id="view-anni-detail" class="view">
-  <div class="topbar">
-    <button class="back-btn" onclick="goAnniList()">‹</button>
-    <h1>纪念日</h1>
-  </div>
-  <div class="scroll-area">
-    <div class="anni-single-page" id="anni-single-page">
-      <button class="anni-bg-picker-btn" onclick="document.getElementById('anni-bg-input').click()" title="更换背景">🖼</button>
-      <input type="file" id="anni-bg-input" accept="image/*" style="display:none" onchange="onAnniBgSelect(this)" />
-    </div>
-  </div>
-</div>
-
-<!-- ===================== ANNIVERSARY MODAL ===================== -->
-<div class="modal-overlay" id="modal-anni" onclick="closeModalIfBg(event)">
-  <div class="modal-sheet">
-    <h2>添加纪念日</h2>
-    <div class="anni-form-row">
-      <label>名称</label>
-      <input class="input-field" id="anni-name" type="text" placeholder="例如：生日、在一起、考试…" maxlength="20"
-        onkeydown="if(event.key==='Enter')createAnni()" />
-    </div>
-    <div class="anni-form-row">
-      <label>日期</label>
-      <input type="date" id="anni-date" />
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeAnniModal()">取消</button>
-      <button class="btn btn-primary" onclick="createAnni()">添加</button>
-    </div>
-  </div>
-</div>
-
-<!-- ===================== BOTTOM TAB BAR ===================== -->
-<div class="tab-bar" id="tab-bar">
-  <button class="tab-item active" onclick="switchTab('record')" id="tab-record">
-    <span class="tab-icon">📝</span>
-    <span>记录</span>
-  </button>
-  <button class="tab-item" onclick="switchTab('mood')" id="tab-mood">
-    <span class="tab-icon">✅</span>
-    <span>待办</span>
-  </button>
-  <button class="tab-item" onclick="switchTab('calendar')" id="tab-calendar">
-    <span class="tab-icon">📅</span>
-    <span>日历</span>
-  </button>
-  <button class="tab-item" onclick="switchTab('me')" id="tab-me">
-    <span class="tab-icon">🧑</span>
-    <span>我</span>
-  </button>
-</div>
-
-<!-- ===================== MOOD PICKER OVERLAY ===================== -->
-<div class="mood-overlay" id="mood-picker-overlay">
-  <div class="picker-card">
-    <div class="picker-round" id="picker-round">第 1/3 轮</div>
-    <div class="picker-emotions" id="picker-emotions"></div>
-    <div class="picker-nav">
-      <button class="picker-nav-btn" id="picker-next-btn" onclick="pickerNext()">
-        <span id="picker-next-text">下一组</span> →
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- ===================== MOOD REVEAL OVERLAY ===================== -->
-<div class="mood-overlay" id="mood-reveal-overlay">
-  <div class="reveal-container" id="reveal-container">
-    <div class="reveal-stars" id="reveal-stars">
-      <div class="reveal-orb"></div>
-      <div class="reveal-icon" id="reveal-icon">🔮</div>
-    </div>
-  </div>
-  <div class="advice-card" id="advice-card" style="display:none">
-    <div class="advice-mood-tags" id="advice-mood-tags"></div>
-    <div class="advice-title" id="advice-title"></div>
-    <div class="advice-text" id="advice-text"></div>
-    <div class="advice-strategy" id="advice-strategy"></div>
-    <div class="advice-nav">
-      <button class="picker-nav-btn" onclick="goToWheel()">下一步 →</button>
-    </div>
-  </div>
-</div>
-
-<!-- ===================== MOOD WHEEL OVERLAY ===================== -->
-<div id="mood-wheel-overlay" class="mood-wheel-overlay">
-  <div class="wheel-title">🌤 心情温度</div>
-  <div class="wheel-hint">点击轮盘，选择你的温度</div>
-  <div class="wheel-container" id="wheel-container">
-    <canvas id="wheel-canvas" width="560" height="560"></canvas>
-  </div>
-  <div class="wheel-result" id="wheel-result"></div>
-  <div class="wheel-result-label" id="wheel-result-label"></div>
-  <button class="wheel-done-btn" id="wheel-done-btn" style="display:none" onclick="wheelDone()">完成 ✦</button>
-</div>
-
-<!-- ===================== LIGHTBOX ===================== -->
-<div class="lightbox" id="lightbox" onclick="closeLightbox()">
-  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
-  <img id="lightbox-img" src="" alt="" />
-</div>
-
-<!-- ===================== TOAST ===================== -->
-<div class="toast" id="toast"></div>
-
-<script>
-/* ======================== SUPABASE CONFIG ======================== */
-const SUPABASE_URL = 'https://raorwfllxyydlolusisk.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhb3J3ZmxseHZ5ZGxvbHVzaXNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzMzUyOTksImV4cCI6MjA5NTkxMTI5OX0.Y5uUyUZDhpROh8tVfETc5FxfsVZZloXqk_sGsiYM-cU';
-const API = SUPABASE_URL + '/rest/v1';
-
-const supabaseHeaders = {
-  'apikey': SUPABASE_KEY,
-  'Authorization': 'Bearer ' + SUPABASE_KEY,
-  'Content-Type': 'application/json',
-  'Prefer': 'return=representation'
-};
-
-/* ======================== DUAL STORAGE ======================== */
-let storageMode = 'local';
-let cloudAvailable = false;
-
-const LS_KEY = 'checkin_app_data';
-
-function loadLocalData() {
-  try {
-    const raw = localStorage.getItem(LS_KEY);
-    return raw ? JSON.parse(raw) : { tasks: [] };
-  } catch(e) {
-    return { tasks: [] };
-  }
-}
-
-function saveLocalData(data) {
-  localStorage.setItem(LS_KEY, JSON.stringify(data));
-}
-
-async function apiFetch(table, method, body, query) {
-  let url = API + '/' + table;
-  if (query) url += '?' + query;
-  const opts = { method, headers: { ...supabaseHeaders } };
-  if (body) opts.body = JSON.stringify(body);
-  const res = await fetch(url, opts);
-  if (!res.ok) throw new Error('API error ' + res.status);
-  if (res.status === 204) return null;
-  return res.json();
-}
-
-async function testCloudConnection() {
-  try {
-    await apiFetch('tasks', 'GET', null, 'select=id&limit=1');
-    return true;
-  } catch(e) {
-    return false;
-  }
-}
-
-async function syncLocalToCloud() {
-  const localData = loadLocalData();
-  if (localData.tasks.length === 0) return;
-  for (const task of localData.tasks) {
-    try {
-      const existing = await apiFetch('tasks', 'GET', null,
-        'name=eq.' + encodeURIComponent(task.name));
-      let cloudTask;
-      if (existing && existing.length > 0) {
-        cloudTask = existing[0];
-      } else {
-        const result = await apiFetch('tasks', 'POST', { name: task.name });
-        cloudTask = Array.isArray(result) ? result[0] : result;
-      }
-      if (task.records && task.records.length > 0) {
-        for (const rec of task.records) {
-          try {
-            await apiFetch('records', 'POST', {
-              task_id: cloudTask.id,
-              text: rec.text || '',
-              images: rec.images || []
-            });
-          } catch(e) { /* skip duplicate */ }
-        }
-      }
-    } catch(e) {
-      console.error('Sync task error:', e);
-    }
-  }
-}
-
-let tasksCache = [];
-
-async function loadData() {
-  cloudAvailable = await testCloudConnection();
-  if (cloudAvailable) {
-    storageMode = 'cloud';
-    try {
-      const tasks = await apiFetch('tasks', 'GET', null, 'select=*&order=created_at.asc');
-      for (const t of tasks) {
-        const records = await apiFetch('records', 'GET', null,
-          'task_id=eq.' + t.id + '&order=created_at.asc');
-        t.records = records || [];
-      }
-      tasksCache = tasks;
-      saveLocalData({ tasks: tasksCache.map(t => ({
-        ...t,
-        records: (t.records || []).map(r => ({ text: r.text, images: r.images, created_at: r.created_at }))
-      }))});
-      updateSyncBadge('cloud');
-      return;
-    } catch(e) {
-      console.error('Cloud load failed, fallback to local:', e);
-    }
-  }
-  storageMode = 'local';
-  const localData = loadLocalData();
-  tasksCache = localData.tasks || [];
-  updateSyncBadge('local');
-}
-
-async function createTaskDB(name) {
-  const localId = 'local_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
-  const now = new Date().toISOString();
-  const task = { id: localId, name, created_at: now, records: [] };
-  if (cloudAvailable) {
-    try {
-      const result = await apiFetch('tasks', 'POST', { name });
-      const cloudTask = Array.isArray(result) ? result[0] : result;
-      task.id = cloudTask.id;
-    } catch(e) {
-      console.error('Cloud create task failed:', e);
-    }
-  }
-  tasksCache.push(task);
-  saveToLocal();
-  return task;
-}
-
-async function deleteTaskDB(id) {
-  if (cloudAvailable) {
-    try {
-      await apiFetch('records', 'DELETE', null, 'task_id=eq.' + id);
-      await apiFetch('tasks', 'DELETE', null, 'id=eq.' + id);
-    } catch(e) {
-      console.error('Cloud delete task failed:', e);
-    }
-  }
-  tasksCache = tasksCache.filter(t => t.id !== id);
-  saveToLocal();
-}
-
-async function createRecordDB(taskId, text, images) {
-  const localId = 'local_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
-  const now = new Date().toISOString();
-  const record = { id: localId, task_id: taskId, text: text || '', images: images || [], created_at: now };
-  if (cloudAvailable) {
-    try {
-      const result = await apiFetch('records', 'POST', {
-        task_id: taskId, text: text || '', images: images || []
-      });
-      const cloudRecord = Array.isArray(result) ? result[0] : result;
-      record.id = cloudRecord.id;
-    } catch(e) {
-      console.error('Cloud create record failed:', e);
-    }
-  }
-  const task = tasksCache.find(t => t.id === taskId);
-  if (task) task.records.push(record);
-  saveToLocal();
-  return record;
-}
-
-async function deleteRecordDB(id) {
-  if (cloudAvailable) {
-    try {
-      await apiFetch('records', 'DELETE', null, 'id=eq.' + id);
-    } catch(e) {
-      console.error('Cloud delete record failed:', e);
-    }
-  }
-  for (const t of tasksCache) {
-    t.records = t.records.filter(r => r.id !== id);
-  }
-  saveToLocal();
-}
-
-function saveToLocal() {
-  saveLocalData({ tasks: tasksCache.map(t => ({
-    id: t.id, name: t.name, created_at: t.created_at,
-    records: (t.records || []).map(r => ({
-      id: r.id, task_id: r.task_id, text: r.text,
-      images: r.images, created_at: r.created_at
-    }))
-  }))});
-}
-
-function getTaskFromCache(id) {
-  return tasksCache.find(t => t.id === id);
-}
-
-function updateSyncBadge(mode) {
-  const badge = document.getElementById('sync-badge');
-  const dot = document.getElementById('sync-dot');
-  const text = document.getElementById('sync-text');
-  badge.classList.add('active');
-  if (mode === 'cloud') {
-    dot.className = 'dot green';
-    text.textContent = '云端同步';
-  } else {
-    dot.className = 'dot yellow';
-    text.textContent = '本地存储';
-  }
-}
-
-/* ======================== STATE ======================== */
-let currentTaskId = null;
-let pendingImages = [];
-let heatmapYear = new Date().getFullYear();
-let heatmapMonth = new Date().getMonth();
-let currentTab = 'record';
-
-/* ======================== TASK TEMPLATES ======================== */
-const TASK_TEMPLATES = [
-  { icon: '🌱', name: '示弱时刻', desc: '展露真实的自己' },
-  { icon: '⭐', name: '每日一赞', desc: '发现自己做得好的事' },
-  { icon: '💡', name: '发现光点', desc: '看见自己的优点和特质' },
-  { icon: '🌤', name: '情绪天气', desc: '觉察今天的内心天气' },
-  { icon: '🤝', name: '连接时刻', desc: '记录真实的连接瞬间' },
-  { icon: '🛡️', name: '边界时刻', desc: '维护自己的时刻' },
-  { icon: '🧘', name: '自我对话', desc: '倾听内心的声音' },
-  { icon: '🌙', name: '睡前和解', desc: '和今天的自己和解' }
-];
-
-let selectedTemplate = null;
-
-function renderTemplateGrid() {
-  const grid = document.getElementById('template-grid');
-  grid.innerHTML = TASK_TEMPLATES.map((t, i) =>
-    `<div class="template-card" onclick="selectTemplate(${i})" id="tpl-${i}">
-      <div class="tpl-icon">${t.icon}</div>
-      <div class="tpl-name">${t.name}</div>
-      <div class="tpl-desc">${t.desc}</div>
-    </div>`
-  ).join('');
-}
-
-function selectTemplate(index) {
-  // Deselect previous
-  document.querySelectorAll('.template-card').forEach(c => c.classList.remove('selected'));
-  // Select new
-  const card = document.getElementById('tpl-' + index);
-  card.classList.add('selected');
-  selectedTemplate = TASK_TEMPLATES[index];
-  document.getElementById('new-task-name').value = selectedTemplate.name;
-}
-
-/* ======================== WELCOME / MOOD ======================== */
-const MOOD_KEY = 'checkin_mood_today';
-const QUOTE_KEY = 'checkin_quote_index';
-
-const MOOD_WORDS = [
-  '欣喜','笃定','释然','热忱','安宁','舒展','畅快','感恩','陶醉','骄傲',
-  '踏实','振奋','温暖','自在','丰盈',
-  '焦虑','迷茫','倦怠','孤独','愤懑','羞耻','怅然','嫉恨','惶恐','压抑',
-  '委屈','空虚','执念','愧疚','崩溃'
-];
-
-const QUOTES = [
-  '与时间做朋友，而不是与它赛跑。',
-  '你不需要成为更好的人，你只需要成为更真实的人。',
-  '今天的打卡，是给明天的自己写的一封信。',
-  '慢一点，让灵魂跟上脚步。',
-  '允许一切发生，但别停止生长。',
-  '你正在成为那个，自己会为之鼓掌的人。',
-  '不是所有的花都在春天开，你也是。',
-  '记录，是为了看见自己的光。',
-  '累了就休息，但别弄丢那个想变好的自己。',
-  '你已经走了很远，只是还没回头看。',
-  '认识自己，是智慧的开端。 ——苏格拉底',
-  '不是事件本身让我们痛苦，而是我们对事件的看法。 ——埃利斯（ABC理论）',
-  '你所抗拒的，会持续存在；你所接纳的，会改变。 ——卡尔·荣格',
-  '潜意识正在操控你的人生，你却称之为命运。 ——荣格',
-  '人是自己选择的结果。 ——萨特（存在主义心理学）',
-  '真正的自由，是掌控自己的反应，而非控制外界。 ——维克多·弗兰克尔',
-  '行为的改变，始于意识的觉醒。 ——威廉·詹姆斯',
-  '你要允许自己为人，才能成为更好的人。 ——积极心理学',
-  '焦虑是对未来的过度担忧，正念是对当下的全然接纳。 ——乔·卡巴金',
-  '了解自己的阴影，才能拥抱完整的自己。 ——荣格心理学'
-];
-
-function getNextQuote() {
-  let idx = parseInt(localStorage.getItem(QUOTE_KEY) || '0', 10);
-  const quote = QUOTES[idx % QUOTES.length];
-  localStorage.setItem(QUOTE_KEY, String((idx + 1) % QUOTES.length));
-  return quote;
-}
-
-function pickRandomMoods(count) {
-  const shuffled = [...MOOD_WORDS].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, count);
-}
-
-function renderMoodButtons() {
-  const moods = pickRandomMoods(4);
-  const container = document.getElementById('mood-options');
-  container.innerHTML = moods.map(m =>
-    `<button class="mood-btn" onclick="selectMood('${m}')">
-      <span class="mood-text">${m}</span>
-    </button>`
-  ).join('');
-}
-
-function closeWelcomeCard() {
-  const card = document.getElementById('welcome-card');
-  const backdrop = document.getElementById('welcome-overlay');
-  card.classList.add('hiding');
-  setTimeout(() => {
-    backdrop.style.display = 'none';
-    card.classList.remove('hiding');
-  }, 300);
-}
-
-function selectMood(mood) {
-  const today = todayStr();
-  const moodData = JSON.parse(localStorage.getItem(MOOD_KEY) || '{}');
-  moodData[today] = mood;
-  localStorage.setItem(MOOD_KEY, JSON.stringify(moodData));
-  closeWelcomeCard();
-  showToast(mood + '，加油 💪');
-}
-
-function skipWelcome() {
-  closeWelcomeCard();
-}
-
-/* ======================== MOOD TAB ======================== */
-const MOOD_DATA_KEY = 'mood_records';
-let moodSession = { round:0, selected:[], roundWords:[] };
-let sunPressTimer = null;
-let curveRange = 7;
-
-/* --- Data --- */
-function loadMoodData() {
-  try { return JSON.parse(localStorage.getItem(MOOD_DATA_KEY) || '{}'); }
-  catch(e) { return {}; }
-}
-function saveMoodData(data) {
-  localStorage.setItem(MOOD_DATA_KEY, JSON.stringify(data));
-}
-
-/* --- Sun button long press --- */
-function initSunButton() {
-  const sun = document.getElementById('home-sun-btn');
-  if (!sun) return;
-  function startPress(e) {
-    e.preventDefault();
-    sun.classList.add('pressing');
-    sunPressTimer = setTimeout(() => {
-      sun.classList.remove('pressing');
-      sunPressTimer = null;
-      startMoodSession();
-    }, 1000);
-  }
-  function endPress(e) {
-    e.preventDefault();
-    sun.classList.remove('pressing');
-    if (sunPressTimer) { clearTimeout(sunPressTimer); sunPressTimer = null; }
-  }
-  sun.addEventListener('mousedown', startPress);
-  sun.addEventListener('mouseup', endPress);
-  sun.addEventListener('mouseleave', endPress);
-  sun.addEventListener('touchstart', startPress, {passive:false});
-  sun.addEventListener('touchend', endPress);
-  sun.addEventListener('touchcancel', endPress);
-}
-
-/* --- Mood session: 3 rounds of 5 emotions --- */
-function startMoodSession() {
-  moodSession = { round:1, selected:[], roundWords:[] };
-  showPickerRound();
-  document.getElementById('mood-picker-overlay').classList.add('open');
-}
-
-function showPickerRound() {
-  const shuffled = [...MOOD_WORDS].sort(() => Math.random() - 0.5);
-  const picks = shuffled.slice(0, 5);
-  moodSession.roundWords = picks;
-  document.getElementById('picker-round').textContent = `第 ${moodSession.round}/3 轮`;
-  const container = document.getElementById('picker-emotions');
-  container.innerHTML = picks.map(w =>
-    `<button class="emotion-chip" onclick="toggleEmotion(this,'${w}')">${w}</button>`
-  ).join('');
-  const nextText = document.getElementById('picker-next-text');
-  nextText.textContent = moodSession.round < 3 ? '下一组' : '揭晓 ✦';
-}
-
-function toggleEmotion(btn, word) {
-  btn.classList.toggle('selected');
-  if (btn.classList.contains('selected')) {
-    if (!moodSession.selected.includes(word)) moodSession.selected.push(word);
-  } else {
-    moodSession.selected = moodSession.selected.filter(w => w !== word);
-  }
-}
-
-function pickerNext() {
-  if (moodSession.round < 3) {
-    moodSession.round++;
-    showPickerRound();
-  } else {
-    document.getElementById('mood-picker-overlay').classList.remove('open');
-    showReveal();
-  }
-}
-
-/* --- Reveal: 占星术 animation + advice --- */
-function showReveal() {
-  const overlay = document.getElementById('mood-reveal-overlay');
-  const adviceCard = document.getElementById('advice-card');
-  const revealContainer = document.getElementById('reveal-container');
-  adviceCard.style.display = 'none';
-  revealContainer.style.display = '';
-  overlay.classList.add('open');
-
-  // Spawn star particles
-  const starsEl = document.getElementById('reveal-stars');
-  const emojis = ['✦','✧','⋆','⊹','✵','⟡','★'];
-  for (let i = 0; i < 12; i++) {
-    const p = document.createElement('span');
-    p.className = 'star-particle';
-    p.textContent = emojis[Math.floor(Math.random()*emojis.length)];
-    const angle = (i / 12) * Math.PI * 2;
-    const dist = 60 + Math.random() * 40;
-    p.style.cssText = `left:50%;top:50%;--dx:${Math.cos(angle)*dist}px;--dy:${Math.sin(angle)*dist}px;animation-delay:${i*0.08}s;font-size:${12+Math.random()*10}px;`;
-    starsEl.appendChild(p);
-  }
-
-  // Pick main icon based on dominant emotion
-  const icon = moodSession.selected.length > 0
-    ? (MOOD_ADVICE[moodSession.selected[moodSession.selected.length-1]]?.icon || '🔮')
-    : '🔮';
-  document.getElementById('reveal-icon').textContent = icon;
-
-  // After animation, show advice
-  setTimeout(() => {
-    revealContainer.style.display = 'none';
-    // Clean up particles
-    starsEl.querySelectorAll('.star-particle').forEach(p => p.remove());
-    renderAdvice();
-    adviceCard.style.display = '';
-  }, 2800);
-}
-
-function renderAdvice() {
-  const selected = moodSession.selected;
-  const tagsEl = document.getElementById('advice-mood-tags');
-  tagsEl.innerHTML = selected.length > 0
-    ? selected.map(w => `<span class="advice-mood-tag">${w}</span>`).join('')
-    : '<span class="advice-mood-tag">平静</span>';
-
-  if (selected.length === 0) {
-    document.getElementById('advice-title').textContent = '今天的你，不需要被定义';
-    document.getElementById('advice-text').textContent = '有时候，不想被归类本身就是一种智慧。不是所有时刻都需要情绪标签，此刻的空白，也许正是你和自己最诚实的距离。';
-    document.getElementById('advice-strategy').textContent = '💡 不必强求觉察。今天允许自己"没有感觉"——这本身就是一种深层的自我照顾。当你准备好了，情绪会来找你。';
-    return;
-  }
-
-  // Find the most "needy" emotion (prioritize negative)
-  const negativeOrder = ['崩溃','压抑','惶恐','愤懑','羞耻','愧疚','嫉恨','孤独','空虚','焦虑','迷茫','倦怠','委屈','怅然','执念'];
-  let mainEmotion = selected[0];
-  for (const neg of negativeOrder) {
-    if (selected.includes(neg)) { mainEmotion = neg; break; }
-  }
-
-  const advice = MOOD_ADVICE[mainEmotion];
-  if (advice) {
-    document.getElementById('advice-title').textContent = advice.title;
-    document.getElementById('advice-text').textContent = advice.text;
-    document.getElementById('advice-strategy').textContent = advice.strategy;
-  }
-}
-
-/* --- Wheel page --- */
-let wheelSelected = -1;
-
-function goToWheel() {
-  document.getElementById('mood-reveal-overlay').classList.remove('open');
-  const wo = document.getElementById('mood-wheel-overlay');
-  wo.classList.add('active');
-  wheelSelected = -1;
-  drawWheel();
-  document.getElementById('wheel-result').textContent = '';
-  document.getElementById('wheel-result-label').textContent = '';
-  document.getElementById('wheel-done-btn').style.display = 'none';
-  initWheelClick();
-}
-
-function drawWheel() {
-  const canvas = document.getElementById('wheel-canvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const w = canvas.width, h = canvas.height;
-  const cx = w/2, cy = h/2, r = w/2 - 10;
-  const n = 11;
-  const segAngle = 2 * Math.PI / n;
-
-  const colors = [
-    '#7b7d8e','#87808a','#93837e','#9f8973','#a9916a',
-    '#a0845c',
-    '#8fa67a','#80b47a','#6ec48a','#5dd49e','#4de4b2'
-  ];
-
-  ctx.clearRect(0, 0, w, h);
-  for (let i = 0; i < n; i++) {
-    const start = i * segAngle - Math.PI/2;
-    const end = start + segAngle;
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.arc(cx, cy, r, start, end);
-    ctx.closePath();
-
-    if (i === wheelSelected) {
-      ctx.fillStyle = '#c4956a';
-      ctx.fill();
-      ctx.strokeStyle = '#a0845c';
-      ctx.lineWidth = 3;
-      ctx.stroke();
-    } else {
-      ctx.fillStyle = colors[i];
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(255,255,255,0.7)';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-    }
-
-    const mid = start + segAngle / 2;
-    const tr = r * 0.72;
-    const tx = cx + tr * Math.cos(mid);
-    const ty = cy + tr * Math.sin(mid);
-    ctx.fillStyle = '#fff';
-    ctx.font = (i === wheelSelected) ? 'bold 34px sans-serif' : 'bold 26px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(String(i), tx, ty);
-  }
-
-  // Center circle
-  ctx.beginPath();
-  ctx.arc(cx, cy, 38, 0, 2*Math.PI);
-  ctx.fillStyle = '#faf6f0';
-  ctx.fill();
-  ctx.strokeStyle = 'rgba(160,132,92,0.3)';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  // Center icon
-  ctx.font = '20px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillStyle = 'var(--accent)';
-  ctx.fillText('🌤', cx, cy);
-}
-
-function initWheelClick() {
-  const canvas = document.getElementById('wheel-canvas');
-  if (!canvas || canvas._clickReady) return;
-  canvas._clickReady = true;
-
-  function getSegment(clientX, clientY) {
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    const x = (clientX - rect.left) * scaleX;
-    const y = (clientY - rect.top) * scaleY;
-    const cx = canvas.width / 2;
-    const cy = canvas.height / 2;
-    const dx = x - cx;
-    const dy = y - cy;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    const r = canvas.width / 2 - 10;
-    if (dist < 38 || dist > r) return -1;
-    let angle = Math.atan2(dy, dx) + Math.PI / 2;
-    if (angle < 0) angle += Math.PI * 2;
-    const segAngle = (Math.PI * 2) / 11;
-    return Math.floor(angle / segAngle);
-  }
-
-  canvas.addEventListener('click', function(e) {
-    const seg = getSegment(e.clientX, e.clientY);
-    if (seg >= 0 && seg <= 10) {
-      wheelSelected = seg;
-      drawWheel();
-      onWheelResult(seg);
-    }
-  });
-
-  canvas.addEventListener('touchend', function(e) {
-    e.preventDefault();
-    const t = e.changedTouches[0];
-    const seg = getSegment(t.clientX, t.clientY);
-    if (seg >= 0 && seg <= 10) {
-      wheelSelected = seg;
-      drawWheel();
-      onWheelResult(seg);
-    }
-  });
-}
-
-function onWheelResult(num) {
-  document.getElementById('wheel-result').textContent = num;
-  const labels = ['冰点','很低','低','偏低','中等','还行','不错','挺好','很好','很棒','满格'];
-  document.getElementById('wheel-result-label').textContent = `心情温度 ${num}/10 · ${labels[num]}`;
-  document.getElementById('wheel-done-btn').style.display = '';
-
-  // Save
-  const now = new Date();
-  const today = todayStr();
-  const data = loadMoodData();
-  if (!data[today]) data[today] = {};
-  data[today].temp = num;
-  data[today].tempTime = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-  data[today].words = moodSession.selected;
-  saveMoodData(data);
-}
-
-function wheelDone() {
-  document.getElementById('mood-wheel-overlay').classList.remove('active');
-  wheelSelected = -1;
-}
-
-/* --- Me page: mood curve --- */
-let calYear = new Date().getFullYear();
-let calMonth = new Date().getMonth();
-
-function renderCalendar() {
-  document.getElementById('cal-month-label').textContent = `${calYear}年${calMonth + 1}月`;
-
-  const dayNames = ['日','一','二','三','四','五','六'];
-  const wdContainer = document.getElementById('cal-weekdays');
-  wdContainer.innerHTML = dayNames.map(d => `<div class="cal-dow">${d}</div>`).join('');
-
-  const now = new Date();
-  const todayDate = now.getDate();
-  const todayMonth = now.getMonth();
-  const todayYear = now.getFullYear();
-
-  const firstDay = new Date(calYear, calMonth, 1).getDay();
-  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
-
-  const grid = document.getElementById('cal-grid');
-  grid.innerHTML = '';
-
-  for (let i = 0; i < firstDay; i++) {
-    const el = document.createElement('div');
-    el.className = 'cal-cell empty';
-    grid.appendChild(el);
-  }
-
-  const moodData = loadMoodData();
-  for (let day = 1; day <= daysInMonth; day++) {
-    const el = document.createElement('div');
-    el.className = 'cal-cell';
-    const dateKey = `${calYear}-${String(calMonth + 1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-    const hasMood = moodData[dateKey]?.temp !== undefined;
-    const hasWords = (moodData[dateKey]?.words || []).length > 0;
-    if (hasMood) el.dataset.mood = 'yes';
-    const isToday = (day === todayDate && calMonth === todayMonth && calYear === todayYear);
-    if (isToday) el.classList.add('today');
-
-    let inner = `<span class="cal-day-num">${day}</span>`;
-    if (hasMood) {
-      inner += `<span class="cal-day-mood">${moodData[dateKey].temp}°</span>`;
-    }
-    if (isToday) {
-      inner += `<span class="cal-today-tag">今</span>`;
-    }
-    el.innerHTML = inner;
-    grid.appendChild(el);
-  }
-  renderAnniPreview();
-}
-
-function changeCalMonth(delta) {
-  calMonth += delta;
-  if (calMonth < 0) { calMonth = 11; calYear--; }
-  if (calMonth > 11) { calMonth = 0; calYear++; }
-  renderCalendar();
-}
-
-/* --- Me page: mood curve --- */
-function renderMeCurve() {
-  const data = loadMoodData();
-  const days = [];
-  for (let i = curveRange - 1; i >= 0; i--) {
-    const d = new Date(); d.setDate(d.getDate() - i);
-    const key = formatDate(d);
-    days.push({ date: d, key, temp: data[key]?.temp ?? null });
-  }
-  const container = document.getElementById('me-curve-chart');
-  if (!container) return;
-  const maxTemp = 10;
-  container.innerHTML = days.map(d => {
-    const h = d.temp !== null ? Math.max(6, (d.temp / maxTemp) * 72) : 4;
-    const label = curveRange <= 7
-      ? `${d.date.getMonth()+1}/${d.date.getDate()}`
-      : (d.date.getDate() === 1 || (curveRange - days.indexOf(d) - 1) % 5 === 0
-        ? `${d.date.getMonth()+1}/${d.getDate()}`
-        : '');
-    return `<div class="me-curve-bar ${d.temp !== null ? 'filled' : ''}" style="height:${h}px">
-      ${d.temp !== null ? `<div class="me-curve-bar-value">${d.temp}</div>` : ''}
-      ${label ? `<div class="me-curve-bar-label">${label}</div>` : ''}
-    </div>`;
-  }).join('');
-}
-
-function setCurveRange(n) {
-  curveRange = n;
-  document.querySelectorAll('.curve-toggle-btn').forEach(b => b.classList.remove('active'));
-  event.target.classList.add('active');
-  renderMeCurve();
-}
-
-/* --- 30 emotion advice dictionary --- */
-const MOOD_ADVICE = {
-  '欣喜': { icon:'🌟', title:'欣喜是灵魂的烟花', text:'这种纯粹的快乐是内心最真实的回应。欣喜来临时，整个世界都在发亮——请允许自己完全沉浸其中，不必急着做任何事。', strategy:'💡 试试"品味法"：闭眼30秒，感受欣喜在身体哪个位置——胸口、指尖还是嘴角？把注意力停留在这个感觉上。研究表明，主动品味积极情绪能让幸福感持续更久。' },
-  '笃定': { icon:'⛰️', title:'笃定是内心的锚', text:'当你感到笃定，说明你与自己的核心价值对齐了。这种确定感不是固执，而是经历风雨后对方向的信任。', strategy:'💡 记住此刻笃定的来源——是什么让你如此确定？把这个理由写下来。在未来的迷茫时刻，它会成为你的指南针。' },
-  '释然': { icon:'🍃', title:'释然是放下的艺术', text:'释然意味着你终于松开了紧握的拳头。那些曾经让你纠结的事，此刻已不再重要。这份轻盈，是你给自己的礼物。', strategy:'💡 享受这份轻盈。释然不是遗忘，而是与过去和解。如果将来类似的事情再出现，你会发现自己已经不再那么容易被困扰了。' },
-  '热忱': { icon:'🔥', title:'热忱是生命的火焰', text:'热忱让你感到活着。这种发自内心的激情是稀缺资源——请好好珍惜和运用它。', strategy:'💡 热忱是一把双刃剑——可以照亮前路，也可能烧尽精力。给自己设定一个"热忱预算"：今天把这份热情投入在最重要的一件事上，而不是同时点燃所有方向。' },
-  '安宁': { icon:'🪷', title:'安宁是内心的湖泊', text:'在这份安宁中，你的心湖没有波澜。不是麻木，而是通透——你已经与自己达成了某种默契。', strategy:'💡 安宁的时刻是自我修复的黄金时间。试着把这份安宁"装瓶"：用3分钟记住此刻身体的感受、呼吸的节奏。日后焦虑时，打开这瓶记忆，让它帮你回到平静。' },
-  '舒展': { icon:'🌿', title:'舒展是灵魂的伸懒腰', text:'当你感到舒展，说明你不再防御了。身体和心理都松开了紧绷的弦，你允许自己占据更大的空间。', strategy:'💡 配合身体的舒展加深感受：站起来，伸一个大大的懒腰，深呼吸3次。心理的舒展和身体的舒展会相互加强，这是"具身认知"的妙处。' },
-  '畅快': { icon:'🌊', title:'畅快是情绪的清流', text:'畅快意味着情绪在流动，没有淤堵。这是最健康的状态——你允许自己感受、表达、释放。', strategy:'💡 畅快时人的创造力会提升。趁这个状态，去做一件平时觉得难的事。畅快的情绪会给你额外的力量。' },
-  '感恩': { icon:'🙏', title:'感恩是心灵的放大镜', text:'感恩不是因为生活完美，而是你选择了看见美好。这份选择本身就是一种力量。', strategy:'💡 研究表明，每天写下3件感恩的事，6周后幸福感会显著提升。但关键是"具体"——不要只写"家人"，而要写"今天妈妈煮了我爱喝的汤"。越具体，越有力量。' },
-  '陶醉': { icon:'🌙', title:'陶醉是美的沉浸', text:'陶醉让你暂时忘记了时间。你被美深深吸引，与它融为一体。心理学称之为"心流"——这是最高质量的快乐。', strategy:'💡 试着记住是什么让你陶醉，然后有意识地为生活创造更多这样的时刻。心流不靠运气，靠设计。' },
-  '骄傲': { icon:'👑', title:'骄傲是自我认可的勋章', text:'健康的骄傲是对自身价值的确认。你做了值得骄傲的事，你有权为此高兴。', strategy:'💡 区分"健康的骄傲"和"防御性骄傲"：前者是"我做了很棒的事"，后者是"我比你强"。如果是前者，请大胆庆祝。' },
-  '踏实': { icon:'🪨', title:'踏实是双脚踩在大地上', text:'踏实意味着你和现实之间没有断裂。不是没有梦想，而是每一步都踩在实处。', strategy:'💡 踏实感来自"可预期的进展"。如果未来感到不安，试着把大目标拆成今天就能完成的小步骤。每完成一步，踏实感就增加一分。' },
-  '振奋': { icon:'⚡', title:'振奋是内心的发动机', text:'振奋给了你启动的能量。这不是虚幻的亢奋，而是有方向的内在驱动——你知道自己要去哪。', strategy:'💡 振奋的能量有时效性。不要浪费在"准备"上，直接开始行动。哪怕只做5分钟，行动本身会维持这份振奋。' },
-  '温暖': { icon:'☀️', title:'温暖是情感的阳光', text:'温暖说明你正在被爱、被关心，或者正在给予爱。这是一种安全感和连接感的体现。', strategy:'💡 试着把这份温暖传递出去——一条消息、一个拥抱、一句感谢。研究表明，给予温暖的人比接受温暖的人获得更多幸福感。' },
-  '自在': { icon:'🦋', title:'自在是做自己的特权', text:'自在意味着你不活在别人的期待里。此刻的你，不需要扮演任何角色，只需要做你自己。', strategy:'💡 注意这份自在出现在什么情境下——和谁在一起？在做什么？这些信息告诉你，什么环境让你真正放松。然后，有意识地为生活创造更多这样的环境。' },
-  '丰盈': { icon:'🌾', title:'丰盈是内心的富足', text:'丰盈不是拥有很多，而是感到足够。此刻你觉得自己什么都不缺，这种富足感比任何物质都珍贵。', strategy:'💡 丰盈感容易转瞬即逝。试着用"三元法则"锚定它：记录3个让你感到丰盈的具体事物。当匮乏感来袭时，读一遍这个清单。' },
-  '焦虑': { icon:'🌀', title:'焦虑是对未来的过度预演', text:'焦虑不是你的敌人，它是大脑的保护机制——它在努力预警危险。只是有时，这个警报太响了。', strategy:'💡 试试"5-4-3-2-1接地法"：说出5个你看到的、4个能触摸的、3个听到的、2个闻到的、1个尝到的。这能把注意力从"未来"拉回"当下"，打断焦虑的循环。' },
-  '迷茫': { icon:'🌫️', title:'迷茫是成长的必经之路', text:'迷茫不是坏事——它说明旧的路已经走完，新的路还没出现。这个过渡期恰恰是蜕变的开始。', strategy:'💡 迷茫时不要急着找方向。先做一件事：今天能做的最小一步是什么？不需要看清整条路，只需要看见脚下这一步。方向是在走的过程中逐渐清晰的。' },
-  '倦怠': { icon:'😴', title:'倦怠是身体在喊停', text:'倦怠不是懒惰，而是你的身心在请求休息。长期透支后，倦怠是最后一道防线。', strategy:'💡 允许自己休息，不带任何愧疚。设定一个"无产出时间"：2小时内不完成任何任务，只是存在。这不是浪费，是充电。' },
-  '孤独': { icon:'🪶', title:'孤独是一个人的交响乐', text:'孤独不等于没有人陪。有时候，即使身处人群，内心依然感到孤独。这种感觉本身是正常的。', strategy:'💡 区分"独处"和"孤独"：独处是选择，孤独是感受。试试"微连接"——给一个朋友发一条简短的消息，一个表情包也行。连接的质量比时长更重要。' },
-  '愤懑': { icon:'🌋', title:'愤懑是未发出的呐喊', text:'愤懑说明你的边界被侵犯了，或者你的需要被忽视了。这份愤怒是有理由的，不必压抑它。', strategy:'💡 试试"书写宣泄法"：拿一张纸，把所有不满写下来，不需要逻辑，不需要文采。写完后你可以撕掉它。表达本身就释放了。' },
-  '羞耻': { icon:'🎭', title:'羞耻是贴错了的标签', text:'羞耻是最具破坏力的情绪之一，因为它让你觉得"我是坏的"。但请记住：你做了不好的事，不代表你是不好的。', strategy:'💡 布琳·布朗的研究指出：羞耻在沉默中生长，在共情中消亡。试着对信任的人说出你的羞耻感。"我不是我的错误。"对自己说三遍。' },
-  '怅然': { icon:'🍂', title:'怅然是时光留下的回响', text:'怅然是一种温柔的失落——你并没有崩溃，但有些东西悄悄流逝了。这种淡淡的忧伤，恰恰说明你在乎过。', strategy:'💡 允许自己怀旧3分钟，然后做一个"新的小期待"：给明天安排一件让你有点期待的事。怅然说再见，期待说你好。' },
-  '嫉恨': { icon:'🪞', title:'嫉恨是一面扭曲的镜子', text:'嫉恨不是道德缺陷，它指向你内心深处未被满足的渴望。你嫉妒的，往往正是你真正想要的。', strategy:'💡 把嫉恨当作导航仪：问自己"我到底想要什么？"嫉恨的表面是"为什么他有我没有"，但内核是"我也想要那个"。当你把它翻译成渴望，它就从毒药变成了指南针。' },
-  '惶恐': { icon:'⚡', title:'惶恐是站在悬崖边的本能', text:'惶恐比焦虑更强烈——它让你感觉危险就在眼前。但请知道：感受是真实的，危险不一定是。', strategy:'💡 用"4-7-8呼吸法"安抚神经系统：吸气4秒→屏息7秒→呼气8秒。重复3次。这不是逃避，是给大脑一个"我很安全"的生理信号。' },
-  '压抑': { icon:'🧱', title:'压抑是被困住的河流', text:'压抑意味着你的情绪找不到出口。不是没有感受，而是不允许自己感受。这堵墙可能保护了你很久，但现在它也困住了你。', strategy:'💡 找一个不会伤害任何人的方式释放：撕纸、用力握拳再松开、对着枕头大喊、在纸上乱涂。让情绪有一道裂缝流出来，比筑更高的堤坝安全得多。' },
-  '委屈': { icon:'💧', title:'委屈是未被听见的哭声', text:'委屈说明你觉得被不公平地对待了，但又无法表达或改变。这种无力感很真实，你不是"太敏感"。', strategy:'💡 委屈最需要的是"被看见"。拿出纸笔，写下"我觉得委屈是因为……"不需要理性分析，只需要如实写下感受。当你承认了委屈，它就不再独自膨胀了。' },
-  '空虚': { icon:'🕳️', title:'空虚是意义的缺席', text:'空虚不是没有情绪，而是一种"什么都感觉不到"的麻木。它像一层灰色的薄膜，把你和世界隔开了。', strategy:'💡 空虚时不要用刺激填充（刷手机、暴食等），这只会让空虚更严重。试试"微意义法"：做一件小到不可能失败的有意义的事——整理桌面、给植物浇水、做一组拉伸。行动能重新建立与世界的连接。' },
-  '执念': { icon:'🔗', title:'执念是紧握的拳头', text:'执念说明你在极力抓住什么——一个人、一个结果、一个念头。但你越紧握，它越让你痛苦。', strategy:'💡 试试"放手练习"：握紧拳头10秒，感受紧张；然后慢慢松开，感受释放。在心里做同样的事：想象自己慢慢松开手。放手不是放弃，而是不再用力去控制不可控的东西。' },
-  '愧疚': { icon:'🪞', title:'愧疚是良心的低语', text:'愧疚说明你有反思能力，这是好品质。但过度的愧疚会变成自我惩罚——你已经为这件事痛苦过了，不必永远偿还。', strategy:'💡 区分"健康的愧疚"和"有毒的愧疚"：前者指向行为（"我做了一件不好的事"），后者指向人格（"我是个坏人"）。试着把"我不好"改成"我做得不好"，这一字之差，是自我惩罚和自我成长的分界线。' },
-  '崩溃': { icon:'🌊', title:'崩溃不是终点，是重建的起点', text:'崩溃意味着你承受的已经超过了极限。这不是软弱——恰恰相反，你已经撑了很久。现在，请允许自己停下来。', strategy:'💡 崩溃时不需要做任何"有用"的事。你现在唯一需要做的就是：对自己温柔。如果可以，找一个安全的地方，允许自己哭泣。眼泪中含有压力激素——哭泣本身就是一种生理排毒。你不需要立刻好起来，但你会好起来。' }
-};
-
-/* ======================== UTILS ======================== */
-function formatDate(ts) {
-  const d = new Date(ts);
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-
-function formatDatetime(ts) {
-  const d = new Date(ts);
-  const date = formatDate(ts);
-  const time = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-  return `${date} ${time}`;
-}
-
-function todayStr() { return formatDate(Date.now()); }
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2200);
-}
-
-function setView(id) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  // Hide tab bar when entering sub-views (detail, heatmap, anniversary)
-  const tabBar = document.getElementById('tab-bar');
-  if (id === 'view-detail' || id === 'view-heatmap' || id === 'view-anniversary' || id === 'view-anni-detail' || id === 'view-todo-detail') {
-    tabBar.classList.add('hidden');
-  } else {
-    tabBar.classList.remove('hidden');
-  }
-  window.scrollTo(0, 0);
-}
-
-function switchTab(tabName) {
-  currentTab = tabName;
-  // Hide all tab views
-  document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
-  // Show selected tab
-  document.getElementById('view-tab-' + tabName).classList.add('active');
-  // Update tab bar
-  document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-  document.getElementById('tab-' + tabName).classList.add('active');
-  // Show tab bar
-  document.getElementById('tab-bar').classList.remove('hidden');
-  // Hide sub-views
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  window.scrollTo(0, 0);
-
-  // Tab-specific init
-  if (tabName === 'mood') {
-    renderTodos();
-  }
-  if (tabName === 'calendar') {
-    calYear = new Date().getFullYear();
-    calMonth = new Date().getMonth();
-    renderCalendar();
-  }
-  if (tabName === 'me') {
-    renderMeCurve();
-  }
-}
-
-/* ======================== IMAGE COMPRESSION ======================== */
-function compressImage(dataUrl, maxWidth, quality) {
-  return new Promise(resolve => {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      let w = img.width, h = img.height;
-      if (w > maxWidth) { h = h * maxWidth / w; w = maxWidth; }
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, w, h);
-      resolve(canvas.toDataURL('image/jpeg', quality));
-    };
-    img.src = dataUrl;
-  });
-}
-
-/* ======================== HOME ======================== */
-function renderHome() {
-  const now = new Date();
-  const weekdays = ['日','一','二','三','四','五','六'];
-  document.getElementById('home-date').textContent =
-    `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 · 星期${weekdays[now.getDay()]}`;
-
-  const grid = document.getElementById('tasks-grid');
-  grid.innerHTML = '';
-
-  if (tasksCache.length === 0) {
-    grid.innerHTML = `
-      <div class="empty-state" style="grid-column:1/-1">
-        <div class="emoji">🏠</div>
-        <p>还没有练习<br>点右上角 <b>+</b> 添加第一个吧</p>
-      </div>`;
-    return;
-  }
-
-  const today = todayStr();
-  tasksCache.forEach(task => {
-    const total = (task.records || []).length;
-    const todayCount = (task.records || []).filter(r => {
-      const ts = r.created_at || r.ts;
-      return formatDate(ts) === today;
-    }).length;
-    const card = document.createElement('div');
-    card.className = 'task-card';
-    card.innerHTML = `
-      ${todayCount > 0 ? '<div class="today-dot" title="今日已打卡"></div>' : ''}
-      <div class="task-name">${escapeHtml(task.name)}</div>
-      <div class="task-total">${total}</div>
-      <div class="task-total-label">总记录数</div>
-      <div class="task-stats" style="margin-top:6px">今日 ${todayCount} 条</div>
-      <button class="delete-btn" title="删除任务" onclick="event.stopPropagation();deleteTask('${task.id}')">✕</button>
-    `;
-    card.addEventListener('click', () => openTask(task.id));
-    grid.appendChild(card);
-  });
-}
-
-function openNewTaskModal() {
-  selectedTemplate = null;
-  document.getElementById('new-task-name').value = '';
-  renderTemplateGrid();
-  document.getElementById('modal-new-task').classList.add('open');
-}
-
-function closeNewTaskModal() {
-  document.getElementById('modal-new-task').classList.remove('open');
-  document.getElementById('new-task-name').value = '';
-  selectedTemplate = null;
-}
-
-function closeModalIfBg(e) {
-  if (e.target === e.currentTarget) closeNewTaskModal();
-}
-
-async function createTask() {
-  const name = document.getElementById('new-task-name').value.trim();
-  if (!name) { showToast('请选择或输入练习名称'); return; }
-  // Check duplicate
-  if (tasksCache.some(t => t.name === name)) {
-    showToast('这个练习已经存在了');
-    return;
-  }
-  try {
-    await createTaskDB(name);
-    closeNewTaskModal();
-    renderHome();
-    showToast('✅ 练习已创建');
-  } catch (e) {
-    showToast('❌ 创建失败');
-    console.error(e);
-  }
-}
-
-async function deleteTask(id) {
-  if (!confirm('确定要删除这个练习及所有记录吗？')) return;
-  try {
-    await deleteTaskDB(id);
-    renderHome();
-    showToast('练习已删除');
-  } catch (e) {
-    showToast('❌ 删除失败');
-    console.error(e);
-  }
-}
-
-/* ======================== TASK DETAIL ======================== */
-function openTask(id) {
-  currentTaskId = id;
-  pendingImages = [];
-  const task = getTaskFromCache(id);
-  if (!task) return;
-  document.getElementById('detail-title').textContent = task.name;
-  document.getElementById('record-text').value = '';
-  document.getElementById('img-previews').innerHTML = '';
-  renderRecords(task);
-  setView('view-detail');
-  setTimeout(() => {
-    const sa = document.getElementById('detail-records');
-    sa.scrollTop = sa.scrollHeight;
-  }, 50);
-}
-
-function renderRecords(task) {
-  const list = document.getElementById('records-list');
-  list.innerHTML = '';
-
-  const records = task.records || [];
-  if (records.length === 0) {
-    list.innerHTML = `<div style="text-align:center;color:var(--text3);padding:40px 0;font-size:14px;">还没有记录，快写下今天的第一条吧 ✍️</div>`;
-    return;
-  }
-
-  const sorted = [...records].sort((a, b) => {
-    const ta = new Date(a.created_at || a.ts).getTime();
-    const tb = new Date(b.created_at || b.ts).getTime();
-    return ta - tb;
-  });
-
-  sorted.forEach(r => {
-    const ts = r.created_at || r.ts;
-    const item = document.createElement('div');
-    item.className = 'record-item';
-    const imgs = (r.images || []).map(src =>
-      `<img class="record-img" src="${src}" alt="" onclick="openLightbox(this.src)" />`
-    ).join('');
-    item.innerHTML = `
-      <button class="record-del" onclick="deleteRecord('${r.id}')" title="删除">✕</button>
-      <div class="record-time">${formatDatetime(ts)}</div>
-      ${r.text ? `<div class="record-content">${escapeHtml(r.text)}</div>` : ''}
-      ${imgs ? `<div class="record-images">${imgs}</div>` : ''}
-    `;
-    list.appendChild(item);
-  });
-}
-
-function autoResize(el) {
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 180) + 'px';
-}
-
-function handleImages(input) {
-  const files = Array.from(input.files);
-  if (pendingImages.length + files.length > 9) {
-    showToast('最多添加9张图片'); return;
-  }
-  files.forEach(file => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      pendingImages.push(e.target.result);
-      renderImagePreviews();
-    };
-    reader.readAsDataURL(file);
-  });
-  input.value = '';
-}
-
-function renderImagePreviews() {
-  const container = document.getElementById('img-previews');
-  container.innerHTML = '';
-  pendingImages.forEach((src, i) => {
-    const wrap = document.createElement('div');
-    wrap.className = 'img-preview-wrap';
-    wrap.innerHTML = `
-      <img src="${src}" alt="" />
-      <button class="remove-img" onclick="removePendingImg(${i})">✕</button>
-    `;
-    container.appendChild(wrap);
-  });
-}
-
-function removePendingImg(i) {
-  pendingImages.splice(i, 1);
-  renderImagePreviews();
-}
-
-async function submitRecord() {
-  const text = document.getElementById('record-text').value.trim();
-  if (!text && pendingImages.length === 0) {
-    showToast('请输入内容或添加图片');
-    return;
-  }
-  try {
-    const compressedImages = [];
-    for (const img of pendingImages) {
-      const compressed = await compressImage(img, 800, 0.7);
-      compressedImages.push(compressed);
-    }
-
-    await createRecordDB(currentTaskId, text, compressedImages);
-    document.getElementById('record-text').value = '';
-    document.getElementById('record-text').style.height = 'auto';
-    pendingImages = [];
-    renderImagePreviews();
-
-    const task = getTaskFromCache(currentTaskId);
-    if (task) renderRecords(task);
-
-    showToast('✅ 记录已保存');
-    setTimeout(() => {
-      const sa = document.getElementById('detail-records');
-      sa.scrollTop = sa.scrollHeight;
-    }, 50);
-  } catch (e) {
-    showToast('❌ 保存失败');
-    console.error(e);
-  }
-}
-
-async function deleteRecord(rid) {
-  if (!confirm('删除这条记录？')) return;
-  try {
-    await deleteRecordDB(rid);
-    const task = getTaskFromCache(currentTaskId);
-    if (task) renderRecords(task);
-    showToast('记录已删除');
-  } catch (e) {
-    showToast('❌ 删除失败');
-    console.error(e);
-  }
-}
-
-/* ======================== HEATMAP ======================== */
-function goHeatmap() {
-  heatmapYear = new Date().getFullYear();
-  heatmapMonth = new Date().getMonth();
-  const task = getTaskFromCache(currentTaskId);
-  if (!task) return;
-  document.getElementById('heatmap-title').textContent = task.name + ' · 热力图';
-  renderHeatmap(task);
-  setView('view-heatmap');
-}
-
-function changeMonth(delta) {
-  heatmapMonth += delta;
-  if (heatmapMonth < 0) { heatmapMonth = 11; heatmapYear--; }
-  if (heatmapMonth > 11) { heatmapMonth = 0; heatmapYear++; }
-  const task = getTaskFromCache(currentTaskId);
-  if (task) renderHeatmap(task);
-}
-
-function renderHeatmap(task) {
-  const y = heatmapYear, m = heatmapMonth;
-  document.getElementById('heatmap-month-label').textContent = `${y}年${m+1}月`;
-
-  const countMap = {};
-  (task.records || []).forEach(r => {
-    const d = new Date(r.created_at || r.ts);
-    if (d.getFullYear() === y && d.getMonth() === m) {
-      const key = String(d.getDate());
-      countMap[key] = (countMap[key] || 0) + 1;
-    }
-  });
-
-  const maxCount = Math.max(1, ...Object.values(countMap));
-
-  function getLevel(count) {
-    if (!count) return 0;
-    if (count <= 3) return 1;
-    return 2;
-  }
-
-  const grid = document.getElementById('heatmap-grid');
-  grid.innerHTML = '';
-
-  ['日','一','二','三','四','五','六'].forEach(d => {
-    const el = document.createElement('div');
-    el.className = 'heatmap-dow';
-    el.textContent = d;
-    grid.appendChild(el);
-  });
-
-  const firstDay = new Date(y, m, 1).getDay();
-  const daysInMonth = new Date(y, m + 1, 0).getDate();
-  const today = new Date();
-  const todayStr2 = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
-
-  for (let i = 0; i < firstDay; i++) {
-    const el = document.createElement('div');
-    el.className = 'heatmap-cell empty';
-    grid.appendChild(el);
-  }
-
-  for (let day = 1; day <= daysInMonth; day++) {
-    const count = countMap[String(day)] || 0;
-    const level = getLevel(count);
-    const el = document.createElement('div');
-    el.className = 'heatmap-cell';
-    if (level > 0) el.dataset.level = level;
-    el.textContent = day;
-    const isTodayCell = `${y}-${m}-${day}` === todayStr2;
-    if (isTodayCell) el.classList.add('today');
-    if (count > 0) el.title = `${y}年${m+1}月${day}日：${count} 条记录`;
-    grid.appendChild(el);
-  }
-
-  const totalThisMonth = Object.values(countMap).reduce((a,b)=>a+b,0);
-  const activeDays = Object.keys(countMap).length;
-  const maxDay = Object.entries(countMap).sort((a,b)=>b[1]-a[1])[0];
-  const totalAll = (task.records || []).length;
-
-  document.getElementById('heatmap-stats').innerHTML = `
-    <h3>📊 统计</h3>
-    <div class="stat-row"><span class="stat-label">本月记录</span><span class="stat-value">${totalThisMonth} 条</span></div>
-    <div class="stat-row"><span class="stat-label">本月打卡天数</span><span class="stat-value">${activeDays} 天</span></div>
-    <div class="stat-row"><span class="stat-label">本月最多单日</span><span class="stat-value">${maxDay ? maxDay[1]+' 条 ('+maxDay[0]+'日)' : '—'}</span></div>
-    <div class="stat-row"><span class="stat-label">全部记录</span><span class="stat-value">${totalAll} 条</span></div>
-  `;
-}
-
-/* ======================== ANNIVERSARY ======================== */
-const ANNI_KEY = 'wellness_anniversaries';
-
-function loadAnnis() {
-  try {
-    const raw = localStorage.getItem(ANNI_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch (e) { return []; }
-}
-function saveAnnis(list) {
-  localStorage.setItem(ANNI_KEY, JSON.stringify(list));
-}
-
-function computeAnniDays(dateStr) {
-  const target = new Date(dateStr + 'T00:00:00');
-  const now = new Date();
-  now.setHours(0, 0, 0, 0);
-  const diff = Math.round((now - target) / (1000 * 60 * 60 * 24));
-  return diff;
-}
-
-function renderAnniPreview() {
-  const list = loadAnnis();
-  const countEl = document.getElementById('anni-section-count');
-  const hintEl = document.getElementById('anni-section-hint');
-  const listEl = document.getElementById('anni-preview-list');
-  if (countEl) countEl.textContent = list.length;
-  if (hintEl) {
-    hintEl.textContent = list.length === 0 ? '记录重要的日子' : '';
-  }
-  if (!listEl) return;
-  listEl.innerHTML = '';
-  // Show top 3, sorted by absolute days (closest first)
-  const sorted = [...list].sort((a, b) => {
-    const da = Math.abs(computeAnniDays(a.date));
-    const db = Math.abs(computeAnniDays(b.date));
-    return da - db;
-  }).slice(0, 3);
-
-  sorted.forEach(item => {
-    const days = computeAnniDays(item.date);
-    const el = document.createElement('div');
-    el.className = 'anni-preview-item';
-    el.innerHTML = `
-      <span class="anni-preview-name">${escapeHtml(item.name)}</span>
-      <span class="anni-preview-days">${Math.abs(days)}</span>
-    `;
-    listEl.appendChild(el);
-  });
-}
-
-function goAnniversary() {
-  renderAnniList();
-  setView('view-anniversary');
-}
-
-function goCalendarTab() {
-  switchTab('calendar');
-}
-
-function goAnniList() {
-  renderAnniList();
-  setView('view-anniversary');
-}
-
-let currentAnniId = null;
-
-function openAnniDetail(id) {
-  currentAnniId = id;
-  const list = loadAnnis();
-  const item = list.find(a => a.id === id);
-  if (!item) return;
-  const days = computeAnniDays(item.date);
-  const absDays = Math.abs(days);
-  const isFuture = days < 0;
-  const suffix = isFuture ? '还有' : '已经';
-  const unit = isFuture ? '天后' : '天';
-  const page = document.getElementById('anni-single-page');
-  page.className = 'anni-single-page' + (item.bgImage ? ' has-bg' : '');
-  if (item.bgImage) {
-    page.style.backgroundImage = `url(${item.bgImage})`;
-  } else {
-    page.style.backgroundImage = '';
-  }
-  page.innerHTML = `
-    <button class="anni-bg-picker-btn" onclick="document.getElementById('anni-bg-input').click()" title="更换背景">🖼</button>
-    <input type="file" id="anni-bg-input" accept="image/*" style="display:none" onchange="onAnniBgSelect(this)" />
-    <div class="anni-single-name">${escapeHtml(item.name)}${suffix}</div>
-    <div class="anni-single-num">${absDays}</div>
-    <div class="anni-single-unit">${unit}</div>
-    <div class="anni-single-date">${item.date}</div>
-  `;
-  setView('view-anni-detail');
-}
-
-function onAnniBgSelect(input) {
-  const file = input.files[0];
-  if (!file || !currentAnniId) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const list = loadAnnis();
-    const item = list.find(a => a.id === currentAnniId);
-    if (item) {
-      item.bgImage = e.target.result;
-      saveAnnis(list);
-      openAnniDetail(currentAnniId);
-      showToast('背景已更新');
-    }
-  };
-  reader.readAsDataURL(file);
-  input.value = '';
-}
-
-function renderAnniList() {
-  const list = loadAnnis();
-  const container = document.getElementById('anni-list');
-  if (!container) return;
-  if (list.length === 0) {
-    container.innerHTML = `
-      <div class="anni-empty">
-        <div class="anni-empty-icon">📅</div>
-        <div>还没有纪念日</div>
-        <div style="margin-top:4px;font-size:12px;">点击右上角 + 添加第一个</div>
-      </div>
-    `;
-    return;
-  }
-  container.innerHTML = '';
-  const sorted = [...list].sort((a, b) => {
-    const da = Math.abs(computeAnniDays(a.date));
     const db = Math.abs(computeAnniDays(b.date));
     return da - db;
   });
@@ -2909,12 +132,33 @@ function setTodoFilter(filter) {
 function toggleTodo(id, event) {
   if (event) event.stopPropagation();
   const list = loadTodos();
-  const item = list.find(t => t.id === id);
-  if (item) {
-    item.completed = !item.completed;
-    saveTodos(list);
-    renderTodos();
+  const itemIdx = list.findIndex(t => t.id === id);
+  if (itemIdx === -1) return;
+  const item = list[itemIdx];
+
+  item.completed = !item.completed;
+  list.splice(itemIdx, 1); // 先从原位置移除
+
+  if (item.completed) {
+    item.completedAt = Date.now();
+    // 插入位置：所有未完成之后，按 completedAt 降序排在已完成里
+    let insertIdx = list.length;
+    for (let i = 0; i < list.length; i++) {
+      if (!list[i].completed) {
+        insertIdx = i + 1; // 插在这个未完成的后面
+      } else if ((list[i].completedAt || 0) < item.completedAt) {
+        insertIdx = i; // 找到第一个更早完成的，插在它前面
+        break;
+      }
+    }
+    list.splice(insertIdx, 0, item);
+  } else {
+    delete item.completedAt;
+    // 未完成的移到最顶部
+    list.unshift(item);
   }
+  saveTodos(list);
+  renderTodos();
 }
 
 function deleteTodo(id) {
@@ -2924,23 +168,77 @@ function deleteTodo(id) {
   showToast('已删除');
 }
 
+let editingTodoId = null;
+let editingTodoPhoto = null;
+
 function openTodoDetail(id) {
   const list = loadTodos();
   const item = list.find(t => t.id === id);
   if (!item) return;
+  editingTodoId = id;
+  editingTodoPhoto = item.photo || null;
+  renderTodoDetailView(item, false);
+  setView('view-todo-detail');
+}
+
+function renderTodoDetailView(item, isEdit) {
   const page = document.getElementById('todo-detail-page');
   const statusText = item.completed ? '已完成' : '进行中';
   const statusIcon = item.completed ? '✓' : '○';
-  page.innerHTML = `
-    ${item.photo ? `<img class="todo-detail-img" src="${item.photo}" onclick="openLightbox('${item.photo}')" />` : ''}
-    <div class="todo-detail-text">${escapeHtml(item.text)}</div>
-    <div class="todo-detail-status">${statusIcon} ${statusText} · ${new Date(item.createdAt).toLocaleDateString('zh-CN')}</div>
-    <div style="margin-top:24px;display:flex;gap:10px;">
-      <button class="btn btn-primary" onclick="toggleTodo('${item.id}');openTodoDetail('${item.id}')">${item.completed ? '标记为未完成' : '标记为已完成'}</button>
-      <button class="btn btn-ghost" style="color:var(--danger);border-color:var(--danger);" onclick="if(confirm('删除这条待办？')){deleteTodo('${item.id}');goBackToTodoTab();}">删除</button>
-    </div>
-  `;
-  setView('view-todo-detail');
+  if (isEdit) {
+    page.innerHTML = `
+      <div class="todo-edit-photo-wrap">
+        ${editingTodoPhoto ? `<img class="todo-edit-photo-preview" src="${editingTodoPhoto}" onclick="openLightbox('${editingTodoPhoto}')" />` : ''}
+        <label class="todo-edit-photo-btn">
+          📷 ${editingTodoPhoto ? '更换照片' : '添加照片'}
+          <input type="file" accept="image/*" style="display:none" onchange="handleTodoEditPhoto(this)">
+        </label>
+        ${editingTodoPhoto ? `<button class="btn btn-ghost" style="margin-left:8px;font-size:12px;padding:6px 10px;" onclick="editingTodoPhoto=null;renderTodoDetailView(loadTodos().find(t=>t.id===editingTodoId),true)">移除照片</button>` : ''}
+      </div>
+      <textarea class="todo-edit-textarea" id="todo-edit-text">${escapeHtml(item.text)}</textarea>
+      <div style="margin-top:16px;display:flex;gap:10px;">
+        <button class="btn btn-primary" onclick="saveTodoEdit()">保存</button>
+        <button class="btn btn-ghost" onclick="renderTodoDetailView(loadTodos().find(t=>t.id===editingTodoId),false)">取消</button>
+      </div>
+    `;
+  } else {
+    page.innerHTML = `
+      ${item.photo ? `<img class="todo-detail-img" src="${item.photo}" onclick="openLightbox('${item.photo}')" />` : ''}
+      <div class="todo-detail-text">${escapeHtml(item.text)}</div>
+      <div class="todo-detail-status">${statusIcon} ${statusText} · ${new Date(item.createdAt).toLocaleDateString('zh-CN')}</div>
+      <div style="margin-top:24px;display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="toggleTodo('${item.id}');openTodoDetail('${item.id}')">${item.completed ? '标记为未完成' : '标记为已完成'}</button>
+        <button class="btn btn-ghost" onclick="renderTodoDetailView(loadTodos().find(t=>t.id===editingTodoId),true)">编辑</button>
+        <button class="btn btn-ghost" style="color:var(--danger);border-color:var(--danger);" onclick="if(confirm('删除这条待办？')){deleteTodo('${item.id}');goBackToTodoTab();}">删除</button>
+      </div>
+    `;
+  }
+}
+
+function handleTodoEditPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    editingTodoPhoto = e.target.result;
+    const item = loadTodos().find(t => t.id === editingTodoId);
+    if (item) renderTodoDetailView(item, true);
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveTodoEdit() {
+  const text = document.getElementById('todo-edit-text').value.trim();
+  if (!text) { showToast('内容不能为空'); return; }
+  const list = loadTodos();
+  const item = list.find(t => t.id === editingTodoId);
+  if (!item) return;
+  item.text = text;
+  item.photo = editingTodoPhoto || null;
+  saveTodos(list);
+  renderTodoDetailView(item, false);
+  renderTodos();
+  showToast('已保存');
 }
 
 function goBackToTodoTab() {
@@ -2966,12 +264,262 @@ function renderTodos() {
   }
 
   container.innerHTML = displayList.map(t => `
-    <div class="todo-item ${t.completed ? 'completed' : ''}" onclick="openTodoDetail('${t.id}')">
-      ${t.photo ? `<img class="todo-thumb" src="${t.photo}" onclick="event.stopPropagation();openLightbox('${t.photo}')" />` : ''}
-      <div class="todo-text">${escapeHtml(t.text)}</div>
-      <div class="todo-check ${t.completed ? 'checked' : ''}" onclick="toggleTodo('${t.id}', event)">${t.completed ? '✓' : ''}</div>
+    <div class="todo-item ${t.completed ? 'completed' : ''}" data-id="${t.id}">
+      <div class="todo-item-inner" onclick="openTodoDetail('${t.id}')">
+        ${t.photo ? `<img class="todo-thumb" src="${t.photo}" onclick="event.stopPropagation();openLightbox('${t.photo}')" />` : ''}
+        <div class="todo-text">${escapeHtml(t.text)}</div>
+        <button class="delete-option" onclick="event.stopPropagation();deleteTodo('${t.id}')">删除</button>
+        <div class="todo-check ${t.completed ? 'checked' : ''}" onclick="toggleTodo('${t.id}', event)">${t.completed ? '✓' : ''}</div>
+      </div>
     </div>
   `).join('');
+
+  // Init long-press delete on each todo item
+  container.querySelectorAll('.todo-item').forEach(initTodoLongPress);
+}
+
+/* ======================== TODO LONG-PRESS DELETE ======================== */
+function initTodoLongPress(el) {
+  let lpTimer = null;
+  function startLP(e) {
+    if (e.target.closest('.delete-option') || e.target.closest('.todo-check')) return;
+    lpTimer = setTimeout(() => {
+      lpTimer = null;
+      document.querySelectorAll('.todo-item.show-delete').forEach(i => i.classList.remove('show-delete'));
+      el.classList.add('show-delete');
+    }, 600);
+  }
+  function endLP() {
+    if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; }
+  }
+  el.addEventListener('touchstart', startLP, {passive: true});
+  el.addEventListener('touchend', endLP);
+  el.addEventListener('touchcancel', endLP);
+  el.addEventListener('mousedown', startLP);
+  el.addEventListener('mouseup', endLP);
+  el.addEventListener('mouseleave', endLP);
+}
+
+// Click outside to hide delete buttons
+document.addEventListener('click', e => {
+  if (!e.target.closest('.todo-item.show-delete')) {
+    document.querySelectorAll('.todo-item.show-delete').forEach(i => i.classList.remove('show-delete'));
+  }
+});
+
+/* ======================== PROFILE / ME PAGE ======================== */
+const PROFILE_KEY = 'wellness_profile';
+const DEFAULT_CONFUSIONS = ['人际关系','工作压力','家庭矛盾','自我认同','未来焦虑','情绪管理'];
+const DEFAULT_MINDSETS = ['完美主义','灾难化思维','非黑即白','过度概括','应该思维','贴标签'];
+
+function loadProfile() {
+  try {
+    const raw = localStorage.getItem(PROFILE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) { return {}; }
+}
+function saveProfile(p) {
+  localStorage.setItem(PROFILE_KEY, JSON.stringify(p));
+}
+function ensureProfileDefaults() {
+  const p = loadProfile();
+  if (!p.name) p.name = '访客';
+  if (!p.avatar) p.avatar = '';
+  if (!p.mbti) p.mbti = { type: '', note: '' };
+  if (!p.confusions) {
+    p.confusions = DEFAULT_CONFUSIONS.map((title, i) => ({
+      id: 'conf_' + i, title, content: ''
+    }));
+  }
+  if (!p.mindsets) {
+    p.mindsets = DEFAULT_MINDSETS.map((title, i) => ({
+      id: 'mind_' + i, title, content: ''
+    }));
+  }
+  saveProfile(p);
+  return p;
+}
+
+function renderMePage() {
+  const p = ensureProfileDefaults();
+  const avatarEl = document.getElementById('me-avatar-img');
+  if (avatarEl) {
+    avatarEl.src = p.avatar || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23e8e0d5%22/%3E%3Ctext x=%2250%22 y=%2258%22 text-anchor=%22middle%22 font-size=%2240%22%3E%F0%9F%A7%91%3C/text%3E%3C/svg%3E';
+  }
+  const nameEl = document.getElementById('me-name');
+  if (nameEl) nameEl.textContent = p.name;
+
+  // MBTI section
+  const mbtiSection = document.getElementById('me-mbti-section');
+  if (mbtiSection) {
+    mbtiSection.innerHTML = `
+      <div class="me-card" onclick="openMbtiModal()">
+        <div class="me-card-title">🔮 MBTI 类型</div>
+        <div class="me-card-hint">点击记录你的性格类型</div>
+        ${p.mbti.type ? `<div class="me-card-value">${escapeHtml(p.mbti.type)}</div>` : ''}
+      </div>
+    `;
+  }
+
+  // Confusion grid
+  const confGrid = document.getElementById('me-confusion-grid');
+  if (confGrid) {
+    confGrid.innerHTML = (p.confusions || []).map(c => `
+      <div class="me-sub-card" data-id="${c.id}" data-type="confusion" onclick="openProfileItem('confusion','${c.id}')">
+        <div class="me-sub-card-title">${escapeHtml(c.title)}</div>
+        <div class="me-sub-card-count">${c.content ? '已记录' : '未记录'}</div>
+      </div>
+    `).join('') + `
+      <div class="me-sub-card add" onclick="addProfileItem('confusion')">
+        <div style="font-size:20px;color:var(--accent);">+</div>
+        <div class="me-sub-card-title" style="font-size:12px;">新增</div>
+      </div>
+    `;
+    // Long press to delete custom items
+    confGrid.querySelectorAll('.me-sub-card:not(.add)').forEach(el => initProfileItemLongPress(el, 'confusion'));
+  }
+
+  // Mindset grid
+  const mindGrid = document.getElementById('me-mindset-grid');
+  if (mindGrid) {
+    mindGrid.innerHTML = (p.mindsets || []).map(m => `
+      <div class="me-sub-card" data-id="${m.id}" data-type="mindset" onclick="openProfileItem('mindset','${m.id}')">
+        <div class="me-sub-card-title">${escapeHtml(m.title)}</div>
+        <div class="me-sub-card-count">${m.content ? '已记录' : '未记录'}</div>
+      </div>
+    `).join('') + `
+      <div class="me-sub-card add" onclick="addProfileItem('mindset')">
+        <div style="font-size:20px;color:var(--accent);">+</div>
+        <div class="me-sub-card-title" style="font-size:12px;">新增</div>
+      </div>
+    `;
+    mindGrid.querySelectorAll('.me-sub-card:not(.add)').forEach(el => initProfileItemLongPress(el, 'mindset'));
+  }
+}
+
+function openAvatarLightbox() {
+  const p = loadProfile();
+  if (!p.avatar) return;
+  document.getElementById('avatar-lightbox-img').src = p.avatar;
+  setView('view-avatar-lightbox');
+}
+function closeAvatarLightbox() {
+  switchTab('me');
+}
+function changeAvatar() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const dataUrl = await compressImage(await readFileAsDataURL(file), 400, 0.8);
+    const p = loadProfile();
+    p.avatar = dataUrl;
+    saveProfile(p);
+    renderMePage();
+    showToast('头像已更新');
+  };
+  input.click();
+}
+function readFileAsDataURL(file) {
+  return new Promise(resolve => {
+    const r = new FileReader();
+    r.onload = e => resolve(e.target.result);
+    r.readAsDataURL(file);
+  });
+}
+function openSettings() {
+  setView('view-settings');
+}
+
+// MBTI
+function openMbtiModal() {
+  const p = loadProfile();
+  document.getElementById('mbti-input').value = p.mbti.type || '';
+  document.getElementById('mbti-note').value = p.mbti.note || '';
+  document.getElementById('modal-mbti').classList.add('open');
+}
+function saveMbti() {
+  const type = document.getElementById('mbti-input').value.trim().toUpperCase();
+  const note = document.getElementById('mbti-note').value.trim();
+  const p = loadProfile();
+  p.mbti = { type, note };
+  saveProfile(p);
+  document.getElementById('modal-mbti').classList.remove('open');
+  renderMePage();
+  showToast('已保存');
+}
+
+// Profile items (confusion / mindset)
+let editingProfileType = '';
+let editingProfileId = '';
+function openProfileItem(type, id) {
+  const p = loadProfile();
+  const arr = type === 'confusion' ? p.confusions : p.mindsets;
+  const item = arr.find(x => x.id === id);
+  if (!item) return;
+  editingProfileType = type;
+  editingProfileId = id;
+  document.getElementById('profile-item-modal-title').textContent = type === 'confusion' ? '🧠 心理困惑' : '🔄 固有思维';
+  document.getElementById('profile-item-title').value = item.title;
+  document.getElementById('profile-item-content').value = item.content;
+  document.getElementById('modal-profile-item').classList.add('open');
+}
+function saveProfileItem() {
+  const title = document.getElementById('profile-item-title').value.trim();
+  const content = document.getElementById('profile-item-content').value.trim();
+  if (!title) { showToast('标题不能为空'); return; }
+  const p = loadProfile();
+  const arr = editingProfileType === 'confusion' ? p.confusions : p.mindsets;
+  const item = arr.find(x => x.id === editingProfileId);
+  if (item) {
+    item.title = title;
+    item.content = content;
+  }
+  saveProfile(p);
+  document.getElementById('modal-profile-item').classList.remove('open');
+  renderMePage();
+  showToast('已保存');
+}
+function addProfileItem(type) {
+  const title = prompt(type === 'confusion' ? '输入困惑名称：' : '输入思维模式名称：');
+  if (!title || !title.trim()) return;
+  const p = loadProfile();
+  const arr = type === 'confusion' ? p.confusions : p.mindsets;
+  arr.push({
+    id: (type === 'confusion' ? 'conf_' : 'mind_') + Date.now(),
+    title: title.trim(),
+    content: ''
+  });
+  saveProfile(p);
+  renderMePage();
+}
+function initProfileItemLongPress(el, type) {
+  // Only allow deleting custom items (non-default)
+  const id = el.dataset.id;
+  const prefix = type === 'confusion' ? 'conf_' : 'mind_';
+  if (!id.startsWith(prefix) || parseInt(id.split('_')[1]) < 100) return; // default items have small numbers
+
+  let lpTimer = null;
+  function startLP(e) {
+    lpTimer = setTimeout(() => {
+      lpTimer = null;
+      if (confirm('删除「' + el.querySelector('.me-sub-card-title').textContent + '」？')) {
+        const p = loadProfile();
+        const arr = type === 'confusion' ? p.confusions : p.mindsets;
+        const idx = arr.findIndex(x => x.id === id);
+        if (idx > -1) { arr.splice(idx, 1); saveProfile(p); renderMePage(); showToast('已删除'); }
+      }
+    }, 600);
+  }
+  function endLP() { if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; } }
+  el.addEventListener('touchstart', startLP, {passive: true});
+  el.addEventListener('touchend', endLP);
+  el.addEventListener('touchcancel', endLP);
+  el.addEventListener('mousedown', startLP);
+  el.addEventListener('mouseup', endLP);
+  el.addEventListener('mouseleave', endLP);
 }
 
 /* ======================== NAVIGATION ======================== */
