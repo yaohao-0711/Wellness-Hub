@@ -251,6 +251,7 @@
     .btn:hover { opacity: .85; }
     .btn-primary { background: linear-gradient(135deg, var(--accent3), var(--accent)); color: #fff; }
     .btn-ghost { background: var(--surface2); color: var(--text2); }
+    .btn-danger { background: var(--danger); color: #fff; }
 
     /* ===== TASK DETAIL VIEW ===== */
     .records-list {
@@ -268,7 +269,19 @@
     .record-item .record-time {
       font-size: 11px; color: var(--text3); margin-bottom: 8px;
     }
-    .record-item .record-content { font-size: 15px; line-height: 1.65; white-space: pre-wrap; word-break: break-word; }
+    .record-item .record-content {
+      font-size: 15px; line-height: 1.65; white-space: pre-wrap; word-break: break-word;
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+      overflow: hidden; cursor: pointer; transition: all .2s;
+    }
+    .record-item .record-content.expanded {
+      -webkit-line-clamp: unset; display: block;
+    }
+    .record-item.long-pressing {
+      transform: scale(0.98);
+      opacity: 0.8;
+      transition: transform .15s, opacity .15s;
+    }
     .record-item .record-images {
       display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;
     }
@@ -1570,8 +1583,37 @@
         onkeydown="if(event.key==='Enter')saveEditTask()" />
     </div>
     <div class="modal-actions">
+      <button class="btn btn-danger" onclick="confirmDeleteTask()">删除</button>
       <button class="btn btn-ghost" onclick="document.getElementById('modal-edit-task').classList.remove('open')">取消</button>
       <button class="btn btn-primary" onclick="saveEditTask()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== CONFIRM DELETE TASK MODAL ===================== -->
+<div class="modal-overlay" id="modal-confirm-delete-task" onclick="if(event.target===event.currentTarget)this.classList.remove('open')">
+  <div class="modal-sheet">
+    <h2>是否确定删除？</h2>
+    <p style="color:var(--text2);font-size:14px;margin-top:8px;">删除后该练习及所有记录将无法恢复</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-confirm-delete-task').classList.remove('open')">否</button>
+      <button class="btn btn-danger" onclick="doDeleteTask()">是</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== EDIT RECORD MODAL ===================== -->
+<div class="modal-overlay" id="modal-edit-record" onclick="if(event.target===event.currentTarget)this.classList.remove('open')">
+  <div class="modal-sheet">
+    <h2>修改记录</h2>
+    <div class="anni-form-row">
+      <label>内容</label>
+      <textarea class="input-field" id="edit-record-text" style="min-height:120px;resize:vertical;" placeholder="输入内容…"
+        onkeydown="if(event.key==='Enter'&&event.ctrlKey)saveEditRecord()"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-edit-record').classList.remove('open')">取消</button>
+      <button class="btn btn-primary" onclick="saveEditRecord()">保存</button>
     </div>
   </div>
 </div>
@@ -1925,6 +1967,21 @@ async function deleteRecordDB(id) {
   }
   for (const t of tasksCache) {
     t.records = t.records.filter(r => r.id !== id);
+  }
+  saveToLocal();
+}
+
+async function updateRecordDB(id, updates) {
+  for (const t of tasksCache) {
+    const r = t.records.find(rec => rec.id === id);
+    if (r) Object.assign(r, updates);
+  }
+  if (cloudAvailable) {
+    try {
+      await apiFetch('records', 'PATCH', updates, 'id=eq.' + id);
+    } catch(e) {
+      console.error('Cloud update record failed:', e);
+    }
   }
   saveToLocal();
 }
@@ -2651,6 +2708,23 @@ async function saveEditTask() {
   }
 }
 
+function confirmDeleteTask() {
+  document.getElementById('modal-edit-task').classList.remove('open');
+  document.getElementById('modal-confirm-delete-task').classList.add('open');
+}
+
+async function doDeleteTask() {
+  try {
+    await deleteTaskDB(editingTaskId);
+    document.getElementById('modal-confirm-delete-task').classList.remove('open');
+    renderHome();
+    showToast('练习已删除');
+  } catch(e) {
+    showToast('删除失败');
+    console.error(e);
+  }
+}
+
 function openNewTaskModal() {
   selectedTemplate = null;
   document.getElementById('new-task-name').value = '';
@@ -2737,14 +2811,37 @@ function renderRecords(task) {
     const item = document.createElement('div');
     item.className = 'record-item';
     const imgs = (r.images || []).map(src =>
-      `<img class="record-img" src="${src}" alt="" onclick="openLightbox(this.src)" />`
+      `<img class="record-img" src="${src}" alt="" onclick="event.stopPropagation();openLightbox(this.src)" />`
     ).join('');
     item.innerHTML = `
-      <button class="record-del" onclick="deleteRecord('${r.id}')" title="删除">✕</button>
+      <button class="record-del" onclick="event.stopPropagation();deleteRecord('${r.id}')" title="删除">✕</button>
       <div class="record-time">${formatDatetime(ts)}</div>
-      ${r.text ? `<div class="record-content">${escapeHtml(r.text)}</div>` : ''}
+      ${r.text ? `<div class="record-content" onclick="event.stopPropagation();this.classList.toggle('expanded')">${escapeHtml(r.text)}</div>` : ''}
       ${imgs ? `<div class="record-images">${imgs}</div>` : ''}
     `;
+    // Long press to edit record
+    let lpTimer = null;
+    function startLP(e) {
+      if (e.target.closest('.record-del') || e.target.closest('.record-img')) return;
+      lpTimer = setTimeout(() => {
+        lpTimer = null;
+        item.classList.add('long-pressing');
+        if (navigator.vibrate) navigator.vibrate(50);
+        openEditRecordModal(r.id, r.text || '');
+        setTimeout(() => item.classList.remove('long-pressing'), 300);
+      }, 600);
+    }
+    function endLP() {
+      if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; }
+      item.classList.remove('long-pressing');
+    }
+    item.addEventListener('touchstart', startLP, { passive: true });
+    item.addEventListener('touchend', endLP);
+    item.addEventListener('touchcancel', endLP);
+    item.addEventListener('touchmove', endLP);
+    item.addEventListener('mousedown', startLP);
+    item.addEventListener('mouseup', endLP);
+    item.addEventListener('mouseleave', endLP);
     list.appendChild(item);
   });
 }
@@ -2787,6 +2884,28 @@ function renderImagePreviews() {
 function removePendingImg(i) {
   pendingImages.splice(i, 1);
   renderImagePreviews();
+}
+
+let editingRecordId = null;
+function openEditRecordModal(id, text) {
+  editingRecordId = id;
+  document.getElementById('edit-record-text').value = text;
+  document.getElementById('modal-edit-record').classList.add('open');
+  setTimeout(() => document.getElementById('edit-record-text').focus(), 100);
+}
+async function saveEditRecord() {
+  const newText = document.getElementById('edit-record-text').value.trim();
+  if (!newText) { showToast('请输入内容'); return; }
+  try {
+    await updateRecordDB(editingRecordId, { text: newText });
+    document.getElementById('modal-edit-record').classList.remove('open');
+    const task = getTaskFromCache(currentTaskId);
+    if (task) renderRecords(task);
+    showToast('已修改');
+  } catch(e) {
+    showToast('修改失败');
+    console.error(e);
+  }
 }
 
 async function submitRecord() {
