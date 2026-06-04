@@ -2598,9 +2598,7 @@ function renderHome() {
       <div class="task-stats" style="margin-top:6px">今日 ${todayCount} 条</div>
       <button class="delete-btn" title="删除任务" onclick="event.stopPropagation();deleteTask('${task.id}')">✕</button>
     `;
-    // Click to open
-    card.addEventListener('click', () => openTask(task.id));
-    // Long press to edit
+    // Short press to open, long press to edit
     let lpTimer = null;
     function startLP(e) {
       e.preventDefault();
@@ -2611,16 +2609,20 @@ function renderHome() {
         openEditTaskModal(task.id, task.name);
       }, 600);
     }
-    function endLP() {
+    function endLP(isClick) {
       card.classList.remove('long-pressing');
+      const wasShort = lpTimer !== null;
       if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; }
+      if (wasShort && isClick) {
+        openTask(task.id);
+      }
     }
     card.addEventListener('mousedown', startLP);
-    card.addEventListener('mouseup', endLP);
-    card.addEventListener('mouseleave', endLP);
+    card.addEventListener('mouseup', () => endLP(true));
+    card.addEventListener('mouseleave', () => endLP(false));
     card.addEventListener('touchstart', startLP, {passive:false});
-    card.addEventListener('touchend', endLP);
-    card.addEventListener('touchcancel', endLP);
+    card.addEventListener('touchend', () => endLP(true));
+    card.addEventListener('touchcancel', () => endLP(false));
     grid.appendChild(card);
   });
 }
