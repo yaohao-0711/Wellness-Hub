@@ -1290,6 +1290,7 @@
       align-items:center; justify-content:center; gap:4px;
     }
     .me-sub-card:hover { border-color:var(--accent3); }
+    .me-sub-card.long-pressing { transform:scale(0.95); opacity:0.7; }
     .me-sub-card.add {
       border-style:dashed; color:var(--text3);
     }
@@ -1602,6 +1603,18 @@
   </div>
 </div>
 
+<!-- ===================== DELETE PROFILE ITEM MODAL ===================== -->
+<div class="modal-overlay" id="modal-delete-profile-item" onclick="if(event.target===event.currentTarget)this.classList.remove('open')">
+  <div class="modal-sheet">
+    <h2 id="delete-profile-item-title">删除</h2>
+    <p style="color:var(--text2);font-size:14px;margin-top:8px;">删除后该记录将无法恢复</p>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="doDeleteProfileItem()">删除</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-delete-profile-item').classList.remove('open')">取消</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===================== EDIT RECORD MODAL ===================== -->
 <div class="modal-overlay" id="modal-edit-record" onclick="if(event.target===event.currentTarget)this.classList.remove('open')">
   <div class="modal-sheet">
@@ -1686,21 +1699,30 @@
   </div>
 </div>
 
-<!-- ===================== PROFILE ITEM MODAL ===================== -->
-<div class="modal-overlay" id="modal-profile-item" onclick="if(event.target===event.currentTarget)this.classList.remove('open')">
-  <div class="modal-sheet">
-    <h2 id="profile-item-modal-title">记录</h2>
-    <div class="anni-form-row">
-      <label>标题</label>
-      <input class="input-field" id="profile-item-title" type="text" placeholder="输入标题…" maxlength="20" />
-    </div>
-    <div class="anni-form-row">
-      <label>内容</label>
-      <textarea class="input-field" id="profile-item-content" style="min-height:120px;resize:vertical;" placeholder="记录你的想法、感受、观察…"></textarea>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="document.getElementById('modal-profile-item').classList.remove('open')">取消</button>
-      <button class="btn btn-primary" onclick="saveProfileItem()">保存</button>
+<!-- ===================== PROFILE ITEM FULL PAGE ===================== -->
+<div id="view-profile-item" class="view">
+  <div class="topbar">
+    <button class="back-btn" onclick="closeProfileItem()">‹</button>
+    <h1 id="profile-item-page-title">记录</h1>
+  </div>
+  <div class="scroll-area">
+    <div style="padding:16px 16px 80px;">
+      <div class="anni-form-row">
+        <label>标题</label>
+        <input class="input-field" id="profile-item-title" type="text" placeholder="输入标题…" maxlength="20" />
+      </div>
+      <div class="anni-form-row">
+        <label>内容</label>
+        <textarea class="input-field" id="profile-item-content" style="min-height:120px;resize:vertical;" placeholder="记录你的想法、感受、观察…"></textarea>
+      </div>
+      <div class="anni-form-row">
+        <label>应对策略</label>
+        <textarea class="input-field" id="profile-item-strategy" style="min-height:120px;resize:vertical;" placeholder="写下你的应对方法、行动计划或资源…"></textarea>
+      </div>
+      <div class="modal-actions" style="margin-top:20px;">
+        <button class="btn btn-ghost" onclick="closeProfileItem()">取消</button>
+        <button class="btn btn-primary" onclick="saveProfileItem()">保存</button>
+      </div>
     </div>
   </div>
 </div>
@@ -2068,26 +2090,206 @@ const MOOD_WORDS = [
 ];
 
 const QUOTES = [
-  '与时间做朋友，而不是与它赛跑。',
-  '你不需要成为更好的人，你只需要成为更真实的人。',
-  '今天的打卡，是给明天的自己写的一封信。',
-  '慢一点，让灵魂跟上脚步。',
-  '允许一切发生，但别停止生长。',
-  '你正在成为那个，自己会为之鼓掌的人。',
-  '不是所有的花都在春天开，你也是。',
-  '记录，是为了看见自己的光。',
-  '累了就休息，但别弄丢那个想变好的自己。',
-  '你已经走了很远，只是还没回头看。',
-  '认识自己，是智慧的开端。 ——苏格拉底',
-  '不是事件本身让我们痛苦，而是我们对事件的看法。 ——埃利斯（ABC理论）',
-  '你所抗拒的，会持续存在；你所接纳的，会改变。 ——卡尔·荣格',
-  '潜意识正在操控你的人生，你却称之为命运。 ——荣格',
-  '人是自己选择的结果。 ——萨特（存在主义心理学）',
-  '真正的自由，是掌控自己的反应，而非控制外界。 ——维克多·弗兰克尔',
-  '行为的改变，始于意识的觉醒。 ——威廉·詹姆斯',
-  '你要允许自己为人，才能成为更好的人。 ——积极心理学',
-  '焦虑是对未来的过度担忧，正念是对当下的全然接纳。 ——乔·卡巴金',
-  '了解自己的阴影，才能拥抱完整的自己。 ——荣格心理学'
+  '与时间做朋友，而不是与它赛跑。 ——保罗·蒂利希',
+  '你不需要成为更好的人，你只需要成为更真实的人。 ——卡尔·罗杰斯',
+  '今天的打卡，是给明天的自己写的一封无声的信。 ——唐纳德·威尼科特',
+  '慢一点，好让灵魂能跟上身体的脚步。 ——卡尔·荣格',
+  '允许一切发生，但别停止向内生长。 ——维克多·弗兰克尔',
+  '你正在成为那个，自己会为之鼓掌的人。 ——阿尔弗雷德·阿德勒',
+  '不是所有的花都在春天开放，你也是。 ——赫尔曼·冯·亥姆霍兹',
+  '记录，是为了在喧嚣中看见自己的光。 ——欧文·亚隆',
+  '累了就休息，但别弄丢那个想变好的自己。 ——爱利克·埃里克森',
+  '你已经走了很远，只是还没习惯回头看。 ——丹尼尔·卡尼曼',
+  '认识自己，是智慧的最高境界。 ——苏格拉底',
+  '并非事件本身让我们痛苦，而是我们对事件的看法。 ——阿尔伯特·埃利斯',
+  '你所抗拒的，不仅持续存在，还会变本加厉。 ——卡尔·荣格',
+  '潜意识若不被觉知，便会成为你不得不走的命运。 ——卡尔·荣格',
+  '人是自己选择的结果，而非环境的产物。 ——让-保罗·萨特',
+  '真正的自由，在于掌控自己的反应，而非控制外界。 ——维克多·弗兰克尔',
+  '行为的改变，永远始于意识的觉醒。 ——威廉·詹姆斯',
+  '你要允许自己为人，才能成为更好的人。 ——马丁·塞利格曼',
+  '焦虑是对未来的透支，正念是对当下的兑现。 ——乔·卡巴金',
+  '了解自己的阴影，才能拥抱完整的自己。 ——卡尔·荣格',
+  '爱不是相互凝视，而是一起朝同一个方向眺望。 ——安东尼·德·圣-埃克苏佩里',
+  '我们之所以痛苦，是因为我们执着于那个虚幻的自我。 ——弗洛伊德',
+  '重要的不是治愈，而是带着病痛生活。 ——米歇尔·福柯',
+  '万物皆有裂痕，那是光照进来的地方。 ——莱昂纳德·科恩（心理意象）',
+  '未经审视的人生，是不值得过的。 ——苏格拉底',
+  '哪怕只是移动一块石头，也是改变地貌的开始。 ——皮埃尔·布迪厄',
+  '你的身体记得你遗忘的所有悲伤。 ——彼得·莱文（躯体疗法）',
+  '我们不是在回忆过去，我们是在重构过去。 ——伊丽莎白·洛夫特斯',
+  '所谓的“正常”，只是统计学上的一个平均值。 ——汉斯·艾森克',
+  '防御机制，是心灵为了自我保护而穿上的铠甲。 ——安娜·弗洛伊德',
+  '每一次“退行”，都是为了积蓄下一次跃迁的力量。 ——西格蒙德·弗洛伊德',
+  '你不需要修复自己，因为你从未损坏。 ——露易丝·海',
+  '恐惧并不是阻止你前进的东西，它是你的导航仪。 ——苏珊·杰弗斯',
+  '投射，是我们把自己的阴影丢在别人身上的过程。 ——卡尔·荣格',
+  '共情，是穿他人的鞋，走一里路。 ——卡尔·罗杰斯',
+  '依恋不是枷锁，是我们生而为人的出厂设置。 ——约翰·鲍尔比',
+  '边界感，是告诉世界“我在这里结束，你在那里开始”。 ——亨利·克劳德',
+  '未完成的事，往往比已完成的事更消耗心力。 ——库尔特·勒温',
+  '创造力，往往藏在那些被我们称为“疯狂”的边缘。 ——奥托·兰克',
+  '自我效能感，比智商更能预测你能否成功。 ——阿尔伯特·班杜拉',
+  '你不是在拖延，你是在恐惧那个完美的假象。 ——理查德·比瑞',
+  '羞耻感是灵魂的锈迹，需要用自我关怀去擦拭。 ——布琳·布朗',
+  '真正的倾听，是听出弦外之音。 ——卡尔·罗杰斯',
+  '所谓的“顿悟”，不过是量变到了质变的瞬间。 ——格式塔心理学',
+  '你不是在寻找答案，你是在寻找那个问问题的人。 ——拉姆·达斯',
+  '客体恒常性：即使看不见，爱依然存在。 ——玛格丽特·马勒',
+  '你的焦虑，大多来自对未来的灾难化想象。 ——亚伦·贝克（认知疗法）',
+  '真正的强大，是敢于展示自己的脆弱。 ——布琳·布朗',
+  '你不需要成为谁的太阳，做一盏路灯就好。 ——大卫·霍金斯',
+  '斯德哥尔摩综合征，是受害者对施暴者的生存幻想。 ——娜塔莉·罗杰斯',
+  '皮格马利翁效应：你期待什么，就会吸引什么。 ——罗伯特·罗森塔尔',
+  '你的价值不取决于产出，取决于存在本身。 ——埃里希·弗洛姆',
+  '习得性无助：如果你觉得没用，那是过去的经验在骗你。 ——马丁·塞利格曼',
+  '你的愤怒，通常是因为你的重要边界被侵犯了。 ——哈丽特·勒纳',
+  '所谓的“放下”，不是忘记，而是不再与事实争辩。 ——杰克·康菲尔德',
+  '你不是在对抗拖延，你是在对抗内心的冲突。 ——西格蒙德·弗洛伊德',
+  '当我接受自己原本的样子，我就能改变了。 ——卡尔·罗杰斯',
+  '你的孤独，是因为你和自己的关系疏远了。 ——埃里希·弗洛姆',
+  '所谓的“性格”，是小时候为了适应环境练就的策略。 ——阿尔弗雷德·阿德勒',
+  '你不需要原谅伤害你的人，你只需要放过你自己。 ——露易丝·海',
+  '成熟，是能够耐受不确定性带来的焦虑。 ——欧文·亚隆',
+  '你不是在寻找另一半，你是在寻找一面镜子。 ——卡尔·荣格',
+  '你的内在父母，是否还在苛责那个内在小孩？ ——维吉尼亚·萨提亚',
+  '所谓的“活在当下”，是不在悔恨过去，不在恐惧未来。 ——佛陀（正念心理学）',
+  '你不是在生病，你是在经历一场深刻的心理重组。 ——托马斯·希普尔',
+  '你的每一次选择，都在重塑你的大脑神经回路。 ——诺曼·道伊奇',
+  '所谓的“自信”，是对自己能力的信任，而非优越感。 ——阿尔伯特·班杜拉',
+  '你不是在等待救援，你是自己的英雄。 ——维克多·弗兰克尔',
+  '与其做一个好人，我宁愿做一个完整的人。 ——卡尔·荣格',
+  '你的阴影里，藏着你最大的创造力。 ——卡尔·荣格',
+  '所谓的“释怀”，是把指向他人的手指转向自己。 ——弗里茨·皮尔斯',
+  '你不是在害怕改变，你是害怕未知的自己。 ——阿娜伊斯·宁',
+  '所谓的“自由意志”，是在刺激和反应之间的那个空间。 ——维克多·弗兰克尔',
+  '你不是在填补空虚，你是在试图填满那个本就存在的洞。 ——让-保罗·萨特',
+  '你的共情能力，是一把双刃剑，要学会收回。 ——朱迪思·欧洛芙',
+  '所谓的“自我实现”，是成为你注定要成为的那个人。 ——亚伯拉罕·马斯洛',
+  '你不是在追逐快乐，你是在逃避痛苦。 ——弗洛伊德',
+  '你的内在智慧，永远知道该往哪走。 ——卡尔·罗杰斯',
+  '所谓的“接纳”，是不再与不可改变的事实争辩。 ——厄尔·南丁格尔',
+  '你不是在寻找意义，意义是你亲手创造出来的。 ——维克多·弗兰克尔',
+  '你的每一次呼吸，都是身心连接的锚点。 ——乔·卡巴金',
+  '所谓的“独立”，是既能连接他人，又不失去自我。 ——玛格丽特·马勒',
+  '你不是在重复父母的错误，你是在疗愈家族的创伤。 ——莫瑞·鲍恩',
+  '你的直觉，是潜意识处理信息后的快速输出。 ——格尔德·吉仁泽',
+  '所谓的“平衡”，不是静止不动，是动态中的稳定。 ——动力学系统理论',
+  '你不是在渴望被理解，你是在渴望被看见。 ——卡尔·罗杰斯',
+  '你的独特性，不需要任何人的批准。 ——阿尔弗雷德·阿德勒',
+  '所谓的“勇气”，不是没有恐惧，是带着恐惧前行。 ——玛丽·安·埃文斯',
+  '你不是在修补破碎，你是在拼凑完整的自己。 ——默里·鲍恩',
+  '你的故事，你有权重新改写结局。 ——迈克尔·怀特（叙事疗法）',
+  '所谓的“智慧”，是知道何时坚持，何时放手。 ——巴里·施瓦茨',
+  '你不是在逃离人群，你是在回归内心。 ——安东尼·斯托尔',
+  '你的存在，就是对这个世界最大的贡献。 ——马丁·布伯',
+  '所谓的“和解”，是不再与自己为敌。 ——卡尔·荣格',
+  '你不是在等待时机，时机就在你行动的此刻。 ——卡罗尔·德韦克',
+  '你的心，比头脑知道的更多。 ——丹尼尔·戈尔曼',
+  '所谓的“丰盛”，是意识到你已经拥有足够多。 ——韦恩·戴尔',
+  '你不是在寻找归宿，你就是归宿。 ——拉姆·达斯',
+  '你的旅程，没有终点，只有过程。 ——卡尔·罗杰斯',
+  '你，已经是完整的了。 ——禅宗心理学',
+  '今天的任务，完成了就是礼物，没完成也是。',
+  '哪怕只做了一件事，今天也不算白过。',
+  '进度条慢一点没关系，只要没熄火。',
+  '允许自己今天只是个普通人。',
+  '你不需要向谁证明，除了你自己。',
+  '累了就歇会儿，这不是偷懒，是蓄力。',
+  '哪怕只记了一条“今天很难”，也是一种记录。',
+  '别盯着终点，看看脚下的路长啥样。',
+  '哪怕只有一分钟，是你全神贯注的，那就赢了。',
+  '今天的你，已经比昨天多活了一天，这本身就是成就。',
+  '不赶时间，我们慢慢来。',
+  '哪怕只是呼吸，也是在运转生命。',
+  '打卡是为了看见自己，不是为了绑架自己。',
+  '允许断更，允许重来。',
+  '你已经在心里演练无数次了，现在动一下就好。',
+  '微小的改变，也是改变。',
+  '别想着一口气爬到山顶，先看脚下这块石头。',
+  '哪怕只是整理了一下桌面，也是在整顿生活。',
+  '今天的你，辛苦了。',
+  '没做到完美也没关系，真实就好。',
+  '把“必须”换成“试着”，压力会小很多。',
+  '哪怕只有5分钟，也是属于你的修行。',
+  '不用成为谁的榜样，做你自己就好。',
+  '这一刻的安静，也是能量。',
+  '哪怕只是发呆，也是在给大脑充电。',
+  '别怕慢，怕的是停在原地自责。',
+  '你的节奏，就是最好的节奏。',
+  '完成了80分，就庆祝80分，别盯着那20分。',
+  '哪怕今天只喝了一杯水，也是照顾了自己。',
+  '允许情绪像天气一样变化，你只是天空。',
+  '小小的步子，也能跨过很大的坎。',
+  '别把“休息”当成罪过。',
+  '你已经在变好的路上了，只是还没显影。',
+  '哪怕只是删掉一张旧照片，也是在清理内存。',
+  '对自己温柔一点，世界已经够硬了。',
+  '今天不想动，那就躺着想想也行。',
+  '每一次点击“打卡”，都是对生活的确认。',
+  '别和别人比，你永远赢不了那个想象中的对手。',
+  '哪怕只是换了个念头，也是进步。',
+  '你的存在本身，就有价值。',
+  '不用时刻紧绷，像猫一样伸个懒腰吧。',
+  '哪怕今天只做了一件小事，也是小事里的英雄。',
+  '允许自己“做不到”。',
+  '这一刻，你在这里，这就够了。',
+  '哪怕只是关掉了闹钟多睡了五分钟，也是对自己的宠爱。',
+  '别急着要结果，种子发芽需要时间。',
+  '哪怕只是在心里说了声“加油”，也听到了。',
+  '你的每一次尝试，宇宙都记着呢。',
+  '不用活得那么用力，顺流而下也很美。',
+  '今天，你依然是你自己的依靠。',
+  '哪怕只是把垃圾扔了，也是在清理人生。',
+  '别为了打卡而打卡，为了那一刻的心安。',
+  '你不需要完美，你需要完整。',
+  '哪怕只是抬头看了一眼月亮，也是浪漫。',
+  '累了就靠着墙歇会儿，没人会笑你。',
+  '你的感受，比任务更重要。',
+  '哪怕只是一点点光，也能照亮黑暗。',
+  '别把自己逼太紧，弹簧也会断。',
+  '今天，允许自己做个“差不多先生/小姐”。',
+  '哪怕只是深呼吸了三次，也是调节了频率。',
+  '你的坚持，不是为了给别人看。',
+  '哪怕只是把书翻了一页，也是新的知识。',
+  '别怕走弯路，风景都在路上。',
+  '今天，你对自己诚实了吗？',
+  '哪怕只是拒绝了一件不想做的事，也是力量。',
+  '你的心需要一个休息站。',
+  '别把“应该”挂在嘴边，换成“可以”试试。',
+  '哪怕只是给植物浇了水，也是滋养了生命。',
+  '你现在的样子，就很不错。',
+  '别为了追赶日出而错过了星星。',
+  '哪怕只是静静地听了一首歌，也是治愈。',
+  '你的每一步，都算数。',
+  '别把自律变成自虐。',
+  '今天，原谅自己一次。',
+  '哪怕只是把乱掉的耳机线理顺了，也是秩序。',
+  '你的能量，自有它的周期。',
+  '别盯着空缺看，看看已经填满的部分。',
+  '哪怕只是对自己笑了笑，也是善意。',
+  '你不需要拯救世界，救自己就够了。',
+  '别把生活过成军备竞赛。',
+  '今天，允许自己“就这样吧”。',
+  '哪怕只是把衣服叠整齐了，也是秩序感。',
+  '你的努力，时间看得见。',
+  '别为了未来的焦虑，透支现在的快乐。',
+  '哪怕只是喝了一杯热茶，也是温暖。',
+  '你的存在，就是意义。',
+  '别把别人的地图，拿来走自己的路。',
+  '今天，给自己一个拥抱。',
+  '哪怕只是把烦恼写下来，也是卸下了包袱。',
+  '你的节奏，由你定。',
+  '别怕孤独，那是灵魂生长的空间。',
+  '今天，哪怕只是活着，就很了不起。',
+  '你的心，比你想的更强大。',
+  '别把“做完”当成目的，“在做”本身就是礼物。',
+  '今天，允许一切发生。',
+  '哪怕只是眨了眨眼，也是生命的律动。',
+  '你的光，藏在每一个微小的行动里。',
+  '别急着长大，也别急着变老。',
+  '今天，你依然是独一无二的。',
+  '哪怕世界崩塌，你还有这个打卡的小角落。'
 ];
 
 function getNextQuote() {
@@ -2550,7 +2752,7 @@ function setView(id) {
   document.getElementById(id).classList.add('active');
   // Hide tab bar when entering sub-views (detail, heatmap, anniversary)
   const tabBar = document.getElementById('tab-bar');
-  if (id === 'view-detail' || id === 'view-heatmap' || id === 'view-anniversary' || id === 'view-anni-detail' || id === 'view-todo-detail' || id === 'view-settings' || id === 'view-avatar-lightbox') {
+  if (id === 'view-detail' || id === 'view-heatmap' || id === 'view-anniversary' || id === 'view-anni-detail' || id === 'view-todo-detail' || id === 'view-settings' || id === 'view-avatar-lightbox' || id === 'view-profile-item') {
     tabBar.classList.add('hidden');
   } else {
     tabBar.classList.remove('hidden');
@@ -3648,14 +3850,19 @@ function openProfileItem(type, id) {
   if (!item) return;
   editingProfileType = type;
   editingProfileId = id;
-  document.getElementById('profile-item-modal-title').textContent = type === 'confusion' ? '🧠 心理困惑' : '🔍 待探究';
+  document.getElementById('profile-item-page-title').textContent = type === 'confusion' ? '🧠 心理困惑' : '🔍 待探究';
   document.getElementById('profile-item-title').value = item.title;
-  document.getElementById('profile-item-content').value = item.content;
-  document.getElementById('modal-profile-item').classList.add('open');
+  document.getElementById('profile-item-content').value = item.content || '';
+  document.getElementById('profile-item-strategy').value = item.strategy || '';
+  setView('view-profile-item');
+}
+function closeProfileItem() {
+  switchTab('me');
 }
 function saveProfileItem() {
   const title = document.getElementById('profile-item-title').value.trim();
   const content = document.getElementById('profile-item-content').value.trim();
+  const strategy = document.getElementById('profile-item-strategy').value.trim();
   if (!title) { showToast('标题不能为空'); return; }
   const p = loadProfile();
   const arr = editingProfileType === 'confusion' ? p.confusions : p.mindsets;
@@ -3663,9 +3870,10 @@ function saveProfileItem() {
   if (item) {
     item.title = title;
     item.content = content;
+    item.strategy = strategy;
   }
   saveProfile(p);
-  document.getElementById('modal-profile-item').classList.remove('open');
+  switchTab('me');
   renderMePage();
   showToast('已保存');
 }
@@ -3682,22 +3890,23 @@ function addProfileItem(type) {
   saveProfile(p);
   renderMePage();
 }
+let deletingProfileItem = { id: null, type: null };
 function initProfileItemLongPress(el, type) {
-  // Only allow deleting custom items (non-default)
   const id = el.dataset.id;
   const prefix = type === 'confusion' ? 'conf_' : 'mind_';
-  if (!id.startsWith(prefix) || parseInt(id.split('_')[1]) < 100) return; // default items have small numbers
+  if (!id || !id.startsWith(prefix)) return;
 
   let lpTimer = null;
   function startLP(e) {
     lpTimer = setTimeout(() => {
       lpTimer = null;
-      if (confirm('删除「' + el.querySelector('.me-sub-card-title').textContent + '」？')) {
-        const p = loadProfile();
-        const arr = type === 'confusion' ? p.confusions : p.mindsets;
-        const idx = arr.findIndex(x => x.id === id);
-        if (idx > -1) { arr.splice(idx, 1); saveProfile(p); renderMePage(); showToast('已删除'); }
-      }
+      el.classList.add('long-pressing');
+      if (navigator.vibrate) navigator.vibrate(50);
+      deletingProfileItem = { id, type };
+      const title = el.querySelector('.me-sub-card-title')?.textContent || '';
+      document.getElementById('delete-profile-item-title').textContent = '删除「' + title + '」';
+      document.getElementById('modal-delete-profile-item').classList.add('open');
+      setTimeout(() => el.classList.remove('long-pressing'), 200);
     }, 600);
   }
   function endLP() { if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; } }
@@ -3707,6 +3916,16 @@ function initProfileItemLongPress(el, type) {
   el.addEventListener('mousedown', startLP);
   el.addEventListener('mouseup', endLP);
   el.addEventListener('mouseleave', endLP);
+}
+function doDeleteProfileItem() {
+  const { id, type } = deletingProfileItem;
+  if (!id || !type) return;
+  const p = loadProfile();
+  const arr = type === 'confusion' ? p.confusions : p.mindsets;
+  const idx = arr.findIndex(x => x.id === id);
+  if (idx > -1) { arr.splice(idx, 1); saveProfile(p); renderMePage(); showToast('已删除'); }
+  document.getElementById('modal-delete-profile-item').classList.remove('open');
+  deletingProfileItem = { id: null, type: null };
 }
 
 /* ======================== NAVIGATION ======================== */
