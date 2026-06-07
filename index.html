@@ -743,234 +743,74 @@
     .placeholder-page .ph-text { font-size: 20px; font-weight: 600; letter-spacing: 2px; }
     .placeholder-page .ph-sub { font-size: 13px; color: var(--text3); }
 
-    /* ===== MOOD TAB ===== */
-    .mood-sun-page {
-      flex:1; display:flex; flex-direction:column;
-      align-items:center; justify-content:center;
-      padding:40px 20px 80px; gap:20px;
-    }
-    .sun-btn {
-      width:min(33vw,180px); height:min(33vw,180px);
-      border-radius:50%;
-      background:radial-gradient(circle at 35% 35%,#f7dfa0,#d9b35e,#9a7d54);
-      display:flex; align-items:center; justify-content:center;
-      font-size:min(15vw,80px); cursor:pointer;
-      box-shadow:0 0 50px rgba(217,179,94,.35),0 0 100px rgba(217,179,94,.10);
-      transition:transform .15s,box-shadow .15s;
-      user-select:none; -webkit-tap-highlight-color:transparent;
-      animation:sunPulse 3s ease-in-out infinite;
-    }
-    .sun-btn:active { transform:scale(.95); box-shadow:0 0 20px rgba(212,165,74,.3); animation:none; }
-    .sun-btn.pressing { transform:scale(1.08); box-shadow:0 0 60px rgba(212,165,74,.6),0 0 120px rgba(212,165,74,.25); animation:none; }
-    @keyframes sunPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.03)} }
-
-    .sun-prompt { text-align:center; line-height:1.8; }
-    .sun-prompt .prompt-line1 { font-size:16px; font-weight:600; color:var(--text2); letter-spacing:2px; }
-    .sun-prompt .prompt-line2 { font-size:14px; color:var(--text3); letter-spacing:3px; }
-    .sun-hint { font-size:12px; color:var(--text3); margin-top:8px; }
-
-    /* Mood overlay (picker + reveal) */
-    .mood-overlay {
-      position:fixed; inset:0; z-index:200;
-      background:rgba(61,52,38,.45); backdrop-filter:blur(8px);
-      display:none; align-items:center; justify-content:center;
-      padding:24px;
-    }
-    .mood-overlay.open { display:flex; }
-
-    /* Picker card */
-    .picker-card {
-      background:var(--surface); border:1px solid var(--border);
-      border-radius:24px; padding:28px 20px 20px;
-      max-width:360px; width:100%; text-align:center;
-      animation:cardPop .35s cubic-bezier(.2,.9,.3,1.1);
-    }
-    .picker-round { font-size:12px; color:var(--text3); margin-bottom:16px; letter-spacing:1px; }
-    .picker-emotions {
-      display:flex; flex-wrap:wrap; gap:10px;
-      justify-content:center; margin-bottom:20px;
-    }
-    .emotion-chip {
-      background:var(--surface2); border:1.5px solid var(--border);
-      border-radius:100px; padding:8px 20px; cursor:pointer;
-      transition:transform .15s,border-color .15s,background .15s;
-      color:var(--text2); font-family:inherit;
-      font-size:14px; font-weight:500; letter-spacing:1px;
-      user-select:none; -webkit-tap-highlight-color:transparent;
-    }
-    .emotion-chip:hover { transform:translateY(-2px); border-color:var(--accent); }
-    .emotion-chip:active { transform:scale(.95); }
-    .emotion-chip.selected { background:var(--accent); color:#fff; border-color:var(--accent); transform:translateY(-2px); box-shadow: 0 3px 10px rgba(154,125,84,0.3); }
-    .picker-nav { display:flex; align-items:center; justify-content:flex-end; margin-top:8px; }
-    .picker-nav-btn {
-      background: linear-gradient(135deg, var(--accent3), var(--accent)); color: #fff; border:none; border-radius:100px;
-      padding:10px 24px; font-size:14px; font-weight:600; cursor:pointer;
-      font-family:inherit; transition:opacity .15s,transform .15s;
-      display:flex; align-items:center; gap:6px;
-    }
-    .picker-nav-btn:hover { opacity:.85; }
-    .picker-nav-btn:active { transform:scale(.95); }
-
-    /* Reveal animation */
-    .reveal-container { text-align:center; animation:cardPop .5s cubic-bezier(.2,.9,.3,1.1); }
-    .reveal-stars { position:relative; width:200px; height:200px; margin:0 auto 24px; }
-    .reveal-orb {
-      width:160px; height:160px; border-radius:50%;
-      background:radial-gradient(circle,rgba(212,165,74,.5),rgba(160,132,92,.15),transparent);
-      position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-      animation:orbGlow 2s ease-in-out infinite;
-    }
-    @keyframes orbGlow {
-      0%,100%{ opacity:.4; transform:translate(-50%,-50%) scale(1); }
-      50%{ opacity:1; transform:translate(-50%,-50%) scale(1.2); }
-    }
-    .reveal-icon {
-      font-size:64px; position:absolute; top:50%; left:50%;
-      transform:translate(-50%,-50%);
-      animation:revealBounce .8s cubic-bezier(.2,.9,.3,1.1) forwards;
-      opacity:0;
-    }
-    @keyframes revealBounce {
-      0%{ opacity:0; transform:translate(-50%,-50%) scale(.3); }
-      60%{ opacity:1; transform:translate(-50%,-50%) scale(1.2); }
-      100%{ opacity:1; transform:translate(-50%,-50%) scale(1); }
-    }
-    .star-particle {
-      position:absolute; font-size:14px;
-      animation:starFloat 1.5s ease-out forwards; opacity:0;
-    }
-    @keyframes starFloat {
-      0%{ opacity:1; transform:translate(0,0) scale(1); }
-      100%{ opacity:0; transform:translate(var(--dx),var(--dy)) scale(0); }
-    }
-
-    /* Advice card */
-    .advice-card {
-      background:var(--surface); border:1px solid var(--border);
-      border-radius:20px; padding:24px 20px 20px;
-      max-width:360px; width:100%; text-align:center;
-      animation:cardPop .5s cubic-bezier(.2,.9,.3,1.1) .2s both;
-      box-shadow: var(--shadow-lg);
-    }
-    .advice-mood-tags { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin-bottom:16px; }
-    .advice-mood-tag {
-      background:rgba(154,125,84,.1); border-radius:100px;
-      padding:4px 12px; font-size:12px; color:var(--accent);
-    }
-    .advice-title { font-size:18px; font-weight:700; color:var(--text); margin-bottom:12px; line-height:1.4; }
-    .advice-text { font-size:14px; color:var(--text2); line-height:1.8; margin-bottom:8px; text-align:left; }
-    .advice-strategy {
-      font-size:13px; color:var(--accent); line-height:1.7; text-align:left;
-      background:rgba(154,125,84,.06); border-radius:var(--radius-sm);
-      padding:12px 14px; margin-top:12px;
-    }
-    .advice-nav { display:flex; justify-content:flex-end; margin-top:16px; }
-
-    /* Wheel page */
-    .mood-wheel-page {
-      flex:1; display:none; flex-direction:column;
-      align-items:center; justify-content:center;
-      padding:40px 20px 80px; gap:20px;
-    }
-    .mood-wheel-page.active { display:flex; }
-    .wheel-title { font-size:16px; font-weight:600; color:var(--text2); letter-spacing:2px; }
-    .wheel-hint { font-size:13px; color:var(--text3); margin-top:4px; }
-    .wheel-container {
-      position:relative; width:min(75vw,280px); height:min(75vw,280px);
-    }
-    .wheel-container canvas {
-      width:100%; height:100%; border-radius:50%;
-      border:3px solid var(--accent);
-      box-shadow:0 0 30px rgba(154,125,84,.2);
-      cursor:pointer;
-    }
-    .wheel-result { font-size:32px; font-weight:700; color:var(--accent); text-align:center; min-height:40px; }
-    .wheel-result-label { font-size:13px; color:var(--text3); text-align:center; }
-    .wheel-done-btn {
-      margin-top:8px; background: linear-gradient(135deg, var(--accent3), var(--accent)); color:#fff; border:none;
-      border-radius:100px; padding:10px 32px; font-size:14px; font-weight:600;
-      cursor:pointer; font-family:inherit; transition:opacity .15s, transform .15s;
-    }
-    .wheel-done-btn:hover { opacity:.85; transform:translateY(-1px); }
-    .wheel-done-btn:hover { opacity:.85; }
-
-    /* ===== MOOD WHEEL OVERLAY ===== */
-    .mood-wheel-overlay {
-      position: fixed; inset: 0; z-index: 180;
-      background: var(--bg);
-      display: none; flex-direction: column;
-      align-items: center; justify-content: center;
-      padding: 40px 20px 80px; gap: 20px;
-    }
-    .mood-wheel-overlay.active { display: flex; }
-
-    /* ===== MOOD CLINIC ON HOME ===== */
-    .mood-clinic-section {
-      margin: 24px 16px 80px;
-      padding: 24px 16px;
+    /* ===== MOOD THERMOMETER ===== */
+    .mood-thermometer-section {
+      margin: 20px 16px 80px;
+      padding: 20px 16px 16px;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      text-align: center;
       box-shadow: var(--shadow-sm);
     }
-    .mood-clinic-title {
+    .mood-thermometer-title {
       font-size: 15px;
       font-weight: 600;
       color: var(--text);
-      margin-bottom: 16px;
-      letter-spacing: 1px;
-    }
-    .mood-clinic-sun {
-      width: min(28vw, 140px);
-      height: min(28vw, 140px);
-      border-radius: 50%;
-      background: radial-gradient(circle at 35% 35%, #f7dfa0, #d9b35e, #9a7d54);
+      margin-bottom: 14px;
       display: flex;
       align-items: center;
-      justify-content: center;
-      font-size: min(12vw, 56px);
-      cursor: pointer;
-      box-shadow: 0 0 40px rgba(217,179,94,.3), 0 0 80px rgba(217,179,94,.08);
-      transition: transform .15s, box-shadow .15s;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-      animation: sunPulse 3s ease-in-out infinite;
-      margin: 0 auto;
-      position: relative;
+      gap: 6px;
     }
-    .mood-clinic-sun:active { transform: scale(.95); box-shadow: 0 0 16px rgba(212,165,74,.3); animation: none; }
-    .mood-clinic-sun.pressing { transform: scale(1.08); box-shadow: 0 0 50px rgba(212,165,74,.5), 0 0 100px rgba(212,165,74,.2); animation: none; }
-    .mood-clinic-sun .sun-ring {
-      position: absolute; inset: -8px; border-radius: 50%;
-      border: 3px solid transparent; border-top-color: rgba(255,223,120,.9);
-      opacity: 0; transition: opacity .2s;
+    .mood-thermometer-score {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--accent);
+      text-align: center;
+      margin-bottom: 4px;
+      transition: color .2s;
     }
-    .mood-clinic-sun.pressing .sun-ring {
-      opacity: 1;
-      animation: sunRingRotate 1s linear infinite;
-    }
-    @keyframes sunRingRotate {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-    .mood-clinic-sun .sun-glow {
-      position: absolute; inset: -20px; border-radius: 50%;
-      background: conic-gradient(from 0deg, transparent 0%, rgba(255,220,100,.15) 25%, transparent 50%, rgba(255,220,100,.1) 75%, transparent 100%);
-      opacity: 0; transition: opacity .3s;
-    }
-    .mood-clinic-sun.pressing .sun-glow {
-      opacity: 1;
-      animation: sunGlowSpin 2s linear infinite;
-    }
-    @keyframes sunGlowSpin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-    .mood-clinic-hint {
+    .mood-thermometer-label {
       font-size: 12px;
       color: var(--text3);
-      margin-top: 12px;
+      text-align: center;
+      margin-bottom: 14px;
+    }
+    .mood-thermometer-bar {
+      display: flex;
+      gap: 4px;
+      align-items: flex-end;
+      height: 56px;
+      padding: 0 4px;
+    }
+    .mood-thermometer-segment {
+      flex: 1;
+      border-radius: 6px 6px 2px 2px;
+      cursor: pointer;
+      transition: transform .15s, opacity .15s;
+      position: relative;
+      min-height: 8px;
+    }
+    .mood-thermometer-segment:active { transform: scaleY(0.92); }
+    .mood-thermometer-segment.inactive { opacity: 0.22; }
+    .mood-thermometer-segment.active { opacity: 1; }
+    .mood-thermometer-segment .seg-num {
+      position: absolute;
+      bottom: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+      color: var(--text3);
+      font-weight: 500;
+    }
+    .mood-thermometer-segment.active .seg-num {
+      color: var(--text);
+      font-weight: 700;
+    }
+    .mood-thermometer-hint {
+      font-size: 11px;
+      color: var(--text3);
+      text-align: center;
+      margin-top: 22px;
     }
 
     /* ===== TODO PAGE ===== */
@@ -1312,8 +1152,6 @@
       .template-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
       .tab-item { font-size: 9px; }
       .tab-item .tab-icon { font-size: 20px; }
-      .emotion-chip { padding:6px 14px; font-size:12px; }
-      .wheel-container { width:min(70vw,250px); height:min(70vw,250px); }
     }
   </style>
 </head>
@@ -1346,16 +1184,15 @@
   </div>
   <div class="tasks-grid" id="tasks-grid"></div>
 
-  <!-- 情绪诊所 -->
-  <div class="mood-clinic-section">
-    <div class="mood-clinic-title">🌤 情绪诊所</div>
-    <div class="mood-clinic-sun" id="home-sun-btn">
-      <div class="sun-glow"></div>
-      <div class="sun-ring"></div>
-      ☀️
-    </div>
-    <div class="mood-clinic-hint">长按太阳，测一测今天的心情 ✦</div>
+  <!-- 心情温度计 -->
+  <div class="mood-thermometer-section" id="mood-thermometer">
+    <div class="mood-thermometer-title">🌡️ 心情温度计</div>
+    <div class="mood-thermometer-score" id="mood-score-display">—</div>
+    <div class="mood-thermometer-label" id="mood-score-label">今天的心情是几分？</div>
+    <div class="mood-thermometer-bar" id="mood-bar"></div>
+    <div class="mood-thermometer-hint">点击数字给今天的心情打分（1~10）</div>
   </div>
+
 </div>
 
 <!-- ===================== TAB 2: 待办 ===================== -->
@@ -1450,7 +1287,7 @@
 
     <div class="me-profile-title">📋 自我档案</div>
 
-    <div class="me-section" id="me-mbti-section"></div>
+    <div class="me-section" id="me-mood-section"></div>
 
     <div class="me-section">
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
@@ -1665,24 +1502,6 @@
   </div>
 </div>
 
-<!-- ===================== PROFILE MBTI MODAL ===================== -->
-<div class="modal-overlay" id="modal-mbti" onclick="if(event.target===event.currentTarget)this.classList.remove('open')">
-  <div class="modal-sheet">
-    <h2>MBTI 类型</h2>
-    <div class="anni-form-row">
-      <label>你的 MBTI 类型</label>
-      <input class="input-field" id="mbti-input" type="text" placeholder="例如：INFJ、ENTP…" maxlength="4" />
-    </div>
-    <div class="anni-form-row">
-      <label>补充说明（可选）</label>
-      <textarea class="input-field" id="mbti-note" style="min-height:80px;resize:vertical;" placeholder="记录你对这个类型的理解…"></textarea>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="document.getElementById('modal-mbti').classList.remove('open')">取消</button>
-      <button class="btn btn-primary" onclick="saveMbti()">保存</button>
-    </div>
-  </div>
-</div>
 
 <!-- ===================== NAME EDIT MODAL ===================== -->
 <div class="modal-overlay" id="modal-name" onclick="if(event.target===event.currentTarget)this.classList.remove('open')">
@@ -1747,49 +1566,6 @@
   </button>
 </div>
 
-<!-- ===================== MOOD PICKER OVERLAY ===================== -->
-<div class="mood-overlay" id="mood-picker-overlay">
-  <div class="picker-card">
-    <div class="picker-round" id="picker-round">第 1/3 轮</div>
-    <div class="picker-emotions" id="picker-emotions"></div>
-    <div class="picker-nav">
-      <button class="picker-nav-btn" id="picker-next-btn" onclick="pickerNext()">
-        <span id="picker-next-text">下一组</span> →
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- ===================== MOOD REVEAL OVERLAY ===================== -->
-<div class="mood-overlay" id="mood-reveal-overlay">
-  <div class="reveal-container" id="reveal-container">
-    <div class="reveal-stars" id="reveal-stars">
-      <div class="reveal-orb"></div>
-      <div class="reveal-icon" id="reveal-icon">🔮</div>
-    </div>
-  </div>
-  <div class="advice-card" id="advice-card" style="display:none">
-    <div class="advice-mood-tags" id="advice-mood-tags"></div>
-    <div class="advice-title" id="advice-title"></div>
-    <div class="advice-text" id="advice-text"></div>
-    <div class="advice-strategy" id="advice-strategy"></div>
-    <div class="advice-nav">
-      <button class="picker-nav-btn" onclick="goToWheel()">下一步 →</button>
-    </div>
-  </div>
-</div>
-
-<!-- ===================== MOOD WHEEL OVERLAY ===================== -->
-<div id="mood-wheel-overlay" class="mood-wheel-overlay">
-  <div class="wheel-title">🌤 心情温度</div>
-  <div class="wheel-hint">点击轮盘，选择你的温度</div>
-  <div class="wheel-container" id="wheel-container">
-    <canvas id="wheel-canvas" width="560" height="560"></canvas>
-  </div>
-  <div class="wheel-result" id="wheel-result"></div>
-  <div class="wheel-result-label" id="wheel-result-label"></div>
-  <button class="wheel-done-btn" id="wheel-done-btn" style="display:none" onclick="wheelDone()">完成 ✦</button>
-</div>
 
 <!-- ===================== LIGHTBOX ===================== -->
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
@@ -2080,6 +1856,8 @@ function selectTemplate(index) {
 
 /* ======================== WELCOME / MOOD ======================== */
 const MOOD_KEY = 'checkin_mood_today';
+const MOOD_SCORE_KEY = 'wellness_mood_score';
+const MOOD_HISTORY_KEY = 'wellness_mood_history';
 const QUOTE_KEY = 'checkin_quote_index';
 
 const MOOD_WORDS = [
@@ -2337,301 +2115,259 @@ function skipWelcome() {
   closeWelcomeCard();
 }
 
-/* ======================== MOOD TAB ======================== */
-const MOOD_DATA_KEY = 'mood_records';
-let moodSession = { round:0, selected:[], roundWords:[] };
-let sunPressTimer = null;
 
-/* --- Data --- */
-function loadMoodData() {
-  try { return JSON.parse(localStorage.getItem(MOOD_DATA_KEY) || '{}'); }
-  catch(e) { return {}; }
-}
-function saveMoodData(data) {
-  localStorage.setItem(MOOD_DATA_KEY, JSON.stringify(data));
+/* --- Mood Thermometer --- */
+const MOOD_COLORS = [
+  '#4a90d9','#5ba3c6','#6cb6b3','#7dc9a0','#8edc8d',
+  '#a0c96e','#b2b64f','#c4a330','#d69018','#e87d00'
+];
+
+function getMoodScore() {
+  const raw = localStorage.getItem(MOOD_SCORE_KEY);
+  if (!raw) return null;
+  try {
+    const obj = JSON.parse(raw);
+    if (obj.date === todayStr()) return obj.score;
+  } catch(e) {}
+  return null;
 }
 
-/* --- Sun button long press --- */
-function initSunButton() {
-  const sun = document.getElementById('home-sun-btn');
-  if (!sun) return;
-  function startPress(e) {
-    e.preventDefault();
-    sun.classList.add('pressing');
-    sunPressTimer = setTimeout(() => {
-      sun.classList.remove('pressing');
-      sunPressTimer = null;
-      startMoodSession();
-    }, 1000);
+function setMoodScore(score) {
+  localStorage.setItem(MOOD_SCORE_KEY, JSON.stringify({ date: todayStr(), score }));
+  renderMoodThermometer();
+}
+
+function getMoodHistory() {
+  const raw = localStorage.getItem(MOOD_HISTORY_KEY);
+  if (!raw) return {};
+  try { return JSON.parse(raw); } catch(e) { return {}; }
+}
+
+function recordMoodToHistory() {
+  const current = getMoodScore();
+  if (current === null) return;
+  const history = getMoodHistory();
+  history[todayStr()] = current;
+  // Keep only last 30 days
+  const keys = Object.keys(history).sort();
+  if (keys.length > 30) {
+    keys.slice(0, keys.length - 30).forEach(k => delete history[k]);
   }
-  function endPress(e) {
-    e.preventDefault();
-    sun.classList.remove('pressing');
-    if (sunPressTimer) { clearTimeout(sunPressTimer); sunPressTimer = null; }
+  localStorage.setItem(MOOD_HISTORY_KEY, JSON.stringify(history));
+}
+
+function checkMoodMidnight() {
+  // Record previous day's mood at 1:00 AM
+  const now = new Date();
+  const hour = now.getHours();
+  const today = todayStr();
+  const lastRecordDate = localStorage.getItem('wellness_mood_last_record_date');
+
+  // Only record between 0:00 and 1:00, and only once per day
+  if (hour < 1 && lastRecordDate !== today) {
+    // It's past midnight but before 1 AM — record yesterday's score
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const ydStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth()+1).padStart(2,'0')}-${String(yesterday.getDate()).padStart(2,'0')}`;
+    const currentScore = getMoodScore();
+    if (currentScore !== null) {
+      const hist = getMoodHistory();
+      hist[ydStr] = currentScore;
+      // Keep only last 60 days
+      const keys = Object.keys(hist).sort();
+      if (keys.length > 60) {
+        keys.slice(0, keys.length - 60).forEach(k => delete hist[k]);
+      }
+      localStorage.setItem(MOOD_HISTORY_KEY, JSON.stringify(hist));
+    }
+    localStorage.setItem('wellness_mood_last_record_date', today);
+    localStorage.removeItem(MOOD_SCORE_KEY);
+  } else if (hour >= 1 && lastRecordDate !== today) {
+    // Past 1 AM and haven't recorded yet today — it means app wasn't open during 0-1 AM
+    // Record yesterday's score if it exists (yesterday's date)
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const ydStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth()+1).padStart(2,'0')}-${String(yesterday.getDate()).padStart(2,'0')}`;
+    const hist = getMoodHistory();
+    // Only record if we haven't already recorded yesterday
+    if (!hist[ydStr]) {
+      const currentScore = getMoodScore();
+      if (currentScore !== null) {
+        hist[ydStr] = currentScore;
+        const keys = Object.keys(hist).sort();
+        if (keys.length > 60) {
+          keys.slice(0, keys.length - 60).forEach(k => delete hist[k]);
+        }
+        localStorage.setItem(MOOD_HISTORY_KEY, JSON.stringify(hist));
+      }
+    }
+    localStorage.setItem('wellness_mood_last_record_date', today);
+    localStorage.removeItem(MOOD_SCORE_KEY);
   }
-  sun.addEventListener('mousedown', startPress);
-  sun.addEventListener('mouseup', endPress);
-  sun.addEventListener('mouseleave', endPress);
-  sun.addEventListener('touchstart', startPress, {passive:false});
-  sun.addEventListener('touchend', endPress);
-  sun.addEventListener('touchcancel', endPress);
 }
 
-/* --- Mood session: 3 rounds of 5 emotions --- */
-function startMoodSession() {
-  moodSession = { round:1, selected:[], roundWords:[] };
-  showPickerRound();
-  document.getElementById('mood-picker-overlay').classList.add('open');
-}
+function renderMoodThermometer() {
+  const bar = document.getElementById('mood-bar');
+  const display = document.getElementById('mood-score-display');
+  const label = document.getElementById('mood-score-label');
+  if (!bar) return;
 
-function showPickerRound() {
-  const shuffled = [...MOOD_WORDS].sort(() => Math.random() - 0.5);
-  const picks = shuffled.slice(0, 5);
-  moodSession.roundWords = picks;
-  document.getElementById('picker-round').textContent = `第 ${moodSession.round}/3 轮`;
-  const container = document.getElementById('picker-emotions');
-  container.innerHTML = picks.map(w =>
-    `<button class="emotion-chip" onclick="toggleEmotion(this,'${w}')">${w}</button>`
-  ).join('');
-  const nextText = document.getElementById('picker-next-text');
-  nextText.textContent = moodSession.round < 3 ? '下一组' : '揭晓 ✦';
-}
+  const current = getMoodScore();
 
-function toggleEmotion(btn, word) {
-  btn.classList.toggle('selected');
-  if (btn.classList.contains('selected')) {
-    if (!moodSession.selected.includes(word)) moodSession.selected.push(word);
+  if (current !== null) {
+    display.textContent = current;
+    display.style.color = MOOD_COLORS[current - 1];
+    label.textContent = '今天的心情温度';
   } else {
-    moodSession.selected = moodSession.selected.filter(w => w !== word);
+    display.textContent = '—';
+    display.style.color = 'var(--accent)';
+    label.textContent = '今天的心情是几分？';
+  }
+
+  bar.innerHTML = '';
+  for (let i = 1; i <= 10; i++) {
+    const seg = document.createElement('div');
+    seg.className = 'mood-thermometer-segment';
+    const heightPct = 25 + (i * 7.5); // 32.5% to 100%
+    seg.style.height = heightPct + '%';
+    seg.style.background = MOOD_COLORS[i - 1];
+    if (current === null || i > current) {
+      seg.classList.add('inactive');
+    } else {
+      seg.classList.add('active');
+    }
+    seg.innerHTML = `<span class="seg-num">${i}</span>`;
+    seg.addEventListener('click', () => setMoodScore(i));
+    bar.appendChild(seg);
   }
 }
 
-function pickerNext() {
-  if (moodSession.round < 3) {
-    moodSession.round++;
-    showPickerRound();
-  } else {
-    document.getElementById('mood-picker-overlay').classList.remove('open');
-    showReveal();
-  }
-}
+function renderMoodHistoryChart() {
+  const section = document.getElementById('me-mood-section');
+  if (!section) return;
+  const history = getMoodHistory();
 
-/* --- Reveal: 占星术 animation + advice --- */
-function showReveal() {
-  const overlay = document.getElementById('mood-reveal-overlay');
-  const adviceCard = document.getElementById('advice-card');
-  const revealContainer = document.getElementById('reveal-container');
-  adviceCard.style.display = 'none';
-  revealContainer.style.display = '';
-  overlay.classList.add('open');
-
-  // Spawn star particles
-  const starsEl = document.getElementById('reveal-stars');
-  const emojis = ['✦','✧','⋆','⊹','✵','⟡','★'];
-  for (let i = 0; i < 12; i++) {
-    const p = document.createElement('span');
-    p.className = 'star-particle';
-    p.textContent = emojis[Math.floor(Math.random()*emojis.length)];
-    const angle = (i / 12) * Math.PI * 2;
-    const dist = 60 + Math.random() * 40;
-    p.style.cssText = `left:50%;top:50%;--dx:${Math.cos(angle)*dist}px;--dy:${Math.sin(angle)*dist}px;animation-delay:${i*0.08}s;font-size:${12+Math.random()*10}px;`;
-    starsEl.appendChild(p);
+  // Build last 15 days list (fill gaps with null)
+  const days = [];
+  const now = new Date();
+  for (let i = 14; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    days.push({ key, label: `${d.getMonth()+1}/${d.getDate()}`, score: history[key] || null });
   }
 
-  // Pick main icon based on dominant emotion
-  const icon = moodSession.selected.length > 0
-    ? (MOOD_ADVICE[moodSession.selected[moodSession.selected.length-1]]?.icon || '🔮')
-    : '🔮';
-  document.getElementById('reveal-icon').textContent = icon;
-
-  // After animation, show advice
-  setTimeout(() => {
-    revealContainer.style.display = 'none';
-    // Clean up particles
-    starsEl.querySelectorAll('.star-particle').forEach(p => p.remove());
-    renderAdvice();
-    adviceCard.style.display = '';
-  }, 2800);
-}
-
-function renderAdvice() {
-  const selected = moodSession.selected;
-  const tagsEl = document.getElementById('advice-mood-tags');
-  tagsEl.innerHTML = selected.length > 0
-    ? selected.map(w => `<span class="advice-mood-tag">${w}</span>`).join('')
-    : '<span class="advice-mood-tag">平静</span>';
-
-  if (selected.length === 0) {
-    document.getElementById('advice-title').textContent = '今天的你，不需要被定义';
-    document.getElementById('advice-text').textContent = '有时候，不想被归类本身就是一种智慧。不是所有时刻都需要情绪标签，此刻的空白，也许正是你和自己最诚实的距离。';
-    document.getElementById('advice-strategy').textContent = '💡 不必强求觉察。今天允许自己"没有感觉"——这本身就是一种深层的自我照顾。当你准备好了，情绪会来找你。';
+  const hasData = days.some(d => d.score !== null);
+  if (!hasData) {
+    section.innerHTML = `
+      <div class="me-card" style="padding:20px;text-align:center;">
+        <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px;">📈 心情曲线</div>
+        <div style="font-size:12px;color:var(--text3);">每天凌晨1:00自动记录心情温度，坚持打卡就能看到趋势啦 🌡️</div>
+      </div>
+    `;
     return;
   }
 
-  // Find the most "needy" emotion (prioritize negative)
-  const negativeOrder = ['崩溃','压抑','惶恐','愤懑','羞耻','愧疚','嫉恨','孤独','空虚','焦虑','迷茫','倦怠','委屈','怅然','执念'];
-  let mainEmotion = selected[0];
-  for (const neg of negativeOrder) {
-    if (selected.includes(neg)) { mainEmotion = neg; break; }
+  // SVG line chart
+  const W = 320, H = 140, padL = 24, padR = 8, padT = 12, padB = 24;
+  const plotW = W - padL - padR;
+  const plotH = H - padT - padB;
+
+  // Y-axis: 1-10
+  function yFor(s) { return padT + plotH - ((s - 1) / 9) * plotH; }
+  function xFor(i) { return padL + (i / 14) * plotW; }
+
+  // Grid lines
+  let gridLines = '';
+  for (let v = 1; v <= 10; v += 3) {
+    const y = yFor(v);
+    gridLines += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="3,3"/>`;
+    gridLines += `<text x="${padL-4}" y="${y+3}" text-anchor="end" font-size="8" fill="var(--text3)">${v}</text>`;
   }
 
-  const advice = MOOD_ADVICE[mainEmotion];
-  if (advice) {
-    document.getElementById('advice-title').textContent = advice.title;
-    document.getElementById('advice-text').textContent = advice.text;
-    document.getElementById('advice-strategy').textContent = advice.strategy;
-  }
-}
-
-/* --- Wheel page --- */
-let wheelSelected = -1;
-
-function goToWheel() {
-  document.getElementById('mood-reveal-overlay').classList.remove('open');
-  const wo = document.getElementById('mood-wheel-overlay');
-  wo.classList.add('active');
-  wheelSelected = -1;
-  drawWheel();
-  document.getElementById('wheel-result').textContent = '';
-  document.getElementById('wheel-result-label').textContent = '';
-  document.getElementById('wheel-done-btn').style.display = 'none';
-  initWheelClick();
-}
-
-function drawWheel() {
-  const canvas = document.getElementById('wheel-canvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const w = canvas.width, h = canvas.height;
-  const cx = w/2, cy = h/2, r = w/2 - 10;
-  const n = 11;
-  const segAngle = 2 * Math.PI / n;
-
-  const colors = [
-    '#7b7d8e','#87808a','#93837e','#9f8973','#a9916a',
-    '#a0845c',
-    '#8fa67a','#80b47a','#6ec48a','#5dd49e','#4de4b2'
-  ];
-
-  ctx.clearRect(0, 0, w, h);
-  for (let i = 0; i < n; i++) {
-    const start = i * segAngle - Math.PI/2;
-    const end = start + segAngle;
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.arc(cx, cy, r, start, end);
-    ctx.closePath();
-
-    if (i === wheelSelected) {
-      ctx.fillStyle = '#c4956a';
-      ctx.fill();
-      ctx.strokeStyle = '#a0845c';
-      ctx.lineWidth = 3;
-      ctx.stroke();
-    } else {
-      ctx.fillStyle = colors[i];
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(255,255,255,0.7)';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-    }
-
-    const mid = start + segAngle / 2;
-    const tr = r * 0.72;
-    const tx = cx + tr * Math.cos(mid);
-    const ty = cy + tr * Math.sin(mid);
-    ctx.fillStyle = '#fff';
-    ctx.font = (i === wheelSelected) ? 'bold 34px sans-serif' : 'bold 26px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(String(i), tx, ty);
-  }
-
-  // Center circle
-  ctx.beginPath();
-  ctx.arc(cx, cy, 38, 0, 2*Math.PI);
-  ctx.fillStyle = '#faf6f0';
-  ctx.fill();
-  ctx.strokeStyle = 'rgba(160,132,92,0.3)';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  // Center icon
-  ctx.font = '20px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillStyle = 'var(--accent)';
-  ctx.fillText('🌤', cx, cy);
-}
-
-function initWheelClick() {
-  const canvas = document.getElementById('wheel-canvas');
-  if (!canvas || canvas._clickReady) return;
-  canvas._clickReady = true;
-
-  function getSegment(clientX, clientY) {
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    const x = (clientX - rect.left) * scaleX;
-    const y = (clientY - rect.top) * scaleY;
-    const cx = canvas.width / 2;
-    const cy = canvas.height / 2;
-    const dx = x - cx;
-    const dy = y - cy;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    const r = canvas.width / 2 - 10;
-    if (dist < 38 || dist > r) return -1;
-    let angle = Math.atan2(dy, dx) + Math.PI / 2;
-    if (angle < 0) angle += Math.PI * 2;
-    const segAngle = (Math.PI * 2) / 11;
-    return Math.floor(angle / segAngle);
-  }
-
-  canvas.addEventListener('click', function(e) {
-    const seg = getSegment(e.clientX, e.clientY);
-    if (seg >= 0 && seg <= 10) {
-      wheelSelected = seg;
-      drawWheel();
-      onWheelResult(seg);
+  // Data points and path
+  const points = [];
+  days.forEach((d, i) => {
+    if (d.score !== null) {
+      points.push({ x: xFor(i), y: yFor(d.score), score: d.score, label: d.label, i });
     }
   });
 
-  canvas.addEventListener('touchend', function(e) {
-    e.preventDefault();
-    const t = e.changedTouches[0];
-    const seg = getSegment(t.clientX, t.clientY);
-    if (seg >= 0 && seg <= 10) {
-      wheelSelected = seg;
-      drawWheel();
-      onWheelResult(seg);
+  // Smooth line path using cardinal spline
+  let linePath = '';
+  let areaPath = '';
+  if (points.length >= 2) {
+    linePath = `M${points[0].x},${points[0].y}`;
+    for (let i = 0; i < points.length - 1; i++) {
+      const p0 = points[Math.max(0, i - 1)];
+      const p1 = points[i];
+      const p2 = points[i + 1];
+      const p3 = points[Math.min(points.length - 1, i + 2)];
+      const cp1x = p1.x + (p2.x - p0.x) / 6;
+      const cp1y = p1.y + (p2.y - p0.y) / 6;
+      const cp2x = p2.x - (p3.x - p1.x) / 6;
+      const cp2y = p2.y - (p3.y - p1.y) / 6;
+      linePath += ` C${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`;
+    }
+    // Area fill
+    const bottomY = padT + plotH;
+    areaPath = linePath + ` L${points[points.length-1].x},${bottomY} L${points[0].x},${bottomY} Z`;
+  } else if (points.length === 1) {
+    linePath = `M${points[0].x},${points[0].y}`;
+  }
+
+  // Dots
+  let dots = '';
+  points.forEach(p => {
+    const color = MOOD_COLORS[p.score - 1];
+    dots += `<circle cx="${p.x}" cy="${p.y}" r="3.5" fill="${color}" stroke="#fff" stroke-width="1.5"/>`;
+  });
+
+  // X labels (show every 3rd day)
+  let xLabels = '';
+  days.forEach((d, i) => {
+    if (i % 3 === 0 || i === 14) {
+      xLabels += `<text x="${xFor(i)}" y="${H - 2}" text-anchor="middle" font-size="8" fill="var(--text3)">${d.label}</text>`;
     }
   });
-}
 
-function onWheelResult(num) {
-  document.getElementById('wheel-result').textContent = num;
-  const labels = ['冰点','很低','低','偏低','中等','还行','不错','挺好','很好','很棒','满格'];
-  document.getElementById('wheel-result-label').textContent = `心情温度 ${num}/10 · ${labels[num]}`;
-  document.getElementById('wheel-done-btn').style.display = '';
+  // Score labels on dots
+  let scoreLabels = '';
+  points.forEach(p => {
+    const color = MOOD_COLORS[p.score - 1];
+    scoreLabels += `<text x="${p.x}" y="${p.y - 7}" text-anchor="middle" font-size="8" font-weight="600" fill="${color}">${p.score}</text>`;
+  });
 
-  // Save
-  const now = new Date();
-  const today = todayStr();
-  const data = loadMoodData();
-  if (!data[today]) data[today] = {};
-  data[today].temp = num;
-  data[today].tempTime = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-  data[today].words = moodSession.selected;
-  saveMoodData(data);
-}
+  const svg = `
+    <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;" xmlns="http://www.w3.org/2000/svg">
+      ${gridLines}
+      ${points.length >= 2 ? `<path d="${areaPath}" fill="url(#moodGrad)" opacity="0.2"/>` : ''}
+      ${points.length >= 2 ? `<path d="${linePath}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>` : ''}
+      ${dots}
+      ${scoreLabels}
+      ${xLabels}
+      <defs>
+        <linearGradient id="moodGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.5"/>
+          <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  `;
 
-function wheelDone() {
-  document.getElementById('mood-wheel-overlay').classList.remove('active');
-  wheelSelected = -1;
+  section.innerHTML = `
+    <div style="padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <span style="font-size:14px;font-weight:600;color:var(--text);">📈 近15天心情曲线</span>
+        <span style="font-size:10px;color:var(--text3);">每日凌晨1:00记录</span>
+      </div>
+      ${svg}
+    </div>
+  `;
 }
 
 /* --- Me page: mood curve --- */
+
 let calYear = new Date().getFullYear();
 let calMonth = new Date().getMonth();
 
@@ -2659,21 +2395,13 @@ function renderCalendar() {
     grid.appendChild(el);
   }
 
-  const moodData = loadMoodData();
   for (let day = 1; day <= daysInMonth; day++) {
     const el = document.createElement('div');
     el.className = 'cal-cell';
-    const dateKey = `${calYear}-${String(calMonth + 1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-    const hasMood = moodData[dateKey]?.temp !== undefined;
-    const hasWords = (moodData[dateKey]?.words || []).length > 0;
-    if (hasMood) el.dataset.mood = 'yes';
     const isToday = (day === todayDate && calMonth === todayMonth && calYear === todayYear);
     if (isToday) el.classList.add('today');
 
     let inner = `<span class="cal-day-num">${day}</span>`;
-    if (hasMood) {
-      inner += `<span class="cal-day-mood">${moodData[dateKey].temp}°</span>`;
-    }
     if (isToday) {
       inner += `<span class="cal-today-tag">今</span>`;
     }
@@ -2691,38 +2419,6 @@ function changeCalMonth(delta) {
 }
 
 /* --- 30 emotion advice dictionary --- */
-const MOOD_ADVICE = {
-  '欣喜': { icon:'🌟', title:'欣喜是灵魂的烟花', text:'这种纯粹的快乐是内心最真实的回应。欣喜来临时，整个世界都在发亮——请允许自己完全沉浸其中，不必急着做任何事。', strategy:'💡 试试"品味法"：闭眼30秒，感受欣喜在身体哪个位置——胸口、指尖还是嘴角？把注意力停留在这个感觉上。研究表明，主动品味积极情绪能让幸福感持续更久。' },
-  '笃定': { icon:'⛰️', title:'笃定是内心的锚', text:'当你感到笃定，说明你与自己的核心价值对齐了。这种确定感不是固执，而是经历风雨后对方向的信任。', strategy:'💡 记住此刻笃定的来源——是什么让你如此确定？把这个理由写下来。在未来的迷茫时刻，它会成为你的指南针。' },
-  '释然': { icon:'🍃', title:'释然是放下的艺术', text:'释然意味着你终于松开了紧握的拳头。那些曾经让你纠结的事，此刻已不再重要。这份轻盈，是你给自己的礼物。', strategy:'💡 享受这份轻盈。释然不是遗忘，而是与过去和解。如果将来类似的事情再出现，你会发现自己已经不再那么容易被困扰了。' },
-  '热忱': { icon:'🔥', title:'热忱是生命的火焰', text:'热忱让你感到活着。这种发自内心的激情是稀缺资源——请好好珍惜和运用它。', strategy:'💡 热忱是一把双刃剑——可以照亮前路，也可能烧尽精力。给自己设定一个"热忱预算"：今天把这份热情投入在最重要的一件事上，而不是同时点燃所有方向。' },
-  '安宁': { icon:'🪷', title:'安宁是内心的湖泊', text:'在这份安宁中，你的心湖没有波澜。不是麻木，而是通透——你已经与自己达成了某种默契。', strategy:'💡 安宁的时刻是自我修复的黄金时间。试着把这份安宁"装瓶"：用3分钟记住此刻身体的感受、呼吸的节奏。日后焦虑时，打开这瓶记忆，让它帮你回到平静。' },
-  '舒展': { icon:'🌿', title:'舒展是灵魂的伸懒腰', text:'当你感到舒展，说明你不再防御了。身体和心理都松开了紧绷的弦，你允许自己占据更大的空间。', strategy:'💡 配合身体的舒展加深感受：站起来，伸一个大大的懒腰，深呼吸3次。心理的舒展和身体的舒展会相互加强，这是"具身认知"的妙处。' },
-  '畅快': { icon:'🌊', title:'畅快是情绪的清流', text:'畅快意味着情绪在流动，没有淤堵。这是最健康的状态——你允许自己感受、表达、释放。', strategy:'💡 畅快时人的创造力会提升。趁这个状态，去做一件平时觉得难的事。畅快的情绪会给你额外的力量。' },
-  '感恩': { icon:'🙏', title:'感恩是心灵的放大镜', text:'感恩不是因为生活完美，而是你选择了看见美好。这份选择本身就是一种力量。', strategy:'💡 研究表明，每天写下3件感恩的事，6周后幸福感会显著提升。但关键是"具体"——不要只写"家人"，而要写"今天妈妈煮了我爱喝的汤"。越具体，越有力量。' },
-  '陶醉': { icon:'🌙', title:'陶醉是美的沉浸', text:'陶醉让你暂时忘记了时间。你被美深深吸引，与它融为一体。心理学称之为"心流"——这是最高质量的快乐。', strategy:'💡 试着记住是什么让你陶醉，然后有意识地为生活创造更多这样的时刻。心流不靠运气，靠设计。' },
-  '骄傲': { icon:'👑', title:'骄傲是自我认可的勋章', text:'健康的骄傲是对自身价值的确认。你做了值得骄傲的事，你有权为此高兴。', strategy:'💡 区分"健康的骄傲"和"防御性骄傲"：前者是"我做了很棒的事"，后者是"我比你强"。如果是前者，请大胆庆祝。' },
-  '踏实': { icon:'🪨', title:'踏实是双脚踩在大地上', text:'踏实意味着你和现实之间没有断裂。不是没有梦想，而是每一步都踩在实处。', strategy:'💡 踏实感来自"可预期的进展"。如果未来感到不安，试着把大目标拆成今天就能完成的小步骤。每完成一步，踏实感就增加一分。' },
-  '振奋': { icon:'⚡', title:'振奋是内心的发动机', text:'振奋给了你启动的能量。这不是虚幻的亢奋，而是有方向的内在驱动——你知道自己要去哪。', strategy:'💡 振奋的能量有时效性。不要浪费在"准备"上，直接开始行动。哪怕只做5分钟，行动本身会维持这份振奋。' },
-  '温暖': { icon:'☀️', title:'温暖是情感的阳光', text:'温暖说明你正在被爱、被关心，或者正在给予爱。这是一种安全感和连接感的体现。', strategy:'💡 试着把这份温暖传递出去——一条消息、一个拥抱、一句感谢。研究表明，给予温暖的人比接受温暖的人获得更多幸福感。' },
-  '自在': { icon:'🦋', title:'自在是做自己的特权', text:'自在意味着你不活在别人的期待里。此刻的你，不需要扮演任何角色，只需要做你自己。', strategy:'💡 注意这份自在出现在什么情境下——和谁在一起？在做什么？这些信息告诉你，什么环境让你真正放松。然后，有意识地为生活创造更多这样的环境。' },
-  '丰盈': { icon:'🌾', title:'丰盈是内心的富足', text:'丰盈不是拥有很多，而是感到足够。此刻你觉得自己什么都不缺，这种富足感比任何物质都珍贵。', strategy:'💡 丰盈感容易转瞬即逝。试着用"三元法则"锚定它：记录3个让你感到丰盈的具体事物。当匮乏感来袭时，读一遍这个清单。' },
-  '焦虑': { icon:'🌀', title:'焦虑是对未来的过度预演', text:'焦虑不是你的敌人，它是大脑的保护机制——它在努力预警危险。只是有时，这个警报太响了。', strategy:'💡 试试"5-4-3-2-1接地法"：说出5个你看到的、4个能触摸的、3个听到的、2个闻到的、1个尝到的。这能把注意力从"未来"拉回"当下"，打断焦虑的循环。' },
-  '迷茫': { icon:'🌫️', title:'迷茫是成长的必经之路', text:'迷茫不是坏事——它说明旧的路已经走完，新的路还没出现。这个过渡期恰恰是蜕变的开始。', strategy:'💡 迷茫时不要急着找方向。先做一件事：今天能做的最小一步是什么？不需要看清整条路，只需要看见脚下这一步。方向是在走的过程中逐渐清晰的。' },
-  '倦怠': { icon:'😴', title:'倦怠是身体在喊停', text:'倦怠不是懒惰，而是你的身心在请求休息。长期透支后，倦怠是最后一道防线。', strategy:'💡 允许自己休息，不带任何愧疚。设定一个"无产出时间"：2小时内不完成任何任务，只是存在。这不是浪费，是充电。' },
-  '孤独': { icon:'🪶', title:'孤独是一个人的交响乐', text:'孤独不等于没有人陪。有时候，即使身处人群，内心依然感到孤独。这种感觉本身是正常的。', strategy:'💡 区分"独处"和"孤独"：独处是选择，孤独是感受。试试"微连接"——给一个朋友发一条简短的消息，一个表情包也行。连接的质量比时长更重要。' },
-  '愤懑': { icon:'🌋', title:'愤懑是未发出的呐喊', text:'愤懑说明你的边界被侵犯了，或者你的需要被忽视了。这份愤怒是有理由的，不必压抑它。', strategy:'💡 试试"书写宣泄法"：拿一张纸，把所有不满写下来，不需要逻辑，不需要文采。写完后你可以撕掉它。表达本身就释放了。' },
-  '羞耻': { icon:'🎭', title:'羞耻是贴错了的标签', text:'羞耻是最具破坏力的情绪之一，因为它让你觉得"我是坏的"。但请记住：你做了不好的事，不代表你是不好的。', strategy:'💡 布琳·布朗的研究指出：羞耻在沉默中生长，在共情中消亡。试着对信任的人说出你的羞耻感。"我不是我的错误。"对自己说三遍。' },
-  '怅然': { icon:'🍂', title:'怅然是时光留下的回响', text:'怅然是一种温柔的失落——你并没有崩溃，但有些东西悄悄流逝了。这种淡淡的忧伤，恰恰说明你在乎过。', strategy:'💡 允许自己怀旧3分钟，然后做一个"新的小期待"：给明天安排一件让你有点期待的事。怅然说再见，期待说你好。' },
-  '嫉恨': { icon:'🪞', title:'嫉恨是一面扭曲的镜子', text:'嫉恨不是道德缺陷，它指向你内心深处未被满足的渴望。你嫉妒的，往往正是你真正想要的。', strategy:'💡 把嫉恨当作导航仪：问自己"我到底想要什么？"嫉恨的表面是"为什么他有我没有"，但内核是"我也想要那个"。当你把它翻译成渴望，它就从毒药变成了指南针。' },
-  '惶恐': { icon:'⚡', title:'惶恐是站在悬崖边的本能', text:'惶恐比焦虑更强烈——它让你感觉危险就在眼前。但请知道：感受是真实的，危险不一定是。', strategy:'💡 用"4-7-8呼吸法"安抚神经系统：吸气4秒→屏息7秒→呼气8秒。重复3次。这不是逃避，是给大脑一个"我很安全"的生理信号。' },
-  '压抑': { icon:'🧱', title:'压抑是被困住的河流', text:'压抑意味着你的情绪找不到出口。不是没有感受，而是不允许自己感受。这堵墙可能保护了你很久，但现在它也困住了你。', strategy:'💡 找一个不会伤害任何人的方式释放：撕纸、用力握拳再松开、对着枕头大喊、在纸上乱涂。让情绪有一道裂缝流出来，比筑更高的堤坝安全得多。' },
-  '委屈': { icon:'💧', title:'委屈是未被听见的哭声', text:'委屈说明你觉得被不公平地对待了，但又无法表达或改变。这种无力感很真实，你不是"太敏感"。', strategy:'💡 委屈最需要的是"被看见"。拿出纸笔，写下"我觉得委屈是因为……"不需要理性分析，只需要如实写下感受。当你承认了委屈，它就不再独自膨胀了。' },
-  '空虚': { icon:'🕳️', title:'空虚是意义的缺席', text:'空虚不是没有情绪，而是一种"什么都感觉不到"的麻木。它像一层灰色的薄膜，把你和世界隔开了。', strategy:'💡 空虚时不要用刺激填充（刷手机、暴食等），这只会让空虚更严重。试试"微意义法"：做一件小到不可能失败的有意义的事——整理桌面、给植物浇水、做一组拉伸。行动能重新建立与世界的连接。' },
-  '执念': { icon:'🔗', title:'执念是紧握的拳头', text:'执念说明你在极力抓住什么——一个人、一个结果、一个念头。但你越紧握，它越让你痛苦。', strategy:'💡 试试"放手练习"：握紧拳头10秒，感受紧张；然后慢慢松开，感受释放。在心里做同样的事：想象自己慢慢松开手。放手不是放弃，而是不再用力去控制不可控的东西。' },
-  '愧疚': { icon:'🪞', title:'愧疚是良心的低语', text:'愧疚说明你有反思能力，这是好品质。但过度的愧疚会变成自我惩罚——你已经为这件事痛苦过了，不必永远偿还。', strategy:'💡 区分"健康的愧疚"和"有毒的愧疚"：前者指向行为（"我做了一件不好的事"），后者指向人格（"我是个坏人"）。试着把"我不好"改成"我做得不好"，这一字之差，是自我惩罚和自我成长的分界线。' },
-  '崩溃': { icon:'🌊', title:'崩溃不是终点，是重建的起点', text:'崩溃意味着你承受的已经超过了极限。这不是软弱——恰恰相反，你已经撑了很久。现在，请允许自己停下来。', strategy:'💡 崩溃时不需要做任何"有用"的事。你现在唯一需要做的就是：对自己温柔。如果可以，找一个安全的地方，允许自己哭泣。眼泪中含有压力激素——哭泣本身就是一种生理排毒。你不需要立刻好起来，但你会好起来。' }
-};
 
 /* ======================== UTILS ======================== */
 function formatDate(ts) {
@@ -2776,6 +2472,9 @@ function switchTab(tabName) {
   window.scrollTo(0, 0);
 
   // Tab-specific init
+  if (tabName === 'record') {
+    renderMoodThermometer();
+  }
   if (tabName === 'mood') {
     renderTodos();
   }
@@ -3698,7 +3397,7 @@ function ensureProfileDefaults() {
   const p = loadProfile();
   if (!p.name) p.name = '访客';
   if (!p.avatar) p.avatar = '';
-  if (!p.mbti) p.mbti = { type: '', note: '' };
+
   if (!p.confusions) {
     p.confusions = DEFAULT_CONFUSIONS.map((title, i) => ({
       id: 'conf_' + i, title, content: ''
@@ -3722,16 +3421,8 @@ function renderMePage() {
   const nameEl = document.getElementById('me-name');
   if (nameEl) nameEl.textContent = p.name;
 
-  // MBTI section
-  const mbtiSection = document.getElementById('me-mbti-section');
-  if (mbtiSection) {
-    mbtiSection.innerHTML = `
-      <div class="me-card" onclick="openMbtiModal()">
-        <div class="me-card-title">🔮 MBTI 类型</div>
-        ${p.mbti.type ? `<div class="me-card-value">${escapeHtml(p.mbti.type)}</div>` : ''}
-      </div>
-    `;
-  }
+  // Mood history section
+  renderMoodHistoryChart();
 
   // Confusion grid
   const confGrid = document.getElementById('me-confusion-grid');
@@ -3805,23 +3496,6 @@ function openSettings() {
   setView('view-settings');
 }
 
-// MBTI
-function openMbtiModal() {
-  const p = loadProfile();
-  document.getElementById('mbti-input').value = p.mbti.type || '';
-  document.getElementById('mbti-note').value = p.mbti.note || '';
-  document.getElementById('modal-mbti').classList.add('open');
-}
-function saveMbti() {
-  const type = document.getElementById('mbti-input').value.trim().toUpperCase();
-  const note = document.getElementById('mbti-note').value.trim();
-  const p = loadProfile();
-  p.mbti = { type, note };
-  saveProfile(p);
-  document.getElementById('modal-mbti').classList.remove('open');
-  renderMePage();
-  showToast('已保存');
-}
 
 // Name
 function openNameModal() {
@@ -3943,6 +3617,8 @@ async function goHome() {
     } catch(e) { /* keep current cache */ }
   }
   renderHome();
+  checkMoodMidnight();
+  renderMoodThermometer();
   switchTab('record');
 }
 
@@ -3996,8 +3672,6 @@ if ('serviceWorker' in navigator) {
   document.getElementById('welcome-quote').textContent = getNextQuote();
   document.getElementById('welcome-overlay').style.display = 'flex';
 
-  // Init mood sun button
-  initSunButton();
 
   // First load local data immediately (no loading screen!)
   const localData = loadLocalData();
