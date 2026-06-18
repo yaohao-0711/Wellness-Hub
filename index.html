@@ -3916,7 +3916,16 @@ document.addEventListener('DOMContentLoaded', () => {
     voiceTouchInProgress = true;
     startVoiceRecording(e);
   }, {passive:false});
-  btn.addEventListener('touchend', () => {
+  // Listen on document so finger can slide off the button
+  document.addEventListener('touchend', (e) => {
+    if (!voiceTouchInProgress) return;
+    voiceTouchInProgress = false;
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      stopVoiceRecording();
+    }
+  });
+  document.addEventListener('touchcancel', () => {
+    if (!voiceTouchInProgress) return;
     voiceTouchInProgress = false;
     stopVoiceRecording();
   });
@@ -3926,11 +3935,15 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   btn.addEventListener('mouseup', () => {
     if (voiceTouchInProgress) return;
-    stopVoiceRecording();
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      stopVoiceRecording();
+    }
   });
   btn.addEventListener('mouseleave', () => {
     if (voiceTouchInProgress) return;
-    stopVoiceRecording();
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      stopVoiceRecording();
+    }
   });
 });
 
