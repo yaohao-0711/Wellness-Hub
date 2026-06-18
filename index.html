@@ -353,6 +353,61 @@
     }
     .submit-btn:hover { opacity: .85; transform: translateY(-1px); }
     .submit-btn:disabled { opacity: .4; cursor: not-allowed; }
+    /* Voice recording */
+    .voice-toggle-btn {
+      display: flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--surface2); border: 1px solid var(--border);
+      cursor: pointer; font-size: 18px; transition: background .2s;
+    }
+    .voice-toggle-btn:hover { background: var(--border); }
+    .voice-toggle-btn.active { background: var(--accent); color: #fff; }
+    #voice-record-container {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+    }
+    .voice-record-btn {
+      width: 100%; height: 72px; border-radius: var(--radius-sm);
+      background: var(--surface); border: 1px solid var(--border);
+      display: none; align-items: center; justify-content: center;
+      font-size: 16px; color: var(--text2); cursor: pointer;
+      user-select: none; -webkit-user-select: none;
+      transition: background .15s, transform .15s;
+      touch-action: none;
+    }
+    .voice-record-btn.recording {
+      background: #e8f5e9; border-color: var(--green); color: #2e7d32;
+      transform: scale(1.02); font-weight: 600;
+    }
+    .voice-slide-cancel {
+      height: 20px; font-size: 12px; color: var(--text3); text-align: center;
+      transition: color .2s;
+    }
+    .voice-slide-cancel.cancel { color: var(--danger); font-weight: 600; }
+    /* Voice record in list */
+    .record-voice {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: #f0f4e8; border-radius: 12px; padding: 10px 16px;
+      cursor: pointer; margin-top: 6px; max-width: 220px;
+      border: 1px solid transparent; transition: border-color .2s;
+    }
+    .record-voice:active { border-color: var(--accent3); }
+    .voice-wave { display: flex; align-items: center; gap: 2px; }
+    .voice-wave span {
+      width: 3px; background: var(--accent); border-radius: 2px;
+      display: inline-block;
+    }
+    .voice-wave span:nth-child(1) { height: 12px; }
+    .voice-wave span:nth-child(2) { height: 18px; }
+    .voice-wave span:nth-child(3) { height: 24px; }
+    .voice-wave span:nth-child(4) { height: 16px; }
+    .voice-wave span:nth-child(5) { height: 20px; }
+    .record-voice.playing .voice-wave span { animation: voice-wave 0.5s infinite alternate; }
+    @keyframes voice-wave {
+      0% { transform: scaleY(0.5); }
+      100% { transform: scaleY(1.2); }
+    }
+    .voice-duration { font-size: 12px; color: var(--text3); white-space: nowrap; }
+    .record-voice.playing .voice-duration { color: var(--accent); font-weight: 600; }
 
     /* ===== HEATMAP VIEW ===== */
     .heatmap-container { padding: 16px 16px 40px; }
@@ -1347,11 +1402,16 @@
     <div class="records-list" id="records-list"></div>
   </div>
   <div class="add-record-area">
+    <div id="voice-record-container" style="display:none">
+      <div class="voice-record-btn" id="voice-record-btn">按住 说话</div>
+      <div class="voice-slide-cancel" id="voice-slide-cancel"></div>
+    </div>
     <textarea class="add-record-textarea" id="record-text" placeholder="记录今天的想法、感悟…" oninput="autoResize(this)"></textarea>
     <div class="img-previews" id="img-previews"></div>
     <div class="add-record-controls">
       <label class="img-upload-label" for="img-input" title="添加图片">🖼</label>
       <input type="file" id="img-input" accept="image/*" multiple onchange="handleImages(this)" />
+      <button class="voice-toggle-btn" id="voice-toggle" onclick="toggleVoiceMode()" title="语音记录">🎤</button>
       <button class="submit-btn" id="submit-btn" onclick="submitRecord()">记录</button>
     </div>
   </div>
@@ -1759,6 +1819,13 @@ async function createRecordDB(taskId, text, images) {
 }
 
 async function deleteRecordDB(id) {
+  // Clean up audio blob if voice record
+  for (const t of tasksCache) {
+    const r = t.records.find(rec => rec.id === id);
+    if (r && r.type === 'voice' && r.audioId) {
+      deleteAudioBlob(r.audioId).catch(() => {});
+    }
+  }
   if (cloudAvailable) {
     try {
       await apiFetch('records', 'DELETE', null, 'id=eq.' + id);
@@ -2692,6 +2759,15 @@ async function deleteTask(id) {
 function openTask(id) {
   currentTaskId = id;
   pendingImages = [];
+  // Reset and hide voice mode
+  isVoiceMode = false;
+  document.getElementById('record-text').style.display = '';
+  const voiceContainer = document.getElementById('voice-record-container');
+  if (voiceContainer) voiceContainer.style.display = 'none';
+  const voiceBtn = document.getElementById('voice-record-btn');
+  if (voiceBtn) { voiceBtn.style.display = 'none'; voiceBtn.textContent = '按住 说话'; voiceBtn.classList.remove('recording'); }
+  const toggle = document.getElementById('voice-toggle');
+  if (toggle) { toggle.textContent = '🎤'; toggle.title = '语音记录'; }
   const task = getTaskFromCache(id);
   if (!task) return;
   document.getElementById('detail-title').textContent = task.name;
@@ -2731,13 +2807,17 @@ function renderRecords(task) {
     item.innerHTML = `
       <button class="record-del" onclick="event.stopPropagation();deleteRecord('${r.id}')" title="删除">✕</button>
       <div class="record-time">${formatDatetime(ts)}</div>
-      ${r.text ? `<div class="record-content" onclick="event.stopPropagation();this.classList.toggle('expanded')">${escapeHtml(r.text)}</div>` : ''}
+      ${r.type === 'voice' ? `<div class="record-voice" onclick="event.stopPropagation();playVoice('${r.audioId}', this)">
+        <span class="voice-duration">${formatVoiceDuration(r.duration)}</span>
+        <span class="voice-wave"><span></span><span></span><span></span><span></span><span></span></span>
+      </div>` : ''}
+      ${(r.type !== 'voice' && r.text) ? `<div class="record-content" onclick="event.stopPropagation();this.classList.toggle('expanded')">${escapeHtml(r.text)}</div>` : ''}
       ${imgs ? `<div class="record-images">${imgs}</div>` : ''}
     `;
     // Long press to edit record
     let lpTimer = null;
     function startLP(e) {
-      if (e.target.closest('.record-del') || e.target.closest('.record-img')) return;
+      if (e.target.closest('.record-del') || e.target.closest('.record-img') || e.target.closest('.record-voice')) return;
       lpTimer = setTimeout(() => {
         lpTimer = null;
         item.classList.add('long-pressing');
@@ -3618,6 +3698,9 @@ function doDeleteProfileItem() {
 
 /* ======================== NAVIGATION ======================== */
 async function goHome() {
+  // Stop any playing audio
+  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+  document.querySelectorAll('.voice-play-btn.playing, .record-voice.playing').forEach(el => el.classList.remove('playing'));
   if (cloudAvailable) {
     try {
       const tasks = await apiFetch('tasks', 'GET', null, 'select=*&order=created_at.asc');
@@ -3659,6 +3742,237 @@ function escapeHtml(str) {
     .replace(/>/g,'&gt;')
     .replace(/"/g,'&quot;');
 }
+
+/* ======================== VOICE RECORDING ======================== */
+function formatVoiceDuration(ms) {
+  const sec = Math.floor(ms / 1000);
+  return sec < 60 ? sec + '"' : Math.floor(sec/60) + '\'' + (sec%60) + '"';
+}
+// IndexedDB for audio storage
+let voiceDB = null;
+function openVoiceDB() {
+  return new Promise((resolve, reject) => {
+    if (voiceDB) return resolve(voiceDB);
+    const req = indexedDB.open('VoiceStore', 1);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains('audios')) {
+        db.createObjectStore('audios', { keyPath: 'id' });
+      }
+    };
+    req.onsuccess = e => { voiceDB = e.target.result; resolve(voiceDB); };
+    req.onerror = e => reject(e.target.error);
+  });
+}
+async function saveAudioBlob(id, blob) {
+  const db = await openVoiceDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('audios', 'readwrite');
+    tx.objectStore('audios').put({ id, blob });
+    tx.oncomplete = resolve;
+    tx.onerror = e => reject(e.target.error);
+  });
+}
+async function getAudioBlob(id) {
+  const db = await openVoiceDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('audios', 'readonly');
+    const req = tx.objectStore('audios').get(id);
+    req.onsuccess = e => resolve(e.target.result ? e.target.result.blob : null);
+    req.onerror = e => reject(e.target.error);
+  });
+}
+async function deleteAudioBlob(id) {
+  const db = await openVoiceDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('audios', 'readwrite');
+    tx.objectStore('audios').delete(id);
+    tx.oncomplete = resolve;
+    tx.onerror = e => reject(e.target.error);
+  });
+}
+
+// Voice recording state
+let isVoiceMode = false;
+let mediaRecorder = null;
+let audioChunks = [];
+let recordingTimer = null;
+let recordingDuration = 0;
+let voiceToggle = false;
+let currentAudio = null; // currently playing audio element
+
+function toggleVoiceMode() {
+  isVoiceMode = !isVoiceMode;
+  const textarea = document.getElementById('record-text');
+  const voiceBtn = document.getElementById('voice-record-btn');
+  const voiceContainer = document.getElementById('voice-record-container');
+  const toggle = document.getElementById('voice-toggle');
+  if (isVoiceMode) {
+    textarea.style.display = 'none';
+    if (voiceContainer) voiceContainer.style.display = 'flex';
+    voiceBtn.style.display = 'flex';
+    toggle.textContent = '⌨';
+    toggle.title = '切换文字输入';
+  } else {
+    textarea.style.display = '';
+    if (voiceContainer) voiceContainer.style.display = 'none';
+    voiceBtn.style.display = 'none';
+    toggle.textContent = '🎤';
+    toggle.title = '语音记录';
+    stopVoiceRecording(true);
+  }
+}
+
+function startVoiceRecording(e) {
+  e.preventDefault();
+  if (mediaRecorder && mediaRecorder.state === 'recording') return;
+  audioChunks = [];
+  recordingDuration = 0;
+  const btn = document.getElementById('voice-record-btn');
+  btn.classList.add('recording');
+  btn.textContent = '松开 结束';
+  const slideUp = document.getElementById('voice-slide-cancel');
+  if (slideUp) slideUp.textContent = '上滑取消';
+  slideUp && slideUp.classList.remove('cancel');
+
+  navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+    // Prefer Opus if available
+    const opts = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+      ? { mimeType: 'audio/webm;codecs=opus' }
+      : {};
+    mediaRecorder = new MediaRecorder(stream, opts);
+    mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+    mediaRecorder.onstop = async () => {
+      stream.getTracks().forEach(t => t.stop());
+      const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+      if (recordingDuration < 500) {
+        showToast('录音时间太短');
+        return;
+      }
+      const audioId = 'audio_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+      await saveAudioBlob(audioId, blob);
+      const record = { audioId, duration: recordingDuration };
+      await createVoiceRecord(currentTaskId, record);
+      const task = getTaskFromCache(currentTaskId);
+      if (task) renderRecords(task);
+      showToast('✅ 语音已保存');
+      setTimeout(() => {
+        const sa = document.getElementById('detail-records');
+        sa.scrollTop = sa.scrollHeight;
+      }, 50);
+    };
+    mediaRecorder.start();
+    // Duration timer
+    recordingTimer = setInterval(() => {
+      recordingDuration += 100;
+      const sec = Math.floor(recordingDuration / 1000);
+      const ms = Math.floor((recordingDuration % 1000) / 100);
+      const btn2 = document.getElementById('voice-record-btn');
+      if (btn2) btn2.textContent = `${sec}.${ms}s`;
+    }, 100);
+  }).catch(err => {
+    console.error('Microphone error:', err);
+    showToast('❌ 无法访问麦克风');
+    btn.classList.remove('recording');
+    btn.textContent = '按住 说话';
+  });
+}
+
+function stopVoiceRecording(cancel) {
+  if (recordingTimer) { clearInterval(recordingTimer); recordingTimer = null; }
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
+    if (cancel) {
+      mediaRecorder.onstop = () => {
+        mediaRecorder.stream?.getTracks().forEach(t => t.stop());
+      };
+      mediaRecorder.stop();
+    } else {
+      mediaRecorder.stop();
+    }
+  }
+  const btn = document.getElementById('voice-record-btn');
+  if (btn) { btn.classList.remove('recording'); btn.textContent = '按住 说话'; }
+  const slideUp = document.getElementById('voice-slide-cancel');
+  if (slideUp) { slideUp.textContent = ''; slideUp.classList.remove('cancel'); }
+}
+
+function handleVoiceTouchMove(e) {
+  const slideUp = document.getElementById('voice-slide-cancel');
+  if (!slideUp) return;
+  const rect = slideUp.getBoundingClientRect();
+  const touch = e.touches[0];
+  // If finger is near/above the slide-up area, mark as cancel
+  if (touch.clientY < rect.top + 20) {
+    slideUp.textContent = '松开手指，取消发送';
+    slideUp.classList.add('cancel');
+  } else {
+    slideUp.textContent = '上滑取消';
+    slideUp.classList.remove('cancel');
+  }
+}
+
+function handleVoiceTouchEnd(e) {
+  const slideUp = document.getElementById('voice-slide-cancel');
+  const shouldCancel = slideUp && slideUp.classList.contains('cancel');
+  if (shouldCancel) {
+    stopVoiceRecording(true);
+    showToast('已取消录音');
+  } else {
+    stopVoiceRecording(false);
+  }
+}
+
+async function createVoiceRecord(taskId, voiceData) {
+  const localId = 'local_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+  const now = new Date().toISOString();
+  const record = { id: localId, task_id: taskId, type: 'voice', audioId: voiceData.audioId, duration: voiceData.duration, images: [], created_at: now };
+  const task = tasksCache.find(t => t.id === taskId);
+  if (task) task.records.push(record);
+  saveToLocal();
+  return record;
+}
+
+function playVoice(audioId, btnEl) {
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio = null;
+    document.querySelectorAll('.voice-play-btn.playing').forEach(el => el.classList.remove('playing'));
+  }
+  getAudioBlob(audioId).then(blob => {
+    if (!blob) { showToast('❌ 语音文件不存在'); return; }
+    const url = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    currentAudio = audio;
+    btnEl.classList.add('playing');
+    audio.onended = () => {
+      btnEl.classList.remove('playing');
+      URL.revokeObjectURL(url);
+      currentAudio = null;
+    };
+    audio.onerror = () => {
+      btnEl.classList.remove('playing');
+      showToast('❌ 播放失败');
+      currentAudio = null;
+    };
+    audio.play().catch(() => {
+      btnEl.classList.remove('playing');
+      showToast('❌ 播放失败');
+      currentAudio = null;
+    });
+  });
+}
+
+// Init voice button event listeners
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('voice-record-btn');
+  if (!btn) return;
+  btn.addEventListener('touchstart', startVoiceRecording, {passive:false});
+  btn.addEventListener('touchmove', handleVoiceTouchMove, {passive:true});
+  btn.addEventListener('touchend', handleVoiceTouchEnd);
+  btn.addEventListener('mousedown', startVoiceRecording);
+  btn.addEventListener('mouseup', () => stopVoiceRecording(false));
+  btn.addEventListener('mouseleave', () => stopVoiceRecording(true));
+});
 
 /* ======================== KEYBOARD ======================== */
 document.addEventListener('keydown', e => {
