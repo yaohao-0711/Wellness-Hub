@@ -2562,9 +2562,10 @@ function renderHome() {
     // Short press to open, long press to edit
     let lpTimer = null;
     let touchMoved = false;
+    let touchStartY = 0;
     function startLP(e) {
       touchMoved = false;
-      e.preventDefault();
+      touchStartY = e.touches ? e.touches[0].clientY : 0;
       card.classList.add('long-pressing');
       lpTimer = setTimeout(() => {
         card.classList.remove('long-pressing');
@@ -2572,7 +2573,9 @@ function renderHome() {
         openEditTaskModal(task.id, task.name);
       }, 600);
     }
-    function onTouchMove() {
+    function onTouchMove(e) {
+      const dy = Math.abs(e.touches[0].clientY - touchStartY);
+      if (dy < 10) return; // 小抖动不算，仍然算点击
       touchMoved = true;
       if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; }
       card.classList.remove('long-pressing');
@@ -2588,8 +2591,8 @@ function renderHome() {
     card.addEventListener('mousedown', startLP);
     card.addEventListener('mouseup', () => endLP(true));
     card.addEventListener('mouseleave', () => endLP(false));
-    card.addEventListener('touchstart', startLP, {passive:false});
-    card.addEventListener('touchmove', onTouchMove, {passive:false});
+    card.addEventListener('touchstart', startLP, {passive:true});
+    card.addEventListener('touchmove', onTouchMove, {passive:true});
     card.addEventListener('touchend', () => endLP(true));
     card.addEventListener('touchcancel', () => endLP(false));
     grid.appendChild(card);
