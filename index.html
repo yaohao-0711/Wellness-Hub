@@ -1227,7 +1227,7 @@
 <div id="view-tab-record" class="tab-view active">
   <div class="home-header">
     <div class="home-header-text">
-      <div class="greeting">心理屋 🏠</div>
+      <div class="greeting">心理小屋 🏠</div>
       <div class="date-label" id="home-date"></div>
     </div>
     <button class="add-task-btn" onclick="openNewTaskModal()" title="新建任务">+</button>
@@ -3808,50 +3808,79 @@ function toggleVoiceMode() {
 
 function startVoiceRecording(e) {
   e.preventDefault();
+  showToast('正在启动录音…');
   if (mediaRecorder && mediaRecorder.state === 'recording') return;
   audioChunks = [];
   recordingDuration = 0;
   const btn = document.getElementById('voice-record-btn');
   btn.classList.add('recording');
-  btn.textContent = '松开 结束';
+  btn.textContent = '0.0s';
+
+  // Microphone with timeout
+  const micTimeout = setTimeout(() => {
+    showToast('❌ 麦克风无响应');
+    btn.classList.remove('recording');
+    btn.textContent = '按住 说话';
+  }, 5000);
 
   navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-    const opts = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-      ? { mimeType: 'audio/webm;codecs=opus' }
-      : {};
-    mediaRecorder = new MediaRecorder(stream, opts);
-    mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
-    mediaRecorder.onstop = async () => {
+    clearTimeout(micTimeout);
+    // Try supported MIME types
+    const type = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus'
+               : MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm'
+               : MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4'
+               : '';
+    mediaRecorder = new MediaRecorder(stream, type ? { mimeType: type } : {});
+    mediaRecorder.ondataavailable = e => {
+      if (e.data.size > 0) audioChunks.push(e.data);
+    };
+    mediaRecorder.onstop = () => {
       stream.getTracks().forEach(t => t.stop());
-      const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+      if (audioChunks.length === 0) {
+        showToast('❌ 未收到音频数据');
+        return;
+      }
+      const blob = new Blob(audioChunks, { type: type || 'audio/webm' });
       if (recordingDuration < 500) {
         showToast('录音时间太短');
         return;
       }
-      const audioId = 'audio_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
-      await saveAudioBlob(audioId, blob);
-      const record = { audioId, duration: recordingDuration };
-      await createVoiceRecord(currentTaskId, record);
-      const task = getTaskFromCache(currentTaskId);
-      if (task) renderRecords(task);
-      showToast('✅ 语音已保存');
-      setTimeout(() => {
-        const sa = document.getElementById('detail-records');
-        sa.scrollTop = sa.scrollHeight;
-      }, 50);
+      const audioId = 'audio_' + Date.now();
+      saveAudioBlob(audioId, blob).then(() => {
+        return createVoiceRecord(currentTaskId, { audioId, duration: recordingDuration });
+      }).then(() => {
+        const task = getTaskFromCache(currentTaskId);
+        if (task) renderRecords(task);
+        showToast('✅ 语音已保存');
+        setTimeout(() => {
+          const sa = document.getElementById('detail-records');
+          if (sa) sa.scrollTop = sa.scrollHeight;
+        }, 50);
+      }).catch(err => {
+        console.error('Save failed:', err);
+        showToast('❌ 保存失败');
+      });
     };
     mediaRecorder.start();
-    // Duration timer
+    showToast('🎤 录音中…');
+    // Update duration display
     recordingTimer = setInterval(() => {
       recordingDuration += 100;
       const sec = Math.floor(recordingDuration / 1000);
-      const ms = Math.floor((recordingDuration % 1000) / 100);
+      const deci = Math.floor((recordingDuration % 1000) / 100);
       const btn2 = document.getElementById('voice-record-btn');
-      if (btn2) btn2.textContent = `${sec}.${ms}s`;
+      if (btn2) btn2.textContent = sec + '.' + deci + 's';
     }, 100);
   }).catch(err => {
-    console.error('Microphone error:', err);
-    showToast('❌ 无法访问麦克风');
+    clearTimeout(micTimeout);
+    console.error('Mic error:', err);
+    if (err.name === 'NotAllowedError') {
+      showToast('❌ 请允许使用麦克风');
+    } else if (err.name === 'NotFoundError') {
+      showToast('❌ 未找到麦克风');
+    } else {
+      showToast('❌ 无法访问麦克风');
+    }
     btn.classList.remove('recording');
     btn.textContent = '按住 说话';
   });
@@ -3859,8 +3888,12 @@ function startVoiceRecording(e) {
 
 function stopVoiceRecording() {
   if (recordingTimer) { clearInterval(recordingTimer); recordingTimer = null; }
-  if (mediaRecorder && mediaRecorder.state === 'recording') {
-    mediaRecorder.stop();
+  try {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      mediaRecorder.stop();
+    }
+  } catch(e) {
+    console.error('Stop error:', e);
   }
   mediaRecorder = null;
   const btn = document.getElementById('voice-record-btn');
@@ -3909,15 +3942,14 @@ function playVoice(audioId, btnEl) {
 
 // Init voice button event listeners
 let voiceTouchInProgress = false;
-document.addEventListener('DOMContentLoaded', () => {
+(function initVoice() {
   const btn = document.getElementById('voice-record-btn');
   if (!btn) return;
   btn.addEventListener('touchstart', (e) => {
     voiceTouchInProgress = true;
     startVoiceRecording(e);
   }, {passive:false});
-  // Listen on document so finger can slide off the button
-  document.addEventListener('touchend', (e) => {
+  document.addEventListener('touchend', () => {
     if (!voiceTouchInProgress) return;
     voiceTouchInProgress = false;
     if (mediaRecorder && mediaRecorder.state === 'recording') {
@@ -3945,7 +3977,7 @@ document.addEventListener('DOMContentLoaded', () => {
       stopVoiceRecording();
     }
   });
-});
+})();
 
 /* ======================== KEYBOARD ======================== */
 document.addEventListener('keydown', e => {
