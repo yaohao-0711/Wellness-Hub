@@ -3798,6 +3798,7 @@ let mediaRecorder = null;
 let audioChunks = [];
 let recordingTimer = null;
 let recordingDuration = 0;
+let recordingCanceled = false;
 let voiceToggle = false;
 let currentAudio = null; // currently playing audio element
 
@@ -3819,7 +3820,8 @@ function toggleVoiceMode() {
     voiceBtn.style.display = 'none';
     toggle.textContent = '🎤';
     toggle.title = '语音记录';
-    stopVoiceRecording(true);
+    recordingCanceled = true;
+    stopVoiceRecording();
   }
 }
 
@@ -3828,6 +3830,7 @@ function startVoiceRecording(e) {
   if (mediaRecorder && mediaRecorder.state === 'recording') return;
   audioChunks = [];
   recordingDuration = 0;
+  recordingCanceled = false;
   const btn = document.getElementById('voice-record-btn');
   btn.classList.add('recording');
   btn.textContent = '松开 结束';
@@ -3836,7 +3839,6 @@ function startVoiceRecording(e) {
   slideUp && slideUp.classList.remove('cancel');
 
   navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-    // Prefer Opus if available
     const opts = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
       ? { mimeType: 'audio/webm;codecs=opus' }
       : {};
@@ -3844,6 +3846,7 @@ function startVoiceRecording(e) {
     mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
     mediaRecorder.onstop = async () => {
       stream.getTracks().forEach(t => t.stop());
+      if (recordingCanceled) return;
       const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
       if (recordingDuration < 500) {
         showToast('录音时间太短');
@@ -3881,15 +3884,9 @@ function startVoiceRecording(e) {
 function stopVoiceRecording(cancel) {
   if (recordingTimer) { clearInterval(recordingTimer); recordingTimer = null; }
   if (mediaRecorder && mediaRecorder.state === 'recording') {
-    if (cancel) {
-      mediaRecorder.onstop = () => {
-        mediaRecorder.stream?.getTracks().forEach(t => t.stop());
-      };
-      mediaRecorder.stop();
-    } else {
-      mediaRecorder.stop();
-    }
+    mediaRecorder.stop();
   }
+  mediaRecorder = null;
   const btn = document.getElementById('voice-record-btn');
   if (btn) { btn.classList.remove('recording'); btn.textContent = '按住 说话'; }
   const slideUp = document.getElementById('voice-slide-cancel');
@@ -3915,10 +3912,11 @@ function handleVoiceTouchEnd(e) {
   const slideUp = document.getElementById('voice-slide-cancel');
   const shouldCancel = slideUp && slideUp.classList.contains('cancel');
   if (shouldCancel) {
-    stopVoiceRecording(true);
+    recordingCanceled = true;
+    stopVoiceRecording();
     showToast('已取消录音');
   } else {
-    stopVoiceRecording(false);
+    stopVoiceRecording();
   }
 }
 
@@ -3963,15 +3961,33 @@ function playVoice(audioId, btnEl) {
 }
 
 // Init voice button event listeners
+let voiceTouchInProgress = false;
 document.addEventListener('DOMContentLoaded', () => {
   const btn = document.getElementById('voice-record-btn');
   if (!btn) return;
-  btn.addEventListener('touchstart', startVoiceRecording, {passive:false});
+  btn.addEventListener('touchstart', (e) => {
+    voiceTouchInProgress = true;
+    startVoiceRecording(e);
+  }, {passive:false});
   btn.addEventListener('touchmove', handleVoiceTouchMove, {passive:true});
-  btn.addEventListener('touchend', handleVoiceTouchEnd);
-  btn.addEventListener('mousedown', startVoiceRecording);
-  btn.addEventListener('mouseup', () => stopVoiceRecording(false));
-  btn.addEventListener('mouseleave', () => stopVoiceRecording(true));
+  btn.addEventListener('touchend', (e) => {
+    voiceTouchInProgress = false;
+    handleVoiceTouchEnd(e);
+  });
+  btn.addEventListener('mousedown', (e) => {
+    if (voiceTouchInProgress) return;
+    startVoiceRecording(e);
+  });
+  btn.addEventListener('mouseup', () => {
+    if (voiceTouchInProgress) return;
+    recordingCanceled = false;
+    stopVoiceRecording();
+  });
+  btn.addEventListener('mouseleave', () => {
+    if (voiceTouchInProgress) return;
+    recordingCanceled = true;
+    stopVoiceRecording();
+  });
 });
 
 /* ======================== KEYBOARD ======================== */
