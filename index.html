@@ -362,9 +362,6 @@
     }
     .voice-toggle-btn:hover { background: var(--border); }
     .voice-toggle-btn.active { background: var(--accent); color: #fff; }
-    #voice-record-container {
-      display: flex; flex-direction: column; align-items: center; gap: 4px;
-    }
     .voice-record-btn {
       width: 100%; height: 72px; border-radius: var(--radius-sm);
       background: var(--surface); border: 1px solid var(--border);
@@ -378,11 +375,6 @@
       background: #e8f5e9; border-color: var(--green); color: #2e7d32;
       transform: scale(1.02); font-weight: 600;
     }
-    .voice-slide-cancel {
-      height: 20px; font-size: 12px; color: var(--text3); text-align: center;
-      transition: color .2s;
-    }
-    .voice-slide-cancel.cancel { color: var(--danger); font-weight: 600; }
     /* Voice record in list */
     .record-voice {
       display: inline-flex; align-items: center; gap: 10px;
@@ -1402,10 +1394,7 @@
     <div class="records-list" id="records-list"></div>
   </div>
   <div class="add-record-area">
-    <div id="voice-record-container" style="display:none">
-      <div class="voice-record-btn" id="voice-record-btn">按住 说话</div>
-      <div class="voice-slide-cancel" id="voice-slide-cancel"></div>
-    </div>
+    <div class="voice-record-btn" id="voice-record-btn">按住 说话</div>
     <textarea class="add-record-textarea" id="record-text" placeholder="记录今天的想法、感悟…" oninput="autoResize(this)"></textarea>
     <div class="img-previews" id="img-previews"></div>
     <div class="add-record-controls">
@@ -2762,8 +2751,6 @@ function openTask(id) {
   // Reset and hide voice mode
   isVoiceMode = false;
   document.getElementById('record-text').style.display = '';
-  const voiceContainer = document.getElementById('voice-record-container');
-  if (voiceContainer) voiceContainer.style.display = 'none';
   const voiceBtn = document.getElementById('voice-record-btn');
   if (voiceBtn) { voiceBtn.style.display = 'none'; voiceBtn.textContent = '按住 说话'; voiceBtn.classList.remove('recording'); }
   const toggle = document.getElementById('voice-toggle');
@@ -3798,29 +3785,23 @@ let mediaRecorder = null;
 let audioChunks = [];
 let recordingTimer = null;
 let recordingDuration = 0;
-let recordingCanceled = false;
-let voiceToggle = false;
 let currentAudio = null; // currently playing audio element
 
 function toggleVoiceMode() {
   isVoiceMode = !isVoiceMode;
   const textarea = document.getElementById('record-text');
   const voiceBtn = document.getElementById('voice-record-btn');
-  const voiceContainer = document.getElementById('voice-record-container');
   const toggle = document.getElementById('voice-toggle');
   if (isVoiceMode) {
     textarea.style.display = 'none';
-    if (voiceContainer) voiceContainer.style.display = 'flex';
     voiceBtn.style.display = 'flex';
     toggle.textContent = '⌨';
     toggle.title = '切换文字输入';
   } else {
     textarea.style.display = '';
-    if (voiceContainer) voiceContainer.style.display = 'none';
     voiceBtn.style.display = 'none';
     toggle.textContent = '🎤';
     toggle.title = '语音记录';
-    recordingCanceled = true;
     stopVoiceRecording();
   }
 }
@@ -3830,13 +3811,9 @@ function startVoiceRecording(e) {
   if (mediaRecorder && mediaRecorder.state === 'recording') return;
   audioChunks = [];
   recordingDuration = 0;
-  recordingCanceled = false;
   const btn = document.getElementById('voice-record-btn');
   btn.classList.add('recording');
   btn.textContent = '松开 结束';
-  const slideUp = document.getElementById('voice-slide-cancel');
-  if (slideUp) slideUp.textContent = '上滑取消';
-  slideUp && slideUp.classList.remove('cancel');
 
   navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
     const opts = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
@@ -3846,7 +3823,6 @@ function startVoiceRecording(e) {
     mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
     mediaRecorder.onstop = async () => {
       stream.getTracks().forEach(t => t.stop());
-      if (recordingCanceled) return;
       const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
       if (recordingDuration < 500) {
         showToast('录音时间太短');
@@ -3881,7 +3857,7 @@ function startVoiceRecording(e) {
   });
 }
 
-function stopVoiceRecording(cancel) {
+function stopVoiceRecording() {
   if (recordingTimer) { clearInterval(recordingTimer); recordingTimer = null; }
   if (mediaRecorder && mediaRecorder.state === 'recording') {
     mediaRecorder.stop();
@@ -3889,35 +3865,6 @@ function stopVoiceRecording(cancel) {
   mediaRecorder = null;
   const btn = document.getElementById('voice-record-btn');
   if (btn) { btn.classList.remove('recording'); btn.textContent = '按住 说话'; }
-  const slideUp = document.getElementById('voice-slide-cancel');
-  if (slideUp) { slideUp.textContent = ''; slideUp.classList.remove('cancel'); }
-}
-
-function handleVoiceTouchMove(e) {
-  const slideUp = document.getElementById('voice-slide-cancel');
-  if (!slideUp) return;
-  const rect = slideUp.getBoundingClientRect();
-  const touch = e.touches[0];
-  // If finger is near/above the slide-up area, mark as cancel
-  if (touch.clientY < rect.top + 20) {
-    slideUp.textContent = '松开手指，取消发送';
-    slideUp.classList.add('cancel');
-  } else {
-    slideUp.textContent = '上滑取消';
-    slideUp.classList.remove('cancel');
-  }
-}
-
-function handleVoiceTouchEnd(e) {
-  const slideUp = document.getElementById('voice-slide-cancel');
-  const shouldCancel = slideUp && slideUp.classList.contains('cancel');
-  if (shouldCancel) {
-    recordingCanceled = true;
-    stopVoiceRecording();
-    showToast('已取消录音');
-  } else {
-    stopVoiceRecording();
-  }
 }
 
 async function createVoiceRecord(taskId, voiceData) {
@@ -3969,10 +3916,9 @@ document.addEventListener('DOMContentLoaded', () => {
     voiceTouchInProgress = true;
     startVoiceRecording(e);
   }, {passive:false});
-  btn.addEventListener('touchmove', handleVoiceTouchMove, {passive:true});
-  btn.addEventListener('touchend', (e) => {
+  btn.addEventListener('touchend', () => {
     voiceTouchInProgress = false;
-    handleVoiceTouchEnd(e);
+    stopVoiceRecording();
   });
   btn.addEventListener('mousedown', (e) => {
     if (voiceTouchInProgress) return;
@@ -3980,12 +3926,10 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   btn.addEventListener('mouseup', () => {
     if (voiceTouchInProgress) return;
-    recordingCanceled = false;
     stopVoiceRecording();
   });
   btn.addEventListener('mouseleave', () => {
     if (voiceTouchInProgress) return;
-    recordingCanceled = true;
     stopVoiceRecording();
   });
 });
