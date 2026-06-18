@@ -76,8 +76,9 @@
 
     /* ===== SCROLL AREA ===== */
     .scroll-area {
-      flex: 1; overflow-y: auto; padding: 16px;
+      flex: 1; overflow-y: auto; padding: 16px 20px;
       -webkit-overflow-scrolling: touch;
+      touch-action: pan-y;
     }
     .scroll-area::-webkit-scrollbar { width: 4px; }
     .scroll-area::-webkit-scrollbar-track { background: transparent; }
@@ -85,7 +86,7 @@
 
     /* ===== HOME VIEW ===== */
     .home-header {
-      padding: 28px 16px 16px;
+      padding: 28px 20px 16px;
       display: flex; justify-content: center; align-items: center;
       position: relative;
     }
@@ -117,17 +118,19 @@
     .tasks-grid {
       padding: 0 16px 16px;
       display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 12px;
+      gap: 20px 16px;
     }
     .task-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 16px 14px;
+      touch-action: manipulation;
       cursor: pointer;
       transition: transform .2s, border-color .2s, box-shadow .2s;
       position: relative; overflow: hidden;
       box-shadow: var(--shadow-sm);
+      -webkit-tap-highlight-color: transparent;
     }
     .task-card::before {
       content: ''; position: absolute; left: 0; top: 0; bottom: 0;
@@ -1177,7 +1180,7 @@
 <div id="view-tab-record" class="tab-view active">
   <div class="home-header">
     <div class="home-header-text">
-      <div class="greeting">心理小屋 🏠</div>
+      <div class="greeting">心理屋 🏠</div>
       <div class="date-label" id="home-date"></div>
     </div>
     <button class="add-task-btn" onclick="openNewTaskModal()" title="新建任务">+</button>
@@ -2558,7 +2561,9 @@ function renderHome() {
     `;
     // Short press to open, long press to edit
     let lpTimer = null;
+    let touchMoved = false;
     function startLP(e) {
+      touchMoved = false;
       e.preventDefault();
       card.classList.add('long-pressing');
       lpTimer = setTimeout(() => {
@@ -2567,11 +2572,16 @@ function renderHome() {
         openEditTaskModal(task.id, task.name);
       }, 600);
     }
+    function onTouchMove() {
+      touchMoved = true;
+      if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; }
+      card.classList.remove('long-pressing');
+    }
     function endLP(isClick) {
       card.classList.remove('long-pressing');
       const wasShort = lpTimer !== null;
       if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; }
-      if (wasShort && isClick) {
+      if (wasShort && isClick && !touchMoved) {
         openTask(task.id);
       }
     }
@@ -2579,6 +2589,7 @@ function renderHome() {
     card.addEventListener('mouseup', () => endLP(true));
     card.addEventListener('mouseleave', () => endLP(false));
     card.addEventListener('touchstart', startLP, {passive:false});
+    card.addEventListener('touchmove', onTouchMove, {passive:false});
     card.addEventListener('touchend', () => endLP(true));
     card.addEventListener('touchcancel', () => endLP(false));
     grid.appendChild(card);
