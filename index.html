@@ -2791,14 +2791,15 @@ function renderRecords(task) {
     const imgs = (r.images || []).map(src =>
       `<img class="record-img" src="${src}" alt="" onclick="event.stopPropagation();openLightbox(this.src)" />`
     ).join('');
+    const isVoice = r.type === 'voice' || r.audioId;
     item.innerHTML = `
       <button class="record-del" onclick="event.stopPropagation();deleteRecord('${r.id}')" title="删除">✕</button>
       <div class="record-time">${formatDatetime(ts)}</div>
-      ${r.type === 'voice' ? `<div class="record-voice" onclick="event.stopPropagation();playVoice('${r.audioId}', this)">
-        <span class="voice-duration">${formatVoiceDuration(r.duration)}</span>
+      ${isVoice ? `<div class="record-voice" onclick="event.stopPropagation();playVoice('${r.audioId}', this)">
+        <span class="voice-duration">${formatVoiceDuration(r.duration || 0)}</span>
         <span class="voice-wave"><span></span><span></span><span></span><span></span><span></span></span>
       </div>` : ''}
-      ${(r.type !== 'voice' && r.text) ? `<div class="record-content" onclick="event.stopPropagation();this.classList.toggle('expanded')">${escapeHtml(r.text)}</div>` : ''}
+      ${(!isVoice && r.text) ? `<div class="record-content" onclick="event.stopPropagation();this.classList.toggle('expanded')">${escapeHtml(r.text)}</div>` : ''}
       ${imgs ? `<div class="record-images">${imgs}</div>` : ''}
     `;
     // Long press to edit record
