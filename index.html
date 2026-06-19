@@ -1848,7 +1848,8 @@ function saveToLocal() {
     id: t.id, name: t.name, created_at: t.created_at,
     records: (t.records || []).map(r => ({
       id: r.id, task_id: r.task_id, text: r.text,
-      images: r.images, created_at: r.created_at
+      images: r.images, created_at: r.created_at,
+      type: r.type, audioId: r.audioId, duration: r.duration
     }))
   }))});
 }
