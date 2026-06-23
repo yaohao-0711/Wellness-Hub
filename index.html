@@ -793,8 +793,8 @@
     .placeholder-page .ph-text { font-size: 20px; font-weight: 600; letter-spacing: 2px; }
     .placeholder-page .ph-sub { font-size: 13px; color: var(--text3); }
 
-    /* ===== MOOD THERMOMETER ===== */
-    .mood-thermometer-section {
+    /* ===== GRAVITY (万有引力) ===== */
+    .gravity-section {
       margin: 20px 16px 80px;
       padding: 20px 16px 16px;
       background: var(--surface);
@@ -802,7 +802,7 @@
       border-radius: var(--radius);
       box-shadow: var(--shadow-sm);
     }
-    .mood-thermometer-title {
+    .gravity-title {
       font-size: 15px;
       font-weight: 600;
       color: var(--text);
@@ -811,56 +811,85 @@
       align-items: center;
       gap: 6px;
     }
-    .mood-thermometer-score {
-      font-size: 36px;
-      font-weight: 700;
-      color: var(--accent);
-      text-align: center;
-      margin-bottom: 4px;
-      transition: color .2s;
-    }
-    .mood-thermometer-label {
-      font-size: 12px;
+    .gravity-prompt {
+      font-size: 13px;
       color: var(--text3);
       text-align: center;
-      margin-bottom: 14px;
-    }
-    .mood-thermometer-bar {
-      display: flex;
-      gap: 4px;
-      align-items: flex-end;
-      height: 56px;
-      padding: 0 4px;
-    }
-    .mood-thermometer-segment {
-      flex: 1;
-      border-radius: 6px 6px 2px 2px;
+      padding: 12px 8px;
+      background: rgba(0,0,0,0.03);
+      border-radius: var(--radius-sm);
       cursor: pointer;
-      transition: transform .15s, opacity .15s;
-      position: relative;
-      min-height: 8px;
+      transition: background .2s;
+      border: 1px dashed transparent;
     }
-    .mood-thermometer-segment:active { transform: scaleY(0.92); }
-    .mood-thermometer-segment.inactive { opacity: 0.22; }
-    .mood-thermometer-segment.active { opacity: 1; }
-    .mood-thermometer-segment .seg-num {
-      position: absolute;
-      bottom: -18px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 11px;
-      color: var(--text3);
-      font-weight: 500;
+    .gravity-prompt:active { background: rgba(0,0,0,0.06); }
+    .gravity-input-wrap {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      animation: gravityFadeIn .25s ease;
     }
-    .mood-thermometer-segment.active .seg-num {
+    .gravity-input-wrap.open { display: flex; }
+    @keyframes gravityFadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .gravity-textarea {
+      width: 100%;
+      min-height: 72px;
+      max-height: 140px;
+      padding: 10px 12px;
+      font-size: 14px;
+      line-height: 1.5;
       color: var(--text);
-      font-weight: 700;
+      background: #fafafa;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      resize: none;
+      box-sizing: border-box;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
     }
-    .mood-thermometer-hint {
+    .gravity-textarea:focus {
+      border-color: #7c6fb0;
+      box-shadow: 0 0 0 3px rgba(124,111,176,.12);
+    }
+    .gravity-textarea::placeholder { color: var(--text3); }
+    .gravity-save-row {
+      display: flex;
+      justify-content: flex-end;
+    }
+    .gravity-save-btn {
+      padding: 7px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      background: linear-gradient(135deg, #7c6fb0, #9b8cc4);
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: opacity .2s, transform .15s;
+    }
+    .gravity-save-btn:active { opacity: .8; transform: scale(.96); }
+    .gravity-saved {
+      margin-top: 12px;
+      padding: 10px 12px;
+      background: linear-gradient(135deg, rgba(124,111,176,.06), rgba(155,140,196,.06));
+      border-left: 3px solid #7c6fb0;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    }
+    .gravity-saved-label {
       font-size: 11px;
-      color: var(--text3);
-      text-align: center;
-      margin-top: 22px;
+      color: #7c6fb0;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .gravity-saved-text {
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.5;
+      word-break: break-word;
     }
 
     /* ===== TODO PAGE ===== */
@@ -1234,13 +1263,20 @@
   </div>
   <div class="tasks-grid" id="tasks-grid"></div>
 
-  <!-- 心情温度计 -->
-  <div class="mood-thermometer-section" id="mood-thermometer">
-    <div class="mood-thermometer-title">🌡️ 心情温度计</div>
-    <div class="mood-thermometer-score" id="mood-score-display">—</div>
-    <div class="mood-thermometer-label" id="mood-score-label">今天的心情是几分？</div>
-    <div class="mood-thermometer-bar" id="mood-bar"></div>
-    <div class="mood-thermometer-hint">点击数字给今天的心情打分（1~10）</div>
+  <!-- 万有引力 -->
+  <div class="gravity-section" id="gravity-section">
+    <div class="gravity-title">🪐 万有引力</div>
+    <div class="gravity-prompt" id="gravity-prompt" onclick="toggleGravityInput()">✨ 对明天有什么期待？点击写下</div>
+    <div class="gravity-input-wrap" id="gravity-input-wrap">
+      <textarea class="gravity-textarea" id="gravity-textarea" placeholder="写下你对明天的期待、目标或想法..." oninput="autoResize(this)"></textarea>
+      <div class="gravity-save-row">
+        <button class="gravity-save-btn" onclick="saveGravityFromUI()">保存期待</button>
+      </div>
+    </div>
+    <div class="gravity-saved" id="gravity-saved" style="display:none">
+      <div class="gravity-saved-label">今日期待</div>
+      <div class="gravity-saved-text" id="gravity-saved-text"></div>
+    </div>
   </div>
 
 </div>
@@ -1914,10 +1950,8 @@ function selectTemplate(index) {
   document.getElementById('new-task-name').value = selectedTemplate.name;
 }
 
-/* ======================== WELCOME / MOOD ======================== */
-const MOOD_KEY = 'checkin_mood_today';
-const MOOD_SCORE_KEY = 'wellness_mood_score';
-const MOOD_HISTORY_KEY = 'wellness_mood_history';
+/* ======================== WELCOME / GRAVITY ======================== */
+const GRAVITY_WELCOME_KEY = 'checkin_gravity_today';
 const QUOTE_KEY = 'checkin_quote_index';
 
 const MOOD_WORDS = [
@@ -2164,9 +2198,9 @@ function closeWelcomeCard() {
 
 function selectMood(mood) {
   const today = todayStr();
-  const moodData = JSON.parse(localStorage.getItem(MOOD_KEY) || '{}');
+  const moodData = JSON.parse(localStorage.getItem(GRAVITY_WELCOME_KEY) || '{}');
   moodData[today] = mood;
-  localStorage.setItem(MOOD_KEY, JSON.stringify(moodData));
+  localStorage.setItem(GRAVITY_WELCOME_KEY, JSON.stringify(moodData));
   closeWelcomeCard();
   showToast(mood + '，加油 💪');
 }
@@ -2176,257 +2210,285 @@ function skipWelcome() {
 }
 
 
-/* --- Mood Thermometer --- */
-const MOOD_COLORS = [
-  '#4a90d9','#5ba3c6','#6cb6b3','#7dc9a0','#8edc8d',
-  '#a0c96e','#b2b64f','#c4a330','#d69018','#e87d00'
-];
+/* ======================== GRAVITY (万有引力) ======================== */
+const GRAVITY_KEY = 'wellness_gravity_today';
+const GRAVITY_HISTORY_KEY = 'wellness_gravity_history';
+const GRAVITY_LAST_RECORD_KEY = 'wellness_gravity_last_record_date';
 
-function getMoodScore() {
-  const raw = localStorage.getItem(MOOD_SCORE_KEY);
+function getGravityToday() {
+  const raw = localStorage.getItem(GRAVITY_KEY);
   if (!raw) return null;
   try {
     const obj = JSON.parse(raw);
-    if (obj.date === todayStr()) return obj.score;
+    if (obj.date === todayStr()) return obj.text || '';
   } catch(e) {}
   return null;
 }
 
-function setMoodScore(score) {
-  localStorage.setItem(MOOD_SCORE_KEY, JSON.stringify({ date: todayStr(), score }));
-  renderMoodThermometer();
+function saveGravity(text) {
+  if (!text || !text.trim()) {
+    localStorage.removeItem(GRAVITY_KEY);
+    return;
+  }
+  localStorage.setItem(GRAVITY_KEY, JSON.stringify({ date: todayStr(), text: text.trim() }));
+  renderGravitySection();
 }
 
-function getMoodHistory() {
-  const raw = localStorage.getItem(MOOD_HISTORY_KEY);
+function getGravityHistory() {
+  const raw = localStorage.getItem(GRAVITY_HISTORY_KEY);
   if (!raw) return {};
   try { return JSON.parse(raw); } catch(e) { return {}; }
 }
 
-function recordMoodToHistory() {
-  const current = getMoodScore();
-  if (current === null) return;
-  const history = getMoodHistory();
-  history[todayStr()] = current;
-  // Keep only last 30 days
-  const keys = Object.keys(history).sort();
-  if (keys.length > 30) {
-    keys.slice(0, keys.length - 30).forEach(k => delete history[k]);
+function toggleGravityInput() {
+  const wrap = document.getElementById('gravity-input-wrap');
+  const prompt = document.getElementById('gravity-prompt');
+  if (wrap.classList.contains('open')) {
+    wrap.classList.remove('open');
+    prompt.style.display = '';
+  } else {
+    wrap.classList.add('open');
+    prompt.style.display = 'none';
+    const ta = document.getElementById('gravity-textarea');
+    ta.focus();
+    // Pre-fill with current value
+    const current = getGravityToday();
+    if (current) ta.value = current;
   }
-  localStorage.setItem(MOOD_HISTORY_KEY, JSON.stringify(history));
 }
 
-function checkMoodMidnight() {
-  // Record previous day's mood at 1:00 AM
+function saveGravityFromUI() {
+  const ta = document.getElementById('gravity-textarea');
+  saveGravity(ta.value);
+  ta.value = '';
+  const wrap = document.getElementById('gravity-input-wrap');
+  wrap.classList.remove('open');
+  document.getElementById('gravity-prompt').style.display = '';
+  showToast('✨ 期待已保存');
+}
+
+function renderGravitySection() {
+  const section = document.getElementById('gravity-section');
+  if (!section) return;
+
+  const current = getGravityToday();
+  const savedEl = document.getElementById('gravity-saved');
+  const savedTextEl = document.getElementById('gravity-saved-text');
+
+  if (current !== null && current.length > 0) {
+    savedEl.style.display = '';
+    savedTextEl.textContent = current;
+    document.getElementById('gravity-prompt').textContent = '✏️ 点击编辑今日期待';
+  } else {
+    savedEl.style.display = 'none';
+    document.getElementById('gravity-prompt').textContent = '✨ 对明天有什么期待？点击写下';
+  }
+}
+
+function checkGravityMidnight() {
   const now = new Date();
   const hour = now.getHours();
   const today = todayStr();
-  const lastRecordDate = localStorage.getItem('wellness_mood_last_record_date');
+  const lastRecordDate = localStorage.getItem(GRAVITY_LAST_RECORD_KEY);
 
-  // Only record between 0:00 and 1:00, and only once per day
   if (hour < 1 && lastRecordDate !== today) {
-    // It's past midnight but before 1 AM — record yesterday's score
+    // Archive yesterday's gravity to history
     const yesterday = new Date(now);
     yesterday.setDate(yesterday.getDate() - 1);
     const ydStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth()+1).padStart(2,'0')}-${String(yesterday.getDate()).padStart(2,'0')}`;
-    const currentScore = getMoodScore();
-    if (currentScore !== null) {
-      const hist = getMoodHistory();
-      hist[ydStr] = currentScore;
-      // Keep only last 60 days
-      const keys = Object.keys(hist).sort();
-      if (keys.length > 60) {
-        keys.slice(0, keys.length - 60).forEach(k => delete hist[k]);
-      }
-      localStorage.setItem(MOOD_HISTORY_KEY, JSON.stringify(hist));
-    }
-    localStorage.setItem('wellness_mood_last_record_date', today);
-    localStorage.removeItem(MOOD_SCORE_KEY);
-  } else if (hour >= 1 && lastRecordDate !== today) {
-    // Past 1 AM and haven't recorded yet today — it means app wasn't open during 0-1 AM
-    // Record yesterday's score if it exists (yesterday's date)
-    const yesterday = new Date(now);
-    yesterday.setDate(yesterday.getDate() - 1);
-    const ydStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth()+1).padStart(2,'0')}-${String(yesterday.getDate()).padStart(2,'0')}`;
-    const hist = getMoodHistory();
-    // Only record if we haven't already recorded yesterday
-    if (!hist[ydStr]) {
-      const currentScore = getMoodScore();
-      if (currentScore !== null) {
-        hist[ydStr] = currentScore;
-        const keys = Object.keys(hist).sort();
-        if (keys.length > 60) {
-          keys.slice(0, keys.length - 60).forEach(k => delete hist[k]);
+    const raw = localStorage.getItem(GRAVITY_KEY);
+    if (raw) {
+      try {
+        const obj = JSON.parse(raw);
+        if (obj.text && obj.text.trim()) {
+          const hist = getGravityHistory();
+          hist[ydStr] = obj.text.trim();
+          // Keep only last 365 days
+          const keys = Object.keys(hist).sort();
+          if (keys.length > 365) {
+            keys.slice(0, keys.length - 365).forEach(k => delete hist[k]);
+          }
+          localStorage.setItem(GRAVITY_HISTORY_KEY, JSON.stringify(hist));
         }
-        localStorage.setItem(MOOD_HISTORY_KEY, JSON.stringify(hist));
+      } catch(e) {}
+    }
+    localStorage.setItem(GRAVITY_LAST_RECORD_KEY, today);
+    localStorage.removeItem(GRAVITY_KEY);
+  } else if (hour >= 1 && lastRecordDate !== today) {
+    // Past 1 AM — archive if not already done
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const ydStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth()+1).padStart(2,'0')}-${String(yesterday.getDate()).padStart(2,'0')}`;
+    const hist = getGravityHistory();
+    if (!hist[ydStr]) {
+      const raw = localStorage.getItem(GRAVITY_KEY);
+      if (raw) {
+        try {
+          const obj = JSON.parse(raw);
+          if (obj.text && obj.text.trim()) {
+            hist[ydStr] = obj.text.trim();
+            const keys = Object.keys(hist).sort();
+            if (keys.length > 365) {
+              keys.slice(0, keys.length - 365).forEach(k => delete hist[k]);
+            }
+            localStorage.setItem(GRAVITY_HISTORY_KEY, JSON.stringify(hist));
+          }
+        } catch(e) {}
       }
     }
-    localStorage.setItem('wellness_mood_last_record_date', today);
-    localStorage.removeItem(MOOD_SCORE_KEY);
-  }
-}
-
-function renderMoodThermometer() {
-  const bar = document.getElementById('mood-bar');
-  const display = document.getElementById('mood-score-display');
-  const label = document.getElementById('mood-score-label');
-  if (!bar) return;
-
-  const current = getMoodScore();
-
-  if (current !== null) {
-    display.textContent = current;
-    display.style.color = MOOD_COLORS[current - 1];
-    label.textContent = '今天的心情温度';
-  } else {
-    display.textContent = '—';
-    display.style.color = 'var(--accent)';
-    label.textContent = '今天的心情是几分？';
-  }
-
-  bar.innerHTML = '';
-  for (let i = 1; i <= 10; i++) {
-    const seg = document.createElement('div');
-    seg.className = 'mood-thermometer-segment';
-    const heightPct = 25 + (i * 7.5); // 32.5% to 100%
-    seg.style.height = heightPct + '%';
-    seg.style.background = MOOD_COLORS[i - 1];
-    if (current === null || i > current) {
-      seg.classList.add('inactive');
-    } else {
-      seg.classList.add('active');
-    }
-    seg.innerHTML = `<span class="seg-num">${i}</span>`;
-    seg.addEventListener('click', () => setMoodScore(i));
-    bar.appendChild(seg);
+    localStorage.setItem(GRAVITY_LAST_RECORD_KEY, today);
+    localStorage.removeItem(GRAVITY_KEY);
   }
 }
 
 function renderMoodHistoryChart() {
+  // Renamed to gravity chart — kept name for backward compat of callers
   const section = document.getElementById('me-mood-section');
   if (!section) return;
-  const history = getMoodHistory();
+  const history = getGravityHistory();
+  const todayGravity = getGravityToday();
 
-  // Build last 15 days list (fill gaps with null)
+  // Count total records
+  const allKeys = Object.keys(history).sort().reverse();
+  const totalCount = allKeys.length + (todayGravity ? 1 : 0);
+
+  if (totalCount === 0) {
+    section.innerHTML = `
+      <div class="me-card" style="padding:20px;text-align:center;cursor:pointer;" onclick="openGravityDetail()">
+        <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px;">🪐 引力曲线</div>
+        <div style="font-size:12px;color:var(--text3);">每晚写下对明天的期待，积累你的引力轨迹 ✨</div>
+      </div>
+    `;
+    return;
+  }
+
+  // Build last 15 days
   const days = [];
   const now = new Date();
   for (let i = 14; i >= 0; i--) {
     const d = new Date(now);
     d.setDate(d.getDate() - i);
     const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    days.push({ key, label: `${d.getMonth()+1}/${d.getDate()}`, score: history[key] || null });
+    days.push({ key, label: `${d.getMonth()+1}/${d.getDate()}`, text: history[key] || null });
   }
 
-  const hasData = days.some(d => d.score !== null);
-  if (!hasData) {
-    section.innerHTML = `
-      <div class="me-card" style="padding:20px;text-align:center;">
-        <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px;">📈 心情曲线</div>
-        <div style="font-size:12px;color:var(--text3);">每天凌晨1:00自动记录心情温度，坚持打卡就能看到趋势啦 🌡️</div>
-      </div>
-    `;
-    return;
-  }
-
-  // SVG line chart
-  const W = 320, H = 140, padL = 24, padR = 8, padT = 12, padB = 24;
-  const plotW = W - padL - padR;
-  const plotH = H - padT - padB;
-
-  // Y-axis: 1-10
-  function yFor(s) { return padT + plotH - ((s - 1) / 9) * plotH; }
-  function xFor(i) { return padL + (i / 14) * plotW; }
-
-  // Grid lines
-  let gridLines = '';
-  for (let v = 1; v <= 10; v += 3) {
-    const y = yFor(v);
-    gridLines += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="3,3"/>`;
-    gridLines += `<text x="${padL-4}" y="${y+3}" text-anchor="end" font-size="8" fill="var(--text3)">${v}</text>`;
-  }
-
-  // Data points and path
-  const points = [];
+  // Mini bar visualization — show dots for days with records
+  let barsHtml = '';
   days.forEach((d, i) => {
-    if (d.score !== null) {
-      points.push({ x: xFor(i), y: yFor(d.score), score: d.score, label: d.label, i });
-    }
+    const hasRecord = d.text !== null || (i === 14 && todayGravity);
+    const bgColor = hasRecord ? '#7c6fb0' : 'rgba(0,0,0,0.06)';
+    barsHtml += `<div style="flex:1;height:28px;border-radius:4px;background:${bgColor};margin:0 1.5px;min-width:0;transition:background .2s;"></div>`;
   });
-
-  // Smooth line path using cardinal spline
-  let linePath = '';
-  let areaPath = '';
-  if (points.length >= 2) {
-    linePath = `M${points[0].x},${points[0].y}`;
-    for (let i = 0; i < points.length - 1; i++) {
-      const p0 = points[Math.max(0, i - 1)];
-      const p1 = points[i];
-      const p2 = points[i + 1];
-      const p3 = points[Math.min(points.length - 1, i + 2)];
-      const cp1x = p1.x + (p2.x - p0.x) / 6;
-      const cp1y = p1.y + (p2.y - p0.y) / 6;
-      const cp2x = p2.x - (p3.x - p1.x) / 6;
-      const cp2y = p2.y - (p3.y - p1.y) / 6;
-      linePath += ` C${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`;
-    }
-    // Area fill
-    const bottomY = padT + plotH;
-    areaPath = linePath + ` L${points[points.length-1].x},${bottomY} L${points[0].x},${bottomY} Z`;
-  } else if (points.length === 1) {
-    linePath = `M${points[0].x},${points[0].y}`;
-  }
-
-  // Dots
-  let dots = '';
-  points.forEach(p => {
-    const color = MOOD_COLORS[p.score - 1];
-    dots += `<circle cx="${p.x}" cy="${p.y}" r="3.5" fill="${color}" stroke="#fff" stroke-width="1.5"/>`;
-  });
-
-  // X labels (show every 3rd day)
-  let xLabels = '';
-  days.forEach((d, i) => {
-    if (i % 3 === 0 || i === 14) {
-      xLabels += `<text x="${xFor(i)}" y="${H - 2}" text-anchor="middle" font-size="8" fill="var(--text3)">${d.label}</text>`;
-    }
-  });
-
-  // Score labels on dots
-  let scoreLabels = '';
-  points.forEach(p => {
-    const color = MOOD_COLORS[p.score - 1];
-    scoreLabels += `<text x="${p.x}" y="${p.y - 7}" text-anchor="middle" font-size="8" font-weight="600" fill="${color}">${p.score}</text>`;
-  });
-
-  const svg = `
-    <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;" xmlns="http://www.w3.org/2000/svg">
-      ${gridLines}
-      ${points.length >= 2 ? `<path d="${areaPath}" fill="url(#moodGrad)" opacity="0.2"/>` : ''}
-      ${points.length >= 2 ? `<path d="${linePath}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>` : ''}
-      ${dots}
-      ${scoreLabels}
-      ${xLabels}
-      <defs>
-        <linearGradient id="moodGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.5"/>
-          <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
-        </linearGradient>
-      </defs>
-    </svg>
-  `;
 
   section.innerHTML = `
-    <div style="padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-        <span style="font-size:14px;font-weight:600;color:var(--text);">📈 近15天心情曲线</span>
-        <span style="font-size:10px;color:var(--text3);">每日凌晨1:00记录</span>
+    <div style="padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);cursor:pointer;" onclick="openGravityDetail()">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <span style="font-size:14px;font-weight:600;color:var(--text);">🪐 引力曲线</span>
+        <span style="font-size:10px;color:#7c6fb0;font-weight:600;">共 ${totalCount} 条 · 点击查看全部</span>
       </div>
-      ${svg}
+      <div style="display:flex;align-items:flex-end;gap:0;padding:4px 0;">
+        ${barsHtml}
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px;">
+        ${days.filter((_,i) => i % 5 === 0).map(d => `<span style="font-size:9px;color:var(--text3);">${d.label}</span>`).join('')}
+      </div>
     </div>
   `;
 }
 
-/* --- Me page: mood curve --- */
+function openGravityDetail() {
+  const history = getGravityHistory();
+  const todayGravity = getGravityToday();
+
+  // Merge today + history, sort descending
+  const allRecords = [];
+  if (todayGravity) {
+    allRecords.push({ date: todayStr(), text: todayGravity, isToday: true });
+  }
+  Object.keys(history).sort().reverse().forEach(key => {
+    if (history[key]) {
+      allRecords.push({ date: key, text: history[key], isToday: false });
+    }
+  });
+
+  // Build detail overlay HTML
+  let listHtml = '';
+  if (allRecords.length === 0) {
+    listHtml = '<div style="text-align:center;color:var(--text3);padding:40px 0;font-size:14px;">还没有记录，今晚写第一条吧 ✨</div>';
+  } else {
+    listHtml = allRecords.map((r, idx) => `
+      <div class="gravity-detail-item" data-date="${r.date}" data-idx="${idx}">
+        <div class="gravity-detail-date">${r.isToday ? '今天' : r.date.replace(/^(\d{4}-)/, '').replace(/-/,'/')}${r.isToday ? ' 🌙' : ''}</div>
+        <div class="gravity-detail-text">${escapeHtml(r.text)}</div>
+        <button class="gravity-detail-edit" onclick="event.stopPropagation();editGravityItem('${r.date}',${idx})">✏️</button>
+        <button class="gravity-detail-del" onclick="event.stopPropagation();deleteGravityItem('${r.date}')">✕</button>
+      </div>
+    `).join('');
+  }
+
+  const overlay = document.createElement('div');
+  overlay.className = 'welcome-backdrop';
+  overlay.id = 'gravity-detail-overlay';
+  overlay.style.zIndex = '200';
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+  overlay.innerHTML = `
+    <div class="welcome-card" style="max-height:85vh;overflow-y:auto;width:92%;max-width:400px;padding:24px 20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div style="font-size:17px;font-weight:700;color:var(--text);">🪐 引力轨迹</div>
+        <button onclick="document.getElementById('gravity-detail-overlay').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;line-height:1;">✕</button>
+      </div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:16px;">共 ${allRecords.length} 条期待记录 · 长按可编辑/删除</div>
+      <div id="gravity-detail-list">${listHtml}</div>
+    </div>
+    <style>
+      .gravity-detail-item { position:relative; padding:12px 36px 12px 14px; border-bottom:1px solid var(--border); }
+      .gravity-detail-item:last-child { border-bottom:none; }
+      .gravity-detail-date { font-size:11px; color:#7c6fb0; font-weight:600; margin-bottom:4px; }
+      .gravity-detail-text { font-size:14px; color:var(--text); line-height:1.55; word-break:break-word; }
+      .gravity-detail-edit { position:absolute; right:28px; top:50%; transform:translateY(-50%); background:none; border:none; font-size:15px; cursor:pointer; padding:4px; }
+      .gravity-detail-del { position:absolute; right:2px; top:50%; transform:translateY(-50%); background:none; border:none; font-size:13px; cursor:pointer; color:var(--danger); padding:4px; }
+    </style>
+  `;
+  document.body.appendChild(overlay);
+}
+
+function editGravityItem(date, idx) {
+  const history = getGravityHistory();
+  const text = date === todayStr() ? (getGravityToday() || '') : (history[date] || '');
+  const newText = prompt('编辑这条期待：', text);
+  if (newText === null) return; // cancelled
+  if (!newText.trim()) {
+    deleteGravityItem(date);
+    return;
+  }
+  if (date === todayStr()) {
+    saveGravity(newText);
+  } else {
+    history[date] = newText.trim();
+    localStorage.setItem(GRAVITY_HISTORY_KEY, JSON.stringify(history));
+  }
+  // Refresh detail
+  document.getElementById('gravity-detail-overlay').remove();
+  openGravityDetail();
+  renderMoodHistoryChart();
+}
+
+function deleteGravityItem(date) {
+  if (!confirm('删除这条记录？')) return;
+  if (date === todayStr()) {
+    localStorage.removeItem(GRAVITY_KEY);
+  } else {
+    const history = getGravityHistory();
+    delete history[date];
+    localStorage.setItem(GRAVITY_HISTORY_KEY, JSON.stringify(history));
+  }
+  document.getElementById('gravity-detail-overlay').remove();
+  openGravityDetail();
+  renderMoodHistoryChart();
+  showToast('已删除');
+}
+
+/* --- Me page: gravity curve --- */
 
 let calYear = new Date().getFullYear();
 let calMonth = new Date().getMonth();
@@ -2533,7 +2595,7 @@ function switchTab(tabName) {
 
   // Tab-specific init
   if (tabName === 'record') {
-    renderMoodThermometer();
+    renderGravitySection();
   }
   if (tabName === 'mood') {
     renderTodos();
@@ -3703,8 +3765,8 @@ async function goHome() {
     } catch(e) { /* keep current cache */ }
   }
   renderHome();
-  checkMoodMidnight();
-  renderMoodThermometer();
+  checkGravityMidnight();
+  renderGravitySection();
   switchTab('record');
 }
 
