@@ -1004,10 +1004,18 @@
     }
     .todo-item.show-delete .delete-option { display: inline-block; }
     .todo-text {
-      flex: 1;
       font-size: 15px;
       color: var(--text);
       word-break: break-word;
+    }
+    .todo-deadline {
+      font-size: 11px; color: var(--text3); margin-top: 2px;
+    }
+    .todo-deadline-warning {
+      color: var(--accent); font-weight: 600;
+    }
+    .todo-deadline-overdue {
+      color: var(--danger); font-weight: 600;
     }
     .todo-check {
       width: 22px; height: 22px;
@@ -1328,6 +1336,18 @@
     .record-search-bar button:hover { background: var(--border); }
     .record-highlight { background: rgba(154,125,84,0.2); border-radius: 2px; padding: 0 1px; }
 
+    /* ===== GRAVITY TIMELINE ===== */
+    .gravity-timeline { display: flex; flex-direction: column; gap: 2px; }
+    .gravity-timeline-item { display: flex; gap: 10px; padding: 8px 0; align-items: flex-start; }
+    .gravity-timeline-date { font-size: 11px; color: var(--text3); min-width: 36px; text-align: right; padding-top: 2px; flex-shrink: 0; }
+    .gravity-timeline-bubble {
+      flex: 1; background: var(--surface2); border-radius: 8px 8px 8px 0;
+      padding: 8px 12px; font-size: 13px; color: var(--text); line-height: 1.5;
+      word-break: break-word;
+    }
+    .gravity-timeline-today .gravity-timeline-date { color: #7c6fb0; font-weight: 600; }
+    .gravity-timeline-today .gravity-timeline-bubble { border-left: 3px solid #7c6fb0; background: rgba(124,111,176,0.06); }
+
     /* ===== RESPONSIVE ===== */
     @media (max-width: 400px) {
       .tasks-grid { grid-template-columns: repeat(2, 1fr); }
@@ -1411,6 +1431,10 @@
       <label>内容</label>
       <input class="input-field" id="todo-new-text" type="text" placeholder="输入待办事项…" maxlength="60"
         onkeydown="if(event.key==='Enter')createTodo()" />
+    </div>
+    <div class="anni-form-row">
+      <label>截止日期（可选）</label>
+      <input type="date" id="todo-new-deadline" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);font-family:inherit;font-size:14px;" />
     </div>
     <div class="anni-form-row">
       <button class="todo-photo-btn" onclick="document.getElementById('todo-photo-input').click()">
@@ -1559,7 +1583,7 @@
         <div class="settings-item">
           <div class="settings-item-left">
             <div class="settings-item-label">🏠 心理小屋</div>
-            <div class="settings-item-desc">v1.1 · 你的心灵栖息地</div>
+            <div class="settings-item-desc">v1.2 · 你的心灵栖息地</div>
           </div>
         </div>
         <div class="settings-item" onclick="toggleChangelog()" style="cursor:pointer">
@@ -1572,9 +1596,17 @@
         <div id="changelog-content" style="display:none;padding:0 16px 16px;">
           <div style="font-size:13px;color:var(--text2);line-height:1.8;">
             <div style="margin-bottom:12px;">
+              <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v1.2 · 2026-06-26</div>
+              <div>· 引力曲线升级为文字时间线，展示最近7天期待内容</div>
+              <div>· 引力轨迹详情页新增"本周回顾"折叠卡片</div>
+              <div>· 记录页新增搜索和排序功能</div>
+              <div>· 日历页新增打卡标记，点击日期查看当天记录</div>
+              <div>· 待办支持截止日期，临期橙色/过期红色提醒</div>
+            </div>
+            <div style="margin-bottom:12px;">
               <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v1.1 · 2026-06-26</div>
               <div>· 新增个性化设置：自定义欢迎语、自定义语录、欢迎弹窗开关</div>
-              <div>· 新增更新日志、反馈入口、开源致谢</div>
+              <div>· 新增更新日志</div>
             </div>
             <div>
               <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v1.0 · 2026-06</div>
@@ -2585,35 +2617,40 @@ function renderMoodHistoryChart() {
     return;
   }
 
-  // Build last 15 days
-  const days = [];
+  // Build last 7 days (only days with records)
   const now = new Date();
-  for (let i = 14; i >= 0; i--) {
+  const timelineItems = [];
+  for (let i = 6; i >= 0; i--) {
     const d = new Date(now);
     d.setDate(d.getDate() - i);
     const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    days.push({ key, label: `${d.getMonth()+1}/${d.getDate()}`, text: history[key] || null });
+    const text = i === 0 ? (todayGravity || null) : (history[key] || null);
+    if (!text) continue;
+    const isToday = i === 0;
+    const label = isToday ? '今天' : `${d.getMonth()+1}/${d.getDate()}`;
+    timelineItems.push({ label, text, isToday });
   }
 
-  // Mini bar visualization — show dots for days with records
-  let barsHtml = '';
-  days.forEach((d, i) => {
-    const hasRecord = d.text !== null || (i === 14 && todayGravity);
-    const bgColor = hasRecord ? '#7c6fb0' : 'rgba(0,0,0,0.06)';
-    barsHtml += `<div style="flex:1;height:28px;border-radius:4px;background:${bgColor};margin:0 1.5px;min-width:0;transition:background .2s;"></div>`;
-  });
+  let timelineHtml = '';
+  if (timelineItems.length === 0) {
+    timelineHtml = '<div style="text-align:center;color:var(--text3);font-size:12px;padding:12px 0;">最近7天暂无记录</div>';
+  } else {
+    timelineHtml = timelineItems.map(item => `
+      <div class="gravity-timeline-item${item.isToday ? ' gravity-timeline-today' : ''}">
+        <div class="gravity-timeline-date">${item.label}</div>
+        <div class="gravity-timeline-bubble">${escapeHtml(item.text)}</div>
+      </div>
+    `).join('');
+  }
 
   section.innerHTML = `
     <div style="padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);cursor:pointer;" onclick="openGravityDetail()">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
         <span style="font-size:14px;font-weight:600;color:var(--text);">🪐 引力曲线</span>
         <span style="font-size:10px;color:#7c6fb0;font-weight:600;">共 ${totalCount} 条 · 点击查看全部</span>
       </div>
-      <div style="display:flex;align-items:flex-end;gap:0;padding:4px 0;">
-        ${barsHtml}
-      </div>
-      <div style="display:flex;justify-content:space-between;margin-top:6px;">
-        ${days.filter((_,i) => i % 5 === 0).map(d => `<span style="font-size:9px;color:var(--text3);">${d.label}</span>`).join('')}
+      <div class="gravity-timeline">
+        ${timelineHtml}
       </div>
     </div>
   `;
@@ -2633,6 +2670,41 @@ function openGravityDetail() {
       allRecords.push({ date: key, text: history[key], isToday: false });
     }
   });
+
+  // Build weekly review (last 7 days)
+  const now = new Date();
+  const weekItems = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const text = i === 0 ? (todayGravity || null) : (history[key] || null);
+    if (!text) continue;
+    const isToday = i === 0;
+    const label = isToday ? '今天' : `${d.getMonth()+1}/${d.getDate()} · 周${'日一二三四五六'[d.getDay()]}`;
+    weekItems.push({ label, text });
+  }
+
+  let weekReviewHtml = '';
+  if (weekItems.length > 0) {
+    const weekListHtml = weekItems.map(item =>
+      `<div style="padding:8px 0;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start;">
+        <span style="font-size:11px;color:#7c6fb0;font-weight:600;min-width:70px;flex-shrink:0;">${item.label}</span>
+        <span style="font-size:13px;color:var(--text);line-height:1.5;">${escapeHtml(item.text)}</span>
+      </div>`
+    ).join('');
+    weekReviewHtml = `
+      <div style="margin-bottom:16px;">
+        <div onclick="toggleWeekReview()" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:rgba(124,111,176,0.06);border-radius:8px;cursor:pointer;border:1px solid rgba(124,111,176,0.15);">
+          <span style="font-size:13px;font-weight:600;color:#7c6fb0;">📋 本周回顾 · ${weekItems.length} 条</span>
+          <span id="week-review-arrow" style="font-size:14px;color:#7c6fb0;">›</span>
+        </div>
+        <div id="week-review-content" style="display:none;padding:4px 0;">
+          ${weekListHtml}
+        </div>
+      </div>
+    `;
+  }
 
   // Build detail overlay HTML
   let listHtml = '';
@@ -2660,7 +2732,8 @@ function openGravityDetail() {
         <div style="font-size:17px;font-weight:700;color:var(--text);">🪐 引力轨迹</div>
         <button onclick="document.getElementById('gravity-detail-overlay').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;line-height:1;">✕</button>
       </div>
-      <div style="font-size:12px;color:var(--text3);margin-bottom:16px;">共 ${allRecords.length} 条期待记录 · 长按可编辑/删除</div>
+      ${weekReviewHtml}
+      <div style="font-size:12px;color:var(--text3);margin-bottom:12px;">共 ${allRecords.length} 条期待记录</div>
       <div id="gravity-detail-list">${listHtml}</div>
     </div>
     <style>
@@ -2673,6 +2746,18 @@ function openGravityDetail() {
     </style>
   `;
   document.body.appendChild(overlay);
+}
+
+function toggleWeekReview() {
+  const content = document.getElementById('week-review-content');
+  const arrow = document.getElementById('week-review-arrow');
+  if (content.style.display === 'none') {
+    content.style.display = 'block';
+    arrow.textContent = '⌄';
+  } else {
+    content.style.display = 'none';
+    arrow.textContent = '›';
+  }
 }
 
 function editGravityItem(date, idx) {
@@ -3661,6 +3746,7 @@ function saveTodos(list) {
 
 function openTodoModal() {
   document.getElementById('todo-new-text').value = '';
+  document.getElementById('todo-new-deadline').value = '';
   todoPhotoData = null;
   const preview = document.getElementById('todo-photo-preview');
   preview.src = ''; preview.classList.remove('show');
@@ -3688,13 +3774,15 @@ function onTodoPhotoSelect(input) {
 function createTodo() {
   const text = document.getElementById('todo-new-text').value.trim();
   if (!text) { showToast('请输入待办内容'); return; }
+  const deadline = document.getElementById('todo-new-deadline').value || null;
   const list = loadTodos();
   list.unshift({
     id: 'todo_' + Date.now(),
     text,
     completed: false,
     createdAt: Date.now(),
-    photo: todoPhotoData || null
+    photo: todoPhotoData || null,
+    deadline: deadline
   });
   saveTodos(list);
   closeTodoModal();
@@ -3765,6 +3853,35 @@ function renderTodoDetailView(item, isEdit) {
   const page = document.getElementById('todo-detail-page');
   const statusText = item.completed ? '已完成' : '进行中';
   const statusIcon = item.completed ? '✓' : '○';
+
+  // Deadline display
+  let deadlineViewHtml = '';
+  let deadlineEditHtml = '';
+  if (item.deadline) {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const dl = new Date(item.deadline + 'T00:00:00'); dl.setHours(0,0,0,0);
+    const diffDays = Math.round((dl - today) / (1000*60*60*24));
+    let dlClass = '';
+    let dlText = item.deadline.replace(/-/g, '/');
+    if (!item.completed) {
+      if (diffDays < 0) { dlClass = 'todo-deadline-overdue'; dlText = `❌ 已过期 ${Math.abs(diffDays)} 天（${dlText}）`; }
+      else if (diffDays <= 3) { dlClass = 'todo-deadline-warning'; dlText = `⚠️ 还剩 ${diffDays} 天（${dlText}）`; }
+      else { dlText = `📅 截止 ${dlText}`; }
+    } else {
+      dlText = `📅 ${dlText}`;
+    }
+    deadlineViewHtml = `<div class="todo-deadline ${dlClass}" style="font-size:13px;margin-top:8px;">${dlText}</div>`;
+  }
+
+  if (isEdit) {
+    deadlineEditHtml = `
+      <div style="margin-top:12px;">
+        <label style="font-size:13px;color:var(--text2);display:block;margin-bottom:6px;">截止日期</label>
+        <input type="date" id="todo-edit-deadline" value="${item.deadline || ''}" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);font-family:inherit;font-size:14px;" />
+      </div>
+    `;
+  }
+
   if (isEdit) {
     page.innerHTML = `
       <div class="todo-edit-photo-wrap">
@@ -3776,6 +3893,7 @@ function renderTodoDetailView(item, isEdit) {
         ${editingTodoPhoto ? `<button class="btn btn-ghost" style="margin-left:8px;font-size:12px;padding:6px 10px;" onclick="editingTodoPhoto=null;renderTodoDetailView(loadTodos().find(t=>t.id===editingTodoId),true)">移除照片</button>` : ''}
       </div>
       <textarea class="todo-edit-textarea" id="todo-edit-text">${escapeHtml(item.text)}</textarea>
+      ${deadlineEditHtml}
       <div style="margin-top:16px;display:flex;gap:10px;">
         <button class="btn btn-primary" onclick="saveTodoEdit()">保存</button>
         <button class="btn btn-ghost" onclick="renderTodoDetailView(loadTodos().find(t=>t.id===editingTodoId),false)">取消</button>
@@ -3785,6 +3903,7 @@ function renderTodoDetailView(item, isEdit) {
     page.innerHTML = `
       ${item.photo ? `<img class="todo-detail-img" src="${item.photo}" onclick="openLightbox('${item.photo}')" />` : ''}
       <div class="todo-detail-text">${escapeHtml(item.text)}</div>
+      ${deadlineViewHtml}
       <div class="todo-detail-status">${statusIcon} ${statusText} · ${new Date(item.createdAt).toLocaleDateString('zh-CN')}</div>
       <div style="margin-top:24px;display:flex;gap:10px;flex-wrap:wrap;">
         <button class="btn btn-primary" onclick="toggleTodo('${item.id}');openTodoDetail('${item.id}')">${item.completed ? '标记为未完成' : '标记为已完成'}</button>
@@ -3810,11 +3929,14 @@ function handleTodoEditPhoto(input) {
 function saveTodoEdit() {
   const text = document.getElementById('todo-edit-text').value.trim();
   if (!text) { showToast('内容不能为空'); return; }
+  const deadlineInput = document.getElementById('todo-edit-deadline');
+  const deadline = deadlineInput ? (deadlineInput.value || null) : null;
   const list = loadTodos();
   const item = list.find(t => t.id === editingTodoId);
   if (!item) return;
   item.text = text;
   item.photo = editingTodoPhoto || null;
+  item.deadline = deadline;
   saveTodos(list);
   renderTodoDetailView(item, false);
   renderTodos();
@@ -3843,16 +3965,33 @@ function renderTodos() {
     return;
   }
 
-  container.innerHTML = displayList.map(t => `
+  container.innerHTML = displayList.map(t => {
+    let deadlineHtml = '';
+    if (!t.completed && t.deadline) {
+      const today = new Date(); today.setHours(0,0,0,0);
+      const dl = new Date(t.deadline + 'T00:00:00'); dl.setHours(0,0,0,0);
+      const diffDays = Math.round((dl - today) / (1000*60*60*24));
+      if (diffDays < 0) {
+        deadlineHtml = `<div class="todo-deadline todo-deadline-overdue">❌ 已过期 ${Math.abs(diffDays)} 天</div>`;
+      } else if (diffDays <= 3) {
+        deadlineHtml = `<div class="todo-deadline todo-deadline-warning">⚠️ 还剩 ${diffDays} 天</div>`;
+      } else {
+        deadlineHtml = `<div class="todo-deadline">📅 ${t.deadline.replace(/-/g,'/')}</div>`;
+      }
+    }
+    return `
     <div class="todo-item ${t.completed ? 'completed' : ''}" data-id="${t.id}">
       <div class="todo-item-inner" onclick="openTodoDetail('${t.id}')">
         ${t.photo ? `<img class="todo-thumb" src="${t.photo}" onclick="event.stopPropagation();openLightbox('${t.photo}')" />` : ''}
-        <div class="todo-text">${escapeHtml(t.text)}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="todo-text">${escapeHtml(t.text)}</div>
+          ${deadlineHtml}
+        </div>
         <button class="delete-option" onclick="event.stopPropagation();deleteTodo('${t.id}')">删除</button>
         <div class="todo-check ${t.completed ? 'checked' : ''}" onclick="toggleTodo('${t.id}', event)">${t.completed ? '✓' : ''}</div>
       </div>
     </div>
-  `).join('');
+  `}).join('');
 
   // Init long-press delete on each todo item
   container.querySelectorAll('.todo-item').forEach(initTodoLongPress);
