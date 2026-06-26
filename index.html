@@ -1494,9 +1494,53 @@
       from { opacity: 0; transform: translateY(6px); }
       to { opacity: 1; transform: translateY(0); }
     }
+    /* ===== SPLASH SCREEN ===== */
+    #splash-screen {
+      position: fixed; inset: 0; z-index: 9999;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 16px;
+      background: var(--bg);
+      animation: splashFadeOut 0.4s ease 0.8s forwards;
+    }
+    [data-theme="dark"] #splash-screen {
+      background: #1c1c1e;
+    }
+    #splash-screen .splash-icon {
+      animation: splashPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+    #splash-screen .splash-name {
+      font-size: 14px; font-weight: 600;
+      color: var(--text-secondary);
+      letter-spacing: 0.1em;
+      opacity: 0;
+      animation: splashTextIn 0.4s ease 0.3s forwards;
+    }
+    @keyframes splashPop {
+      from { opacity: 0; transform: scale(0.6); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes splashTextIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes splashFadeOut {
+      to { opacity: 0; pointer-events: none; }
+    }
   </style>
 </head>
 <body>
+
+<!-- ===================== SPLASH SCREEN ===================== -->
+<div id="splash-screen">
+  <div class="splash-icon">
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+      <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+  </div>
+  <div class="splash-name">心理小屋</div>
+</div>
 
 <!-- ===================== WELCOME MODAL ===================== -->
 <div class="welcome-backdrop" id="welcome-overlay">
