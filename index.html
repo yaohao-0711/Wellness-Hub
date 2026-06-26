@@ -1348,6 +1348,37 @@
     .gravity-timeline-today .gravity-timeline-date { color: #7c6fb0; font-weight: 600; }
     .gravity-timeline-today .gravity-timeline-bubble { border-left: 3px solid #7c6fb0; background: rgba(124,111,176,0.06); }
 
+    /* ===== ACHIEVEMENTS ===== */
+    .achievements-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    }
+    .achievement-card {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 14px 6px 10px; border-radius: var(--radius);
+      background: var(--surface); border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm); text-align: center;
+      transition: transform .15s, box-shadow .15s;
+      position: relative; overflow: hidden;
+    }
+    .achievement-card.locked {
+      opacity: 0.45; filter: grayscale(0.8);
+    }
+    .achievement-card.locked::after {
+      content: '🔒'; position: absolute; top: 8px; right: 8px;
+      font-size: 12px; opacity: 0.7;
+    }
+    .achievement-card:not(.locked) {
+      border-color: rgba(154,125,84,0.3);
+    }
+    .achievement-card:not(.locked)::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--accent), #b8a0c8);
+    }
+    .achievement-emoji { font-size: 28px; line-height: 1; margin-bottom: 6px; }
+    .achievement-name { font-size: 11px; font-weight: 600; color: var(--text); line-height: 1.3; }
+    .achievement-desc { font-size: 9px; color: var(--text3); margin-top: 2px; line-height: 1.3; }
+    .achievement-unlocked-date { font-size: 8px; color: var(--accent); margin-top: 4px; }
+
     /* ===== RESPONSIVE ===== */
     @media (max-width: 400px) {
       .tasks-grid { grid-template-columns: repeat(2, 1fr); }
@@ -1356,6 +1387,31 @@
       .template-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
       .tab-item { font-size: 9px; }
       .tab-item .tab-icon { font-size: 20px; }
+    }
+
+    /* ===== VIEW TRANSITIONS ===== */
+    .view { animation: none; }
+    .view.slide-in-right {
+      animation: slideInRight .25s cubic-bezier(.2,.9,.3,1) forwards;
+    }
+    .view.slide-in-left {
+      animation: slideInLeft .25s cubic-bezier(.2,.9,.3,1) forwards;
+    }
+    @keyframes slideInRight {
+      from { transform: translateX(100%); opacity: 0.6; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideInLeft {
+      from { transform: translateX(-30%); opacity: 0.6; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    .tab-view { animation: none; }
+    .tab-view.fade-in {
+      animation: fadeTabIn .2s ease forwards;
+    }
+    @keyframes fadeTabIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
@@ -1519,6 +1575,8 @@
       </div>
       <div class="me-sub-grid" id="me-mindset-grid"></div>
     </div>
+
+    <div class="me-section" id="me-achievements-section"></div>
   </div>
 </div>
 
@@ -1550,6 +1608,13 @@
             <div class="settings-item-desc">保护眼睛，更适合夜间使用</div>
           </div>
           <button class="toggle-switch" id="toggle-dark" onclick="toggleTheme()"></button>
+        </div>
+        <div class="settings-item">
+          <div class="settings-item-left">
+            <div class="settings-item-label">📳 震动反馈</div>
+            <div class="settings-item-desc">操作时的触觉反馈（仅 Android）</div>
+          </div>
+          <button class="toggle-switch" id="toggle-haptic" onclick="toggleHaptic()"></button>
         </div>
       </div>
 
@@ -1583,7 +1648,7 @@
         <div class="settings-item">
           <div class="settings-item-left">
             <div class="settings-item-label">🏠 心理小屋</div>
-            <div class="settings-item-desc">v1.2 · 你的心灵栖息地</div>
+            <div class="settings-item-desc">v1.3 · 你的心灵栖息地</div>
           </div>
         </div>
         <div class="settings-item" onclick="toggleChangelog()" style="cursor:pointer">
@@ -1595,6 +1660,12 @@
         </div>
         <div id="changelog-content" style="display:none;padding:0 16px 16px;">
           <div style="font-size:13px;color:var(--text2);line-height:1.8;">
+            <div style="margin-bottom:12px;">
+              <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v1.3 · 2026-06-26</div>
+              <div>· 成就系统：12个勋章（铜/银/金/钻石四级）</div>
+              <div>· 页面过渡动画：子页面滑入、tab 切换淡入</div>
+              <div>· 震动反馈：打卡/删除/待办完成时触觉反馈（可在设置关闭）</div>
+            </div>
             <div style="margin-bottom:12px;">
               <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v1.2 · 2026-06-26</div>
               <div>· 引力曲线升级为文字时间线，展示最近7天期待内容</div>
@@ -2946,9 +3017,16 @@ function showToast(msg) {
 }
 
 function setView(id) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const oldView = document.querySelector('.view.active');
+  document.querySelectorAll('.view').forEach(v => { v.classList.remove('active'); v.classList.remove('slide-in-right'); v.classList.remove('slide-in-left'); });
   document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+  const newView = document.getElementById(id);
+  newView.classList.add('active');
+  // Add slide animation
+  if (oldView && oldView !== newView) {
+    newView.classList.add('slide-in-right');
+    newView.addEventListener('animationend', () => newView.classList.remove('slide-in-right'), { once: true });
+  }
   // Hide tab bar when entering sub-views (detail, heatmap, anniversary)
   const tabBar = document.getElementById('tab-bar');
   if (id === 'view-detail' || id === 'view-heatmap' || id === 'view-anniversary' || id === 'view-anni-detail' || id === 'view-todo-detail' || id === 'view-settings' || id === 'view-avatar-lightbox' || id === 'view-profile-item' || id === 'view-custom-quotes') {
@@ -2962,9 +3040,12 @@ function setView(id) {
 function switchTab(tabName) {
   currentTab = tabName;
   // Hide all tab views
-  document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.tab-view').forEach(v => { v.classList.remove('active'); v.classList.remove('fade-in'); });
   // Show selected tab
-  document.getElementById('view-tab-' + tabName).classList.add('active');
+  const tabView = document.getElementById('view-tab-' + tabName);
+  tabView.classList.add('active');
+  tabView.classList.add('fade-in');
+  tabView.addEventListener('animationend', () => tabView.classList.remove('fade-in'), { once: true });
   // Update tab bar
   document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
   document.getElementById('tab-' + tabName).classList.add('active');
@@ -3320,7 +3401,7 @@ function renderRecords(task) {
       lpTimer = setTimeout(() => {
         lpTimer = null;
         item.classList.add('long-pressing');
-        if (navigator.vibrate) navigator.vibrate(50);
+        hapticFeedback(50);
         openEditRecordModal(r.id, r.text || '');
         setTimeout(() => item.classList.remove('long-pressing'), 300);
       }, 600);
@@ -3425,6 +3506,8 @@ async function submitRecord() {
     if (task) renderRecords(task);
 
     showToast('✅ 记录已保存');
+    hapticFeedback(10);
+    checkAchievements();
     setTimeout(() => {
       const sa = document.getElementById('detail-records');
       sa.scrollTop = sa.scrollHeight;
@@ -3437,6 +3520,7 @@ async function submitRecord() {
 
 async function deleteRecord(rid) {
   if (!confirm('删除这条记录？')) return;
+  hapticFeedback([10, 50, 10]);
   try {
     await deleteRecordDB(rid);
     const task = getTaskFromCache(currentTaskId);
@@ -3803,8 +3887,9 @@ function toggleTodo(id, event) {
   const itemIdx = list.findIndex(t => t.id === id);
   if (itemIdx === -1) return;
   const item = list[itemIdx];
-
+  const wasCompleted = item.completed;
   item.completed = !item.completed;
+  if (item.completed && !wasCompleted) hapticFeedback(10);
   list.splice(itemIdx, 1); // 先从原位置移除
 
   if (item.completed) {
@@ -3827,9 +3912,11 @@ function toggleTodo(id, event) {
   }
   saveTodos(list);
   renderTodos();
+  if (item.completed && !wasCompleted) checkAchievements();
 }
 
 function deleteTodo(id) {
+  hapticFeedback([10, 50, 10]);
   const list = loadTodos().filter(t => t.id !== id);
   saveTodos(list);
   renderTodos();
@@ -4105,6 +4192,9 @@ function renderMePage() {
     `;
     mindGrid.querySelectorAll('.me-sub-card:not(.add)').forEach(el => initProfileItemLongPress(el, 'mindset'));
   }
+
+  // Achievements
+  renderAchievements();
 }
 
 function openAvatarLightbox() {
@@ -4160,6 +4250,27 @@ function toggleTheme() {
   const next = getTheme() === 'dark' ? 'light' : 'dark';
   localStorage.setItem(THEME_KEY, next);
   applyTheme(next);
+}
+
+// ===== SETTINGS: Haptic Feedback =====
+const HAPTIC_KEY = 'wellness_haptic';
+
+function getHapticEnabled() {
+  const v = localStorage.getItem(HAPTIC_KEY);
+  return v === null ? true : v === 'true';
+}
+
+function toggleHaptic() {
+  const next = !getHapticEnabled();
+  localStorage.setItem(HAPTIC_KEY, String(next));
+  const toggle = document.getElementById('toggle-haptic');
+  if (toggle) toggle.classList.toggle('on', next);
+  if (next && navigator.vibrate) navigator.vibrate(20);
+}
+
+function hapticFeedback(pattern) {
+  if (!getHapticEnabled()) return;
+  if (navigator.vibrate) navigator.vibrate(pattern);
 }
 
 // ===== SETTINGS: Welcome Toggle =====
@@ -4224,6 +4335,9 @@ function updateSettingsPreviews() {
   // Update welcome toggle state
   const welcomeToggle = document.getElementById('toggle-welcome');
   if (welcomeToggle) welcomeToggle.classList.toggle('on', getWelcomeShow());
+  // Update haptic toggle state
+  const hapticToggle = document.getElementById('toggle-haptic');
+  if (hapticToggle) hapticToggle.classList.toggle('on', getHapticEnabled());
 }
 
 // ===== SETTINGS: Custom Quotes =====
@@ -4281,6 +4395,131 @@ function deleteCustomQuote(index) {
   saveCustomQuotes(list);
   renderCustomQuotesList();
   showToast('已删除');
+}
+
+// ===== SETTINGS: Changelog Toggle =====
+// ===== ACHIEVEMENTS =====
+const ACHIEVEMENTS_KEY = 'wellness_achievements';
+const ACHIEVEMENTS = [
+  { id: 'seed_30', emoji: '🌱', name: '种子发芽', desc: '累计记录30条', tier: 'bronze', check: () => getTotalRecordCount() >= 30 },
+  { id: 'action_20', emoji: '✅', name: '行动派', desc: '完成20个待办', tier: 'bronze', check: () => getCompletedTodoCount() >= 20 },
+  { id: 'gravity_14', emoji: '🪐', name: '引力初探', desc: '写下14天引力期待', tier: 'bronze', check: () => getGravityDaysCount() >= 14 },
+  { id: 'streak_14', emoji: '🔥', name: '火焰之心', desc: '连续14天有记录', tier: 'silver', check: () => getMaxRecordStreak() >= 14 },
+  { id: 'recorder_200', emoji: '📖', name: '记录者', desc: '累计记录200条', tier: 'silver', check: () => getTotalRecordCount() >= 200 },
+  { id: 'night_10', emoji: '🌙', name: '夜行者', desc: '23点后记录10次', tier: 'silver', check: () => getLateNightCount() >= 10 },
+  { id: 'streak_30', emoji: '🔥', name: '永恒之火', desc: '连续30天有记录', tier: 'gold', check: () => getMaxRecordStreak() >= 30 },
+  { id: 'recorder_500', emoji: '📚', name: '百科全书', desc: '累计记录500条', tier: 'gold', check: () => getTotalRecordCount() >= 500 },
+  { id: 'gravity_60', emoji: '🪐', name: '引力大师', desc: '写下60天引力期待', tier: 'gold', check: () => getGravityDaysCount() >= 60 },
+  { id: 'deadline_50', emoji: '🎯', name: '目标猎人', desc: '完成50个有截止日期的待办', tier: 'gold', check: () => getCompletedDeadlineTodoCount() >= 50 },
+  { id: 'streak_100', emoji: '💎', name: '时光见证者', desc: '连续100天有记录', tier: 'diamond', check: () => getMaxRecordStreak() >= 100 },
+  { id: 'recorder_1000', emoji: '🏆', name: '心灵守护者', desc: '累计记录1000条', tier: 'diamond', check: () => getTotalRecordCount() >= 1000 },
+];
+
+function loadAchievements() {
+  try {
+    const raw = localStorage.getItem(ACHIEVEMENTS_KEY);
+    return raw ? JSON.parse(raw) : { unlocked: {}, unlockedAt: {} };
+  } catch(e) { return { unlocked: {}, unlockedAt: {} }; }
+}
+function saveAchievements(data) {
+  localStorage.setItem(ACHIEVEMENTS_KEY, JSON.stringify(data));
+}
+
+function getTotalRecordCount() {
+  let count = 0;
+  tasksCache.forEach(t => { count += (t.records || []).length; });
+  return count;
+}
+
+function getCompletedTodoCount() {
+  return loadTodos().filter(t => t.completed).length;
+}
+
+function getCompletedDeadlineTodoCount() {
+  return loadTodos().filter(t => t.completed && t.deadline).length;
+}
+
+function getGravityDaysCount() {
+  const history = getGravityHistory();
+  const today = getGravityToday();
+  return Object.keys(history).length + (today ? 1 : 0);
+}
+
+function getMaxRecordStreak() {
+  // Collect all unique record dates
+  const dateSet = new Set();
+  tasksCache.forEach(t => {
+    (t.records || []).forEach(r => {
+      const ts = r.created_at || r.ts;
+      if (ts) dateSet.add(formatDate(ts));
+    });
+  });
+  if (dateSet.size === 0) return 0;
+  const dates = [...dateSet].sort();
+  let maxStreak = 1, streak = 1;
+  for (let i = 1; i < dates.length; i++) {
+    const prev = new Date(dates[i-1] + 'T00:00:00');
+    const curr = new Date(dates[i] + 'T00:00:00');
+    const diff = (curr - prev) / (1000*60*60*24);
+    if (diff === 1) { streak++; maxStreak = Math.max(maxStreak, streak); }
+    else if (diff > 1) { streak = 1; }
+  }
+  return maxStreak;
+}
+
+function getLateNightCount() {
+  let count = 0;
+  tasksCache.forEach(t => {
+    (t.records || []).forEach(r => {
+      const ts = r.created_at || r.ts;
+      if (ts && new Date(ts).getHours() >= 23) count++;
+    });
+  });
+  return count;
+}
+
+function checkAchievements() {
+  const data = loadAchievements();
+  let newUnlock = false;
+  ACHIEVEMENTS.forEach(a => {
+    if (!data.unlocked[a.id] && a.check()) {
+      data.unlocked[a.id] = true;
+      data.unlockedAt[a.id] = todayStr();
+      newUnlock = true;
+      showToast('🏆 解锁成就：' + a.emoji + ' ' + a.name);
+      hapticFeedback([20, 80, 20]);
+    }
+  });
+  if (newUnlock) saveAchievements(data);
+}
+
+function renderAchievements() {
+  const section = document.getElementById('me-achievements-section');
+  if (!section) return;
+  const data = loadAchievements();
+  const unlockedCount = Object.keys(data.unlocked).length;
+
+  const cardsHtml = ACHIEVEMENTS.map(a => {
+    const isUnlocked = !!data.unlocked[a.id];
+    const tierColors = { bronze: '#cd7f32', silver: '#a8a8a8', gold: '#daa520', diamond: '#b9f2ff' };
+    const tierBg = { bronze: 'rgba(205,127,50,0.08)', silver: 'rgba(168,168,168,0.08)', gold: 'rgba(218,165,32,0.08)', diamond: 'rgba(185,242,255,0.08)' };
+    return `
+      <div class="achievement-card${isUnlocked ? '' : ' locked'}" ${isUnlocked ? `style="border-top:3px solid ${tierColors[a.tier]};background:${tierBg[a.tier]}"` : ''}>
+        <div class="achievement-emoji">${a.emoji}</div>
+        <div class="achievement-name">${a.name}</div>
+        <div class="achievement-desc">${a.desc}</div>
+        ${isUnlocked ? `<div class="achievement-unlocked-date">${data.unlockedAt[a.id]}</div>` : ''}
+      </div>
+    `;
+  }).join('');
+
+  section.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <span style="font-size:14px;font-weight:600;color:var(--text);">🏆 成就</span>
+      <span style="font-size:11px;color:var(--text3);">${unlockedCount}/${ACHIEVEMENTS.length} 已解锁</span>
+    </div>
+    <div class="achievements-grid">${cardsHtml}</div>
+  `;
 }
 
 // ===== SETTINGS: Changelog Toggle =====
@@ -4374,7 +4613,7 @@ function initProfileItemLongPress(el, type) {
     lpTimer = setTimeout(() => {
       lpTimer = null;
       el.classList.add('long-pressing');
-      if (navigator.vibrate) navigator.vibrate(50);
+      hapticFeedback(50);
       deletingProfileItem = { id, type };
       const title = el.querySelector('.me-sub-card-title')?.textContent || '';
       document.getElementById('delete-profile-item-title').textContent = '删除「' + title + '」';
