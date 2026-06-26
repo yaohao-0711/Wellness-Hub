@@ -4108,41 +4108,32 @@ if ('serviceWorker' in navigator) {
     console.log('Cloud unavailable, using local only');
   }
 
-  // ====== 一次性任务合并（LUCK时刻 + 连接时刻 → 社交时刻）======
-  // 清除旧标记以防冲突
-  if (localStorage.getItem('wellness_merge_done')) localStorage.removeItem('wellness_merge_done');
-  if (!localStorage.getItem('wellness_social_merged')) {
-    console.log('[Merge] Looking for LUCK时刻 and 连接时刻...');
+  // ====== 任务合并：LUCK时刻 + 连接时刻 → 社交时刻 ======
+  (function tryMerge() {
     const luck = tasksCache.find(t => t.name === 'LUCK时刻');
     const conn = tasksCache.find(t => t.name === '连接时刻');
-    console.log('[Merge] found luck:', !!luck, 'conn:', !!conn);
-    if (luck && conn) {
-      // 备份当前数据
+    if (!luck || !conn) return;  // 已合并或不存在，跳过
+    console.log('[Merge] 开始合并...');
+    try {
+      // 备份
       const backup = JSON.stringify({ tasks: tasksCache.map(t => ({
         id: t.id, name: t.name, created_at: t.created_at,
         records: (t.records || []).map(r => ({ ...r }))
       })) });
       localStorage.setItem('wellness_backup_merge', backup);
-      // 云端同步（如果已连接）
-      if (cloudAvailable) {
-        try {
-          await apiFetch('records', 'PATCH', { task_id: luck.id }, 'task_id=eq.' + conn.id);
-          await apiFetch('tasks', 'PATCH', { name: '社交时刻' }, 'id=eq.' + luck.id);
-          await apiFetch('records', 'DELETE', null, 'task_id=eq.' + conn.id);
-          await apiFetch('tasks', 'DELETE', null, 'id=eq.' + conn.id);
-        } catch(e) { console.log('Cloud merge err:', e); }
-      }
       // 本地合并
       (conn.records || []).forEach(r => { r.task_id = luck.id; });
       luck.records = [...(luck.records || []), ...(conn.records || [])];
       luck.name = '社交时刻';
       tasksCache = tasksCache.filter(t => t.id !== conn.id);
       saveToLocal();
-      localStorage.setItem('wellness_social_merged', '1');
       renderHome();
       showToast('✅ 已合并：LUCK时刻+连接时刻→社交时刻');
+      console.log('[Merge] 合并完成');
+    } catch(e) {
+      console.error('[Merge] 失败:', e);
     }
-  }
+  })();
 })();
 </script>
 </body>
