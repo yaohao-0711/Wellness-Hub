@@ -1,10 +1,12 @@
-const CACHE_NAME = 'checkin-app-v1';
+const CACHE_NAME = 'checkin-app-v4';
 const ASSETS = [
   '/Wellness-Hub/',
   '/Wellness-Hub/index.html',
-  '/Wellness-Hub/manifest.json'
+  '/Wellness-Hub/manifest.json',
+  '/Wellness-Hub/icon.png'
 ];
 
+// Install: cache core assets
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
@@ -12,6 +14,7 @@ self.addEventListener('install', e => {
   self.skipWaiting();
 });
 
+// Activate: clean old caches
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys =>
@@ -21,8 +24,7 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
+// Fetch: network only (no cache)
 self.addEventListener('fetch', e => {
-  e.respondWith(
-    fetch(e.request).catch(() => caches.match(e.request))
-  );
+  e.respondWith(fetch(e.request));
 });
