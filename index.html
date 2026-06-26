@@ -3276,6 +3276,12 @@ function setView(id) {
 
 function switchTab(tabName) {
   hapticFeedback(5);
+  // Save current tab scroll position
+  if (!window._tabScrollPos) window._tabScrollPos = {};
+  if (currentTab) {
+    window._tabScrollPos[currentTab] = window.scrollY || document.documentElement.scrollTop;
+  }
+
   currentTab = tabName;
   // Hide all tab views
   document.querySelectorAll('.tab-view').forEach(v => { v.classList.remove('active'); v.classList.remove('fade-in'); });
@@ -3291,7 +3297,12 @@ function switchTab(tabName) {
   document.getElementById('tab-bar').classList.remove('hidden');
   // Hide sub-views
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  window.scrollTo(0, 0);
+
+  // Restore saved scroll position
+  const savedY = window._tabScrollPos[tabName] || 0;
+  requestAnimationFrame(() => {
+    window.scrollTo(0, savedY);
+  });
 
   // Tab-specific init
   if (tabName === 'record') {
