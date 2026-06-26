@@ -3260,6 +3260,7 @@ function setView(id) {
   // Add slide animation for sub-views
   if (oldView && oldView !== newView) {
     newView.classList.add('slide-in');
+    hapticFeedback(10);
     newView.addEventListener('animationend', () => newView.classList.remove('slide-in'), { once: true });
   }
   // Hide tab bar when entering sub-views
@@ -3274,6 +3275,7 @@ function setView(id) {
 }
 
 function switchTab(tabName) {
+  hapticFeedback(5);
   currentTab = tabName;
   // Hide all tab views
   document.querySelectorAll('.tab-view').forEach(v => { v.classList.remove('active'); v.classList.remove('fade-in'); });
@@ -3587,6 +3589,7 @@ function openTask(id) {
     if (diff >= THRESHOLD && !isRefreshing) {
       // Trigger refresh
       isRefreshing = true;
+      hapticFeedback(15);
       ind.style.height = '48px';
       ind.classList.remove('ready');
       const arrowEl = ind.querySelector('.pull-arrow');
