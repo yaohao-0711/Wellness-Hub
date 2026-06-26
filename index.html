@@ -4109,9 +4109,13 @@ if ('serviceWorker' in navigator) {
   }
 
   // ====== 一次性任务合并（LUCK时刻 + 连接时刻 → 社交时刻）======
-  if (!localStorage.getItem('wellness_merge_done')) {
+  // 清除旧标记以防冲突
+  if (localStorage.getItem('wellness_merge_done')) localStorage.removeItem('wellness_merge_done');
+  if (!localStorage.getItem('wellness_social_merged')) {
+    console.log('[Merge] Looking for LUCK时刻 and 连接时刻...');
     const luck = tasksCache.find(t => t.name === 'LUCK时刻');
     const conn = tasksCache.find(t => t.name === '连接时刻');
+    console.log('[Merge] found luck:', !!luck, 'conn:', !!conn);
     if (luck && conn) {
       // 备份当前数据
       const backup = JSON.stringify({ tasks: tasksCache.map(t => ({
@@ -4134,7 +4138,7 @@ if ('serviceWorker' in navigator) {
       luck.name = '社交时刻';
       tasksCache = tasksCache.filter(t => t.id !== conn.id);
       saveToLocal();
-      localStorage.setItem('wellness_merge_done', '1');
+      localStorage.setItem('wellness_social_merged', '1');
       renderHome();
       showToast('✅ 已合并：LUCK时刻+连接时刻→社交时刻');
     }
