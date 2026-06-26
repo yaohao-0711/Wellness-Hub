@@ -343,19 +343,40 @@
     .btn-ghost { background: var(--surface2); color: var(--text-secondary); }
     .btn-danger { background: var(--danger); color: #fff; }
 
-    /* ===== TASK DETAIL VIEW — Clean cards ===== */
+    /* ===== TASK DETAIL VIEW — Swipeable cards ===== */
     .records-list {
       display: flex; flex-direction: column-reverse;
       gap: 8px; padding-bottom: 16px;
     }
-    .record-item {
-      background: var(--surface);
-      border: none;
-      border-radius: var(--radius);
-      padding: 16px 18px;
+    .record-swipe-wrap {
       position: relative;
+      overflow: hidden;
+      border-radius: var(--radius);
+    }
+    .record-swipe-actions {
+      position: absolute; top: 0; right: 0; bottom: 0;
+      display: flex; align-items: stretch;
+      transform: translateX(100%);
+      transition: transform 0.2s ease;
+    }
+    .record-swipe-actions .swipe-btn {
+      display: flex; align-items: center; justify-content: center;
+      width: 72px; border: none; cursor: pointer;
+      font-size: 13px; font-weight: 600; color: #fff;
+      font-family: inherit;
+    }
+    .record-swipe-actions .swipe-delete { background: var(--danger); }
+    .record-swipe-actions .swipe-edit { background: var(--accent); }
+    .record-swipe-content {
+      background: var(--surface);
+      position: relative;
+      z-index: 1;
+      transition: transform 0.2s ease;
+      will-change: transform;
+    }
+    .record-item {
+      padding: 16px 18px;
       box-shadow: var(--shadow-xs);
-      transition: all var(--transition-fast);
     }
     .record-item .record-time {
       font-size: 11px; color: var(--text-tertiary); margin-bottom: 8px; font-weight: 500;
@@ -368,11 +389,6 @@
     .record-item .record-content.expanded {
       -webkit-line-clamp: unset; display: block;
     }
-    .record-item.long-pressing {
-      transform: scale(0.98);
-      opacity: 0.8;
-      transition: transform .15s, opacity .15s;
-    }
     .record-item .record-images {
       display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;
     }
@@ -383,15 +399,8 @@
     }
     .record-item .record-img:active { transform: scale(0.95); }
     .record-del {
-      position: absolute; top: 12px; right: 12px;
-      background: transparent; border: none; cursor: pointer;
-      color: var(--text-quaternary); font-size: 12px; padding: 4px; width: 24px; height: 24px;
-      border-radius: 50%; display: flex; align-items: center; justify-content: center;
-      transition: all var(--transition-fast); opacity: 0;
+      display: none; /* Hidden — using swipe actions instead */
     }
-    .record-item:hover .record-del { opacity: 1; }
-    .record-del:active { color: var(--danger); }
-    .record-del:active { color: var(--danger); }
 
     /* Add record area — Clean frosted glass */
     .add-record-area {
@@ -3572,46 +3581,91 @@ function renderRecords(task) {
 
   sorted.forEach(r => {
     const ts = r.created_at || r.ts;
-    const item = document.createElement('div');
-    item.className = 'record-item';
     const imgs = (r.images || []).map(src =>
       `<img class="record-img" src="${src}" alt="" onclick="event.stopPropagation();openLightbox(this.src)" />`
     ).join('');
     const isVoice = r.type === 'voice' || r.audioId;
-    item.innerHTML = `
-      <button class="record-del" onclick="event.stopPropagation();deleteRecord('${r.id}')" title="删除">✕</button>
-      <div class="record-time">${formatDatetime(ts)}</div>
-      ${isVoice ? `<div class="record-voice" onclick="event.stopPropagation();playVoice('${r.audioId}', this)">
-        <span class="voice-duration">${formatVoiceDuration(r.duration || 0)}</span>
-        <span class="voice-wave"><span></span><span></span><span></span><span></span><span></span></span>
-      </div>` : ''}
-      ${(!isVoice && r.text) ? `<div class="record-content" onclick="event.stopPropagation();this.classList.toggle('expanded')">${highlightText(r.text, recordSearchKeyword)}</div>` : ''}
-      ${imgs ? `<div class="record-images">${imgs}</div>` : ''}
+
+    // Swipe wrapper
+    const wrap = document.createElement('div');
+    wrap.className = 'record-swipe-wrap';
+    wrap.innerHTML = `
+      <div class="record-swipe-actions">
+        <button class="swipe-btn swipe-edit" onclick="openEditRecordModal('${r.id}', '${escapeHtml(r.text || '').replace(/'/g, "\\'")}')">编辑</button>
+        <button class="swipe-btn swipe-delete" onclick="deleteRecord('${r.id}')">删除</button>
+      </div>
+      <div class="record-swipe-content">
+        <div class="record-item">
+          <div class="record-time">${formatDatetime(ts)}</div>
+          ${isVoice ? `<div class="record-voice" onclick="event.stopPropagation();playVoice('${r.audioId}', this)">
+            <span class="voice-duration">${formatVoiceDuration(r.duration || 0)}</span>
+            <span class="voice-wave"><span></span><span></span><span></span><span></span><span></span></span>
+          </div>` : ''}
+          ${(!isVoice && r.text) ? `<div class="record-content" onclick="event.stopPropagation();this.classList.toggle('expanded')">${highlightText(r.text, recordSearchKeyword)}</div>` : ''}
+          ${imgs ? `<div class="record-images">${imgs}</div>` : ''}
+        </div>
+      </div>
     `;
-    // Long press to edit record
-    let lpTimer = null;
-    function startLP(e) {
-      if (e.target.closest('.record-del') || e.target.closest('.record-img') || e.target.closest('.record-voice')) return;
-      lpTimer = setTimeout(() => {
-        lpTimer = null;
-        item.classList.add('long-pressing');
-        hapticFeedback(50);
-        openEditRecordModal(r.id, r.text || '');
-        setTimeout(() => item.classList.remove('long-pressing'), 300);
-      }, 600);
-    }
-    function endLP() {
-      if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; }
-      item.classList.remove('long-pressing');
-    }
-    item.addEventListener('touchstart', startLP, { passive: true });
-    item.addEventListener('touchend', endLP);
-    item.addEventListener('touchcancel', endLP);
-    item.addEventListener('touchmove', endLP);
-    item.addEventListener('mousedown', startLP);
-    item.addEventListener('mouseup', endLP);
-    item.addEventListener('mouseleave', endLP);
-    list.appendChild(item);
+
+    // Swipe gesture
+    const content = wrap.querySelector('.record-swipe-content');
+    const actions = wrap.querySelector('.record-swipe-actions');
+    let startX = 0, currentX = 0, isDragging = false, isOpen = false;
+
+    content.addEventListener('touchstart', e => {
+      startX = e.touches[0].clientX;
+      isDragging = true;
+      content.style.transition = 'none';
+    }, { passive: true });
+
+    content.addEventListener('touchmove', e => {
+      if (!isDragging) return;
+      currentX = e.touches[0].clientX;
+      const diff = currentX - startX;
+      if (isOpen) {
+        // If already open, allow closing (swipe right)
+        const offset = Math.max(-144, Math.min(0, diff - 144));
+        content.style.transform = `translateX(${offset}px)`;
+      } else {
+        // Allow opening (swipe left)
+        const offset = Math.min(0, diff);
+        content.style.transform = `translateX(${Math.max(-144, offset)}px)`;
+      }
+    }, { passive: true });
+
+    content.addEventListener('touchend', () => {
+      isDragging = false;
+      content.style.transition = 'transform 0.2s ease';
+      const diff = currentX - startX;
+      if (isOpen) {
+        // Close if swiped right enough
+        if (diff > 50) {
+          content.style.transform = 'translateX(0)';
+          isOpen = false;
+        } else {
+          content.style.transform = 'translateX(-144px)';
+        }
+      } else {
+        // Open if swiped left enough
+        if (diff < -50) {
+          content.style.transform = 'translateX(-144px)';
+          isOpen = true;
+        } else {
+          content.style.transform = 'translateX(0)';
+        }
+      }
+    });
+
+    // Close on tap outside
+    document.addEventListener('touchstart', e => {
+      if (isOpen && !wrap.contains(e.target)) {
+        content.style.transition = 'transform 0.2s ease';
+        content.style.transform = 'translateX(0)';
+        isOpen = false;
+      }
+    });
+
+    list.appendChild(wrap);
   });
 }
 
