@@ -1278,34 +1278,6 @@
     .toggle-switch.on { background: var(--accent); }
     .toggle-switch.on::after { transform: translateX(20px); }
     /* Font size options */
-    .font-size-options {
-      display: flex; gap: 6px; flex-shrink: 0;
-    }
-    .font-size-btn {
-      width: 36px; height: 36px; border-radius: 50%;
-      background: var(--surface2); border: 1.5px solid var(--border);
-      color: var(--text2); font-weight: 600; cursor: pointer;
-      font-family: inherit; transition: all .2s;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .font-size-btn.active {
-      background: var(--accent); color: #fff; border-color: var(--accent);
-    }
-    /* Settings action buttons */
-    .settings-action {
-      display: flex; align-items: center; gap: 8px;
-      padding: 14px 16px; cursor: pointer; background: none;
-      border: none; width: 100%; font-family: inherit; text-align: left;
-      font-size: 15px; font-weight: 500; color: var(--accent);
-      transition: background .2s;
-    }
-    .settings-action:hover { background: var(--accent-light); }
-    .settings-action + .settings-action { border-top: 1px solid var(--border); }
-    .settings-action .action-icon { font-size: 18px; width: 24px; text-align: center; }
-    .settings-footer {
-      text-align: center; padding: 24px 16px;
-      font-size: 12px; color: var(--text3);
-    }
 
     /* ===== RESPONSIVE ===== */
     @media (max-width: 400px) {
@@ -1506,30 +1478,6 @@
           </div>
           <button class="toggle-switch" id="toggle-dark" onclick="toggleTheme()"></button>
         </div>
-        <div class="settings-item">
-          <div class="settings-item-left">
-            <div class="settings-item-label">🔤 字体大小</div>
-            <div class="settings-item-desc">调整全局文字大小</div>
-          </div>
-          <div class="font-size-options">
-            <button class="font-size-btn" data-size="small" onclick="setFontSize('small')">小</button>
-            <button class="font-size-btn active" data-size="medium" onclick="setFontSize('medium')">中</button>
-            <button class="font-size-btn" data-size="large" onclick="setFontSize('large')">大</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="settings-section">数据</div>
-      <div class="settings-card">
-        <button class="settings-action" onclick="exportData()">
-          <span class="action-icon">📦</span>
-          <span>导出备份</span>
-        </button>
-        <button class="settings-action" onclick="document.getElementById('import-file-input').click()">
-          <span class="action-icon">📥</span>
-          <span>导入恢复</span>
-        </button>
-        <input type="file" id="import-file-input" accept=".json" style="display:none" onchange="importData(this)" />
       </div>
 
       <div class="settings-section">关于</div>
@@ -1542,7 +1490,6 @@
         </div>
       </div>
 
-      <div class="settings-footer">数据存储在本地浏览器中<br>建议定期导出备份</div>
     </div>
   </div>
 </div>
@@ -3767,15 +3714,13 @@ function readFileAsDataURL(file) {
 }
 function openSettings() {
   setView('view-settings');
-  renderSettingsUI();
+  applyTheme(getTheme());
 }
 
 // ===== SETTINGS: Theme =====
 const THEME_KEY = 'wellness_theme';
-const FONT_KEY = 'wellness_font_size';
 
 function getTheme() { return localStorage.getItem(THEME_KEY) || 'light'; }
-function getFontSize() { return localStorage.getItem(FONT_KEY) || 'medium'; }
 
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
@@ -3788,119 +3733,6 @@ function toggleTheme() {
   localStorage.setItem(THEME_KEY, next);
   applyTheme(next);
 }
-
-function applyFontSize(size) {
-  const px = size === 'small' ? '13px' : size === 'large' ? '17px' : '15px';
-  document.body.style.fontSize = px;
-  document.querySelectorAll('.font-size-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.size === size);
-  });
-}
-
-function setFontSize(size) {
-  localStorage.setItem(FONT_KEY, size);
-  applyFontSize(size);
-}
-
-function renderSettingsUI() {
-  applyTheme(getTheme());
-  applyFontSize(getFontSize());
-}
-
-// ===== SETTINGS: Data Export =====
-function exportData() {
-  const exportObj = {};
-  // All localStorage keys used by the app
-  const keys = [
-    'checkin_app_data', 'wellness_profile', 'wellness_todos',
-    'wellness_anniversaries', 'wellness_gravity_today',
-    'wellness_gravity_history', 'wellness_gravity_last_record_date',
-    'checkin_gravity_today', 'checkin_quote_index',
-    'wellness_theme', 'wellness_font_size'
-  ];
-  keys.forEach(k => {
-    const v = localStorage.getItem(k);
-    if (v !== null) exportObj[k] = v;
-  });
-  // IndexedDB voice recordings
-  try {
-    const req = indexedDB.open('VoiceStore');
-    req.onsuccess = function() {
-      const db = req.result;
-      const tx = db.transaction('voices', 'readonly');
-      const store = tx.objectStore('voices');
-      const getAll = store.getAll();
-      getAll.onsuccess = function() {
-        exportObj._voiceRecordings = getAll.result || [];
-        downloadJSON(exportObj);
-      };
-      getAll.onerror = function() { downloadJSON(exportObj); };
-    };
-    req.onerror = function() { downloadJSON(exportObj); };
-  } catch(e) { downloadJSON(exportObj); }
-}
-
-function downloadJSON(data) {
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  const now = new Date();
-  const dateStr = now.getFullYear() + String(now.getMonth()+1).padStart(2,'0') + String(now.getDate()).padStart(2,'0');
-  a.download = '心理小屋备份_' + dateStr + '.json';
-  a.href = URL.createObjectURL(blob);
-  a.click();
-  URL.revokeObjectURL(a.href);
-  showToast('✅ 备份已下载');
-}
-
-// ===== SETTINGS: Data Import =====
-function importData(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const data = JSON.parse(e.target.result);
-      // Restore localStorage
-      const keys = [
-        'checkin_app_data', 'wellness_profile', 'wellness_todos',
-        'wellness_anniversaries', 'wellness_gravity_today',
-        'wellness_gravity_history', 'wellness_gravity_last_record_date',
-        'checkin_gravity_today', 'checkin_quote_index',
-        'wellness_theme', 'wellness_font_size'
-      ];
-      keys.forEach(k => {
-        if (data[k] !== undefined) localStorage.setItem(k, data[k]);
-      });
-      // Restore IndexedDB voice recordings
-      if (data._voiceRecordings && data._voiceRecordings.length > 0) {
-        try {
-          const req = indexedDB.open('VoiceStore');
-          req.onsuccess = function() {
-            const db = req.result;
-            const tx = db.transaction('voices', 'readwrite');
-            const store = tx.objectStore('voices');
-            data._voiceRecordings.forEach(r => store.put(r));
-            tx.oncomplete = finishImport;
-            tx.onerror = finishImport;
-          };
-          req.onerror = finishImport;
-        } catch(err) { finishImport(); }
-      } else {
-        finishImport();
-      }
-    } catch(err) {
-      showToast('❌ 文件格式错误');
-      input.value = '';
-    }
-  };
-  reader.readAsText(file);
-}
-
-function finishImport() {
-  showToast('✅ 数据已恢复，即将刷新');
-  setTimeout(() => location.reload(), 1200);
-}
-
 
 // Name
 function openNameModal() {
@@ -4327,7 +4159,6 @@ if ('serviceWorker' in navigator) {
 (async function init() {
   // Apply saved settings
   applyTheme(getTheme());
-  applyFontSize(getFontSize());
 
   // Show welcome modal every time with rotating quote
   document.getElementById('welcome-quote').textContent = getNextQuote();
