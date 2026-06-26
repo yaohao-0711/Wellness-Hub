@@ -127,7 +127,7 @@
     .animate-in-delay-3 { animation-delay: 0.15s; opacity: 0; }
 
     /* ===== VIEWS ===== */
-    .view { display: none; min-height: 100vh; }
+    .view { display: none; min-height: 100vh; position: relative; }
     .view.active { display: flex; flex-direction: column; }
 
     /* ===== TOP BAR — Clean frosted glass ===== */
@@ -1406,6 +1406,36 @@
       color: var(--text-tertiary); font-size: 14px;
     }
 
+    /* ===== PULL TO REFRESH ===== */
+    .pull-refresh-indicator {
+      position: absolute; top: 0; left: 0; right: 0;
+      display: flex; align-items: center; justify-content: center;
+      height: 0; overflow: hidden;
+      background: var(--surface);
+      z-index: 5; pointer-events: none;
+      transition: height 0.2s ease;
+      font-size: 13px; color: var(--text-tertiary);
+    }
+    .pull-refresh-indicator.pulling {
+      transition: none;
+    }
+    .pull-refresh-indicator .spinner {
+      width: 18px; height: 18px; margin-right: 8px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .pull-refresh-indicator .pull-arrow {
+      display: inline-block; margin-right: 6px;
+      transition: transform 0.15s ease;
+      font-size: 16px;
+    }
+    .pull-refresh-indicator.ready .pull-arrow {
+      transform: rotate(180deg);
+    }
+
     /* ===== RECORD SEARCH BAR ===== */
     .record-search-bar {
       display: flex; align-items: center; gap: 8px;
@@ -1947,6 +1977,11 @@
       <button class="icon-btn" onclick="toggleRecordSearch()" title="搜索"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
       <button class="icon-btn" onclick="goHeatmap()" title="查看热力图"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></button>
     </div>
+  </div>
+  <div class="pull-refresh-indicator" id="pull-refresh-indicator">
+    <span class="pull-arrow">↓</span>
+    <span class="pull-text">下拉刷新</span>
+    <span class="spinner" style="display:none;"></span>
   </div>
   <div class="record-search-bar" id="record-search-bar" style="display:none;">
     <input type="text" id="record-search-input" placeholder="搜索记录内容…" oninput="onRecordSearchInput()" />
@@ -3491,6 +3526,109 @@ function openTask(id) {
     sa.scrollTop = sa.scrollHeight;
   }, 50);
 }
+
+/* ======================== PULL TO REFRESH ======================== */
+(function initPullRefresh() {
+  const THRESHOLD = 70;
+  let startY = 0, currentY = 0, isPulling = false, isRefreshing = false;
+
+  function getIndicator() { return document.getElementById('pull-refresh-indicator'); }
+  function getScrollArea() { return document.getElementById('detail-records'); }
+
+  document.addEventListener('touchstart', e => {
+    const scrollArea = getScrollArea();
+    if (!scrollArea || !scrollArea.closest('.view.active')) return;
+    if (scrollArea.scrollTop > 0) return;
+    startY = e.touches[0].clientY;
+    isPulling = true;
+    const ind = getIndicator();
+    if (ind) ind.classList.add('pulling');
+  }, { passive: true });
+
+  document.addEventListener('touchmove', e => {
+    if (!isPulling || isRefreshing) return;
+    const scrollArea = getScrollArea();
+    if (!scrollArea || scrollArea.scrollTop > 0) { isPulling = false; return; }
+    currentY = e.touches[0].clientY;
+    const diff = currentY - startY;
+    if (diff < 0) return;
+    const ind = getIndicator();
+    if (!ind) return;
+    const progress = Math.min(diff, 120);
+    ind.style.height = progress + 'px';
+    ind.style.opacity = Math.min(progress / THRESHOLD, 1);
+    const textEl = ind.querySelector('.pull-text');
+    const arrowEl = ind.querySelector('.pull-arrow');
+    if (diff >= THRESHOLD) {
+      ind.classList.add('ready');
+      if (textEl) textEl.textContent = '松开刷新';
+    } else {
+      ind.classList.remove('ready');
+      if (textEl) textEl.textContent = '下拉刷新';
+    }
+  }, { passive: true });
+
+  document.addEventListener('touchend', () => {
+    if (!isPulling) return;
+    isPulling = false;
+    const ind = getIndicator();
+    if (!ind) return;
+    ind.classList.remove('pulling');
+    const diff = currentY - startY;
+    if (diff >= THRESHOLD && !isRefreshing) {
+      // Trigger refresh
+      isRefreshing = true;
+      ind.style.height = '48px';
+      ind.classList.remove('ready');
+      const arrowEl = ind.querySelector('.pull-arrow');
+      const spinnerEl = ind.querySelector('.spinner');
+      const textEl = ind.querySelector('.pull-text');
+      if (arrowEl) arrowEl.style.display = 'none';
+      if (spinnerEl) spinnerEl.style.display = '';
+      if (textEl) textEl.textContent = '刷新中…';
+      doPullRefresh(ind);
+    } else {
+      // Cancel
+      ind.style.height = '0';
+      ind.style.opacity = '0';
+      ind.classList.remove('ready');
+    }
+  }, { passive: true });
+
+  async function doPullRefresh(ind) {
+    const task = getTaskFromCache(currentTaskId);
+    if (!task || !cloudAvailable) {
+      finishRefresh(ind);
+      return;
+    }
+    try {
+      // Reload this task's records from cloud
+      const records = await apiFetch('records', 'GET', null,
+        'task_id=eq.' + task.id + '&order=created_at.asc');
+      task.records = records || [];
+      saveToLocal();
+      renderRecords(task);
+      showToast('已刷新');
+    } catch(e) {
+      console.error('Refresh failed:', e);
+      showToast('刷新失败');
+    }
+    finishRefresh(ind);
+  }
+
+  function finishRefresh(ind) {
+    isRefreshing = false;
+    ind.style.height = '0';
+    ind.style.opacity = '0';
+    const arrowEl = ind.querySelector('.pull-arrow');
+    const spinnerEl = ind.querySelector('.spinner');
+    const textEl = ind.querySelector('.pull-text');
+    if (arrowEl) { arrowEl.style.display = ''; }
+    if (spinnerEl) spinnerEl.style.display = 'none';
+    if (textEl) textEl.textContent = '下拉刷新';
+    ind.classList.remove('ready');
+  }
+})();
 
 /* ======================== RECORD SORT & SEARCH ======================== */
 let recordSortAsc = true;
