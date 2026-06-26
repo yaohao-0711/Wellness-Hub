@@ -985,6 +985,37 @@
       background: var(--surface2);
       border-radius: var(--radius);
     }
+
+    /* ===== LETTER TO FUTURE SELF ===== */
+    .letter-section {
+      margin-top: 12px;
+      padding: 16px;
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-xs);
+    }
+    .letter-prompt {
+      font-size: 13px;
+      color: var(--text-tertiary);
+      text-align: center;
+      padding: 16px 12px;
+      background: linear-gradient(135deg, rgba(88,86,214,0.06), rgba(88,86,214,0.02));
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      border: 1px dashed var(--border-strong);
+    }
+    .letter-prompt:active { transform: scale(0.98); }
+    .letter-prompt .letter-icon { font-size: 28px; display: block; margin-bottom: 6px; }
+    .letter-prompt .letter-title { font-weight: 600; color: var(--text); font-size: 14px; }
+    .letter-prompt .letter-sub { font-size: 12px; color: var(--text-tertiary); margin-top: 4px; }
+    .letter-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      margin-top: 10px; padding: 4px 10px;
+      background: var(--accent-soft); color: var(--accent);
+      border-radius: 100px; font-size: 12px; font-weight: 600;
+    }
+
     .gravity-saved-label {
       font-size: 11px;
       color: var(--accent);
@@ -1134,6 +1165,122 @@
       text-align: center; padding: 80px 20px;
       color: var(--text-tertiary); font-size: 14px;
     }
+
+    /* ===== LETTER OVERLAY ===== */
+    .letter-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 2000; background: var(--bg);
+      display: none; flex-direction: column;
+      animation: fadeInUp 0.3s ease;
+    }
+    .letter-overlay.open { display: flex; }
+    .letter-overlay .topbar { position: sticky; top: 0; z-index: 10; }
+    .letter-compose-body {
+      flex: 1; padding: 20px; overflow-y: auto;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .letter-date-picker {
+      display: flex; gap: 8px; flex-wrap: wrap;
+    }
+    .letter-date-option {
+      padding: 8px 16px; border-radius: 100px;
+      border: 1.5px solid var(--border-strong);
+      background: var(--surface); color: var(--text-secondary);
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      transition: all var(--transition-fast);
+      font-family: inherit;
+    }
+    .letter-date-option:active { transform: scale(0.95); }
+    .letter-date-option.active {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+    .letter-textarea {
+      width: 100%; min-height: 200px; padding: 16px;
+      font-size: 15px; line-height: 1.8; color: var(--text);
+      background: var(--surface); border: none;
+      border-radius: var(--radius); resize: none;
+      font-family: inherit; outline: none;
+      transition: all var(--transition-fast);
+      box-shadow: var(--shadow-xs);
+    }
+    .letter-textarea:focus { box-shadow: 0 0 0 2px var(--accent); }
+    .letter-textarea::placeholder { color: var(--text-quaternary); }
+    .letter-send-btn {
+      padding: 14px 32px; border-radius: 100px;
+      background: var(--accent); color: #fff;
+      border: none; font-size: 15px; font-weight: 600;
+      cursor: pointer; transition: all var(--transition-fast);
+      font-family: inherit; align-self: flex-end;
+    }
+    .letter-send-btn:active { transform: scale(0.95); opacity: 0.8; }
+    .letter-list-item {
+      padding: 14px 16px; background: var(--surface);
+      border-radius: var(--radius); box-shadow: var(--shadow-xs);
+      cursor: pointer; transition: all var(--transition-fast);
+    }
+    .letter-list-item:active { transform: scale(0.98); }
+    .letter-list-item .letter-status {
+      font-size: 12px; font-weight: 600; margin-bottom: 4px;
+    }
+    .letter-list-item .letter-status.waiting { color: var(--accent3); }
+    .letter-list-item .letter-status.delivered { color: var(--accent); }
+    .letter-list-item .letter-date {
+      font-size: 11px; color: var(--text-tertiary);
+    }
+    .letter-list-item .letter-preview {
+      font-size: 14px; color: var(--text-secondary);
+      margin-top: 6px; display: -webkit-box;
+      -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* Letter reading overlay */
+    .letter-reading-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 2001;
+      background: linear-gradient(180deg, #1c1c1e 0%, #2c2c2e 100%);
+      display: none; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 32px;
+      animation: fadeInUp 0.4s ease;
+    }
+    .letter-reading-overlay.open { display: flex; }
+    .letter-reading-card {
+      background: var(--surface); border-radius: var(--radius-xl);
+      padding: 32px 24px; max-width: 380px; width: 100%;
+      box-shadow: var(--shadow-xl);
+      max-height: 80vh; overflow-y: auto;
+    }
+    .letter-reading-header {
+      text-align: center; margin-bottom: 20px;
+    }
+    .letter-reading-header .letter-from-date {
+      font-size: 12px; color: var(--text-tertiary);
+      margin-bottom: 4px;
+    }
+    .letter-reading-header .letter-to-date {
+      font-size: 12px; color: var(--accent); font-weight: 600;
+    }
+    .letter-reading-header .letter-emoji {
+      font-size: 40px; margin: 12px 0;
+    }
+    .letter-reading-content {
+      font-size: 15px; line-height: 1.9; color: var(--text);
+      white-space: pre-wrap; word-break: break-word;
+    }
+    .letter-reading-actions {
+      margin-top: 24px; text-align: center;
+    }
+    .letter-reading-close {
+      padding: 10px 24px; border-radius: 100px;
+      background: var(--accent); color: #fff;
+      border: none; font-size: 14px; font-weight: 600;
+      cursor: pointer; font-family: inherit;
+      transition: all var(--transition-fast);
+    }
+    .letter-reading-close:active { transform: scale(0.95); }
 
     /* ===== TODO MODAL ===== */
     .todo-photo-preview {
@@ -1631,6 +1778,48 @@
     </div>
   </div>
 
+  <!-- 给未来的自己写信 -->
+  <div class="letter-section" id="letter-section">
+    <div class="letter-title" style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:12px;">💌 给未来的自己</div>
+    <div id="letter-content"></div>
+  </div>
+
+</div>
+
+<!-- ===================== LETTER COMPOSE OVERLAY ===================== -->
+<div class="letter-overlay" id="letter-compose-overlay">
+  <div class="topbar">
+    <button class="back-btn" onclick="closeLetterCompose()">‹</button>
+    <h1>写给未来的自己</h1>
+  </div>
+  <div class="letter-compose-body">
+    <div>
+      <div style="font-size:13px;color:var(--text-secondary);margin-bottom:10px;">什么时候收到这封信？</div>
+      <div class="letter-date-picker" id="letter-date-picker">
+        <button class="letter-date-option active" data-months="3" onclick="setLetterMonths(3)">3个月后</button>
+        <button class="letter-date-option" data-months="6" onclick="setLetterMonths(6)">半年后</button>
+        <button class="letter-date-option" data-months="12" onclick="setLetterMonths(12)">1年后</button>
+      </div>
+      <div style="font-size:12px;color:var(--text-quaternary);margin-top:8px;" id="letter-deliver-date"></div>
+    </div>
+    <textarea class="letter-textarea" id="letter-textarea" placeholder="亲爱的未来的我..." oninput="autoResize(this)"></textarea>
+    <button class="letter-send-btn" onclick="sendLetter()">📮 寄出这封信</button>
+  </div>
+</div>
+
+<!-- ===================== LETTER READING OVERLAY ===================== -->
+<div class="letter-reading-overlay" id="letter-reading-overlay" onclick="closeLetterReading(event)">
+  <div class="letter-reading-card" id="letter-reading-card" onclick="event.stopPropagation()">
+    <div class="letter-reading-header">
+      <div class="letter-from-date" id="letter-from-date"></div>
+      <div class="letter-emoji">💌</div>
+      <div class="letter-to-date" id="letter-to-date"></div>
+    </div>
+    <div class="letter-reading-content" id="letter-reading-content"></div>
+    <div class="letter-reading-actions">
+      <button class="letter-reading-close" onclick="closeLetterReading()">收到，关闭</button>
+    </div>
+  </div>
 </div>
 
 <!-- ===================== TAB 2: 待办 ===================== -->
@@ -1819,7 +2008,7 @@
         <div class="settings-item">
           <div class="settings-item-left">
             <div class="settings-item-label">🏠 心理小屋</div>
-            <div class="settings-item-desc">v1.4 · 你的心灵栖息地</div>
+            <div class="settings-item-desc">v1.5 · 你的心灵栖息地</div>
           </div>
         </div>
         <div class="settings-item" onclick="toggleChangelog()" style="cursor:pointer">
@@ -1831,6 +2020,10 @@
         </div>
         <div id="changelog-content" style="display:none;padding:0 16px 16px;">
           <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
+            <div style="margin-bottom:12px;">
+              <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v1.5 · 2026-06-27</div>
+              <div>· 给未来的自己写信：写下此刻想法，3个月/半年/1年后送达</div>
+            </div>
             <div style="margin-bottom:12px;">
               <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v1.4 · 2026-06-27</div>
               <div>· 启动画面：SVG logo + 品牌名渐入动画</div>
@@ -2915,6 +3108,176 @@ function checkGravityMidnight() {
   }
 }
 
+/* ======================== LETTER TO FUTURE SELF ======================== */
+const LETTER_KEY = 'wellness_letters';
+let letterMonths = 3;
+
+function loadLetters() {
+  try {
+    const raw = localStorage.getItem(LETTER_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) { return []; }
+}
+
+function saveLetters(letters) {
+  localStorage.setItem(LETTER_KEY, JSON.stringify(letters));
+}
+
+function renderLetterSection() {
+  const content = document.getElementById('letter-content');
+  if (!content) return;
+  const letters = loadLetters();
+  const now = new Date();
+  const pending = letters.filter(l => !l.opened);
+  const deliverable = letters.filter(l => !l.opened && new Date(l.deliverAt) <= now);
+  const waiting = letters.filter(l => !l.opened && new Date(l.deliverAt) > now);
+  const opened = letters.filter(l => l.opened);
+
+  let html = '';
+
+  // Deliverable letters — show prompt to open
+  if (deliverable.length > 0) {
+    html += `<div class="letter-prompt" onclick="openDeliverableLetter('${deliverable[deliverable.length-1].id}')">
+      <span class="letter-icon">💌</span>
+      <div class="letter-title">你有一封来自过去的信</div>
+      <div class="letter-sub">点击打开阅读</div>
+      <div class="letter-badge">📬 ${deliverable.length} 封已送达</div>
+    </div>`;
+  }
+
+  // Waiting letters
+  if (waiting.length > 0) {
+    html += `<div style="margin-top:10px;">`;
+    waiting.forEach(l => {
+      const deliverDate = new Date(l.deliverAt);
+      const daysLeft = Math.ceil((deliverDate - now) / (1000*60*60*24));
+      html += `<div class="letter-list-item" style="margin-bottom:8px;">
+        <div class="letter-status waiting">⏳ 还有 ${daysLeft} 天送达</div>
+        <div class="letter-date">${l.createdAt} 写于 ${formatLetterDate(l.createdAt)}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Empty state + compose button
+  if (letters.length === 0) {
+    html += `<div class="letter-prompt" onclick="openLetterCompose()">
+      <span class="letter-icon">✉️</span>
+      <div class="letter-title">给未来的自己写封信</div>
+      <div class="letter-sub">写下此刻的想法，在未来的某天打开</div>
+    </div>`;
+  } else {
+    html += `<div style="margin-top:10px;text-align:center;">
+      <button class="gravity-save-btn" onclick="openLetterCompose()" style="font-size:13px;padding:8px 20px;">✉️ 再写一封</button>
+    </div>`;
+  }
+
+  content.innerHTML = html;
+}
+
+function formatLetterDate(dateStr) {
+  const d = new Date(dateStr);
+  return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;
+}
+
+function openLetterCompose() {
+  document.getElementById('letter-compose-overlay').classList.add('open');
+  document.getElementById('letter-textarea').value = '';
+  letterMonths = 3;
+  updateLetterDatePicker();
+  updateLetterDeliverDate();
+}
+
+function closeLetterCompose() {
+  document.getElementById('letter-compose-overlay').classList.remove('open');
+}
+
+function setLetterMonths(m) {
+  letterMonths = m;
+  updateLetterDatePicker();
+  updateLetterDeliverDate();
+}
+
+function updateLetterDatePicker() {
+  document.querySelectorAll('.letter-date-option').forEach(btn => {
+    btn.classList.toggle('active', parseInt(btn.dataset.months) === letterMonths);
+  });
+}
+
+function updateLetterDeliverDate() {
+  const d = new Date();
+  d.setMonth(d.getMonth() + letterMonths);
+  const el = document.getElementById('letter-deliver-date');
+  if (el) el.textContent = `将于 ${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 送达`;
+}
+
+function sendLetter() {
+  const text = document.getElementById('letter-textarea').value.trim();
+  if (!text) { showToast('写点什么吧'); return; }
+
+  const now = new Date();
+  const deliverAt = new Date(now);
+  deliverAt.setMonth(deliverAt.getMonth() + letterMonths);
+
+  const letter = {
+    id: 'letter_' + Date.now(),
+    content: text,
+    createdAt: now.toISOString(),
+    deliverAt: deliverAt.toISOString(),
+    opened: false,
+    openedAt: null
+  };
+
+  const letters = loadLetters();
+  letters.push(letter);
+  saveLetters(letters);
+
+  closeLetterCompose();
+  renderLetterSection();
+  showToast('📮 信已寄出，' + letterMonths + '个月后送达');
+  hapticFeedback(15);
+}
+
+function openDeliverableLetter(id) {
+  const letters = loadLetters();
+  const letter = letters.find(l => l.id === id);
+  if (!letter) return;
+
+  // Mark as opened
+  letter.opened = true;
+  letter.openedAt = new Date().toISOString();
+  saveLetters(letters);
+
+  // Show reading overlay
+  const from = new Date(letter.createdAt);
+  const to = new Date(letter.deliverAt);
+  document.getElementById('letter-from-date').textContent =
+    `写于 ${from.getFullYear()}年${from.getMonth()+1}月${from.getDate()}日`;
+  document.getElementById('letter-to-date').textContent =
+    `送达于 ${to.getFullYear()}年${to.getMonth()+1}月${to.getDate()}日`;
+  document.getElementById('letter-reading-content').textContent = letter.content;
+  document.getElementById('letter-reading-overlay').classList.add('open');
+}
+
+function closeLetterReading(e) {
+  if (e && e.target !== document.getElementById('letter-reading-overlay')) return;
+  document.getElementById('letter-reading-overlay').classList.remove('open');
+  renderLetterSection();
+}
+
+// Check for deliverable letters on init
+function checkLetterDelivery() {
+  const letters = loadLetters();
+  const now = new Date();
+  const deliverable = letters.filter(l => !l.opened && new Date(l.deliverAt) <= now);
+  if (deliverable.length > 0) {
+    // Show subtle badge on letter section
+    setTimeout(() => {
+      showToast('💌 你有一封来自过去的信');
+    }, 2000);
+  }
+}
+
 function renderMoodHistoryChart() {
   const section = document.getElementById('me-mood-section');
   if (!section) return;
@@ -3309,6 +3672,7 @@ function switchTab(tabName) {
   // Tab-specific init
   if (tabName === 'record') {
     renderGravitySection();
+    renderLetterSection();
   }
   if (tabName === 'mood') {
     renderTodos();
@@ -5087,6 +5451,8 @@ async function goHome() {
   renderHome();
   checkGravityMidnight();
   renderGravitySection();
+  renderLetterSection();
+  checkLetterDelivery();
   switchTab('record');
 }
 
