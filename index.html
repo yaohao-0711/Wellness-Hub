@@ -3865,7 +3865,7 @@ function renderTodoDetailView(item, isEdit) {
     let dlText = item.deadline.replace(/-/g, '/');
     if (!item.completed) {
       if (diffDays < 0) { dlClass = 'todo-deadline-overdue'; dlText = `❌ 已过期 ${Math.abs(diffDays)} 天（${dlText}）`; }
-      else if (diffDays <= 3) { dlClass = 'todo-deadline-warning'; dlText = `⚠️ 还剩 ${diffDays} 天（${dlText}）`; }
+      else if (diffDays <= 1) { dlClass = 'todo-deadline-warning'; dlText = `⚠️ 还剩 ${diffDays} 天（${dlText}）`; }
       else { dlText = `📅 截止 ${dlText}`; }
     } else {
       dlText = `📅 ${dlText}`;
@@ -3973,7 +3973,7 @@ function renderTodos() {
       const diffDays = Math.round((dl - today) / (1000*60*60*24));
       if (diffDays < 0) {
         deadlineHtml = `<div class="todo-deadline todo-deadline-overdue">❌ 已过期 ${Math.abs(diffDays)} 天</div>`;
-      } else if (diffDays <= 3) {
+      } else if (diffDays <= 1) {
         deadlineHtml = `<div class="todo-deadline todo-deadline-warning">⚠️ 还剩 ${diffDays} 天</div>`;
       } else {
         deadlineHtml = `<div class="todo-deadline">📅 ${t.deadline.replace(/-/g,'/')}</div>`;
