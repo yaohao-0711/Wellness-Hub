@@ -373,6 +373,7 @@
       z-index: 1;
       transition: transform 0.2s ease;
       will-change: transform;
+      touch-action: pan-y;
     }
     .record-item {
       padding: 16px 18px;
@@ -2870,61 +2871,50 @@ function checkGravityMidnight() {
 }
 
 function renderMoodHistoryChart() {
-  // Renamed to gravity chart — kept name for backward compat of callers
   const section = document.getElementById('me-mood-section');
   if (!section) return;
   const history = getGravityHistory();
   const todayGravity = getGravityToday();
-
-  // Count total records
   const allKeys = Object.keys(history).sort().reverse();
   const totalCount = allKeys.length + (todayGravity ? 1 : 0);
 
   if (totalCount === 0) {
     section.innerHTML = `
-      <div class="me-card" style="padding:20px;text-align:center;cursor:pointer;" onclick="openGravityDetail()">
-        <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px;">🪐 引力曲线</div>
-        <div style="font-size:12px;color:var(--text3);">每晚写下对明天的期待，积累你的引力轨迹 ✨</div>
+      <div class="me-card" style="padding:14px;text-align:center;cursor:pointer;" onclick="openGravityDetail()">
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;">🪐 引力曲线</div>
+        <div style="font-size:11px;color:var(--text-tertiary);">每晚写下对明天的期待</div>
       </div>
     `;
     return;
   }
 
-  // Build last 7 days (only days with records)
+  // Show last 3 days compact
   const now = new Date();
-  const timelineItems = [];
-  for (let i = 6; i >= 0; i--) {
+  const recentItems = [];
+  for (let i = 0; i < 3; i++) {
     const d = new Date(now);
     d.setDate(d.getDate() - i);
     const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     const text = i === 0 ? (todayGravity || null) : (history[key] || null);
     if (!text) continue;
-    const isToday = i === 0;
-    const label = isToday ? '今天' : `${d.getMonth()+1}/${d.getDate()}`;
-    timelineItems.push({ label, text, isToday });
+    const label = i === 0 ? '今天' : `${d.getMonth()+1}/${d.getDate()}`;
+    recentItems.push({ label, text });
   }
 
-  let timelineHtml = '';
-  if (timelineItems.length === 0) {
-    timelineHtml = '<div style="text-align:center;color:var(--text3);font-size:12px;padding:12px 0;">最近7天暂无记录</div>';
-  } else {
-    timelineHtml = timelineItems.map(item => `
-      <div class="gravity-timeline-item${item.isToday ? ' gravity-timeline-today' : ''}">
-        <div class="gravity-timeline-date">${item.label}</div>
-        <div class="gravity-timeline-bubble">${escapeHtml(item.text)}</div>
-      </div>
-    `).join('');
-  }
+  const recentHtml = recentItems.map(item =>
+    `<div style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--border);">
+      <span style="font-size:11px;color:var(--accent);font-weight:600;min-width:36px;flex-shrink:0;">${item.label}</span>
+      <span style="font-size:12px;color:var(--text);line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(item.text)}</span>
+    </div>`
+  ).join('');
 
   section.innerHTML = `
-    <div style="padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);cursor:pointer;" onclick="openGravityDetail()">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <span style="font-size:14px;font-weight:600;color:var(--text);">🪐 引力曲线</span>
-        <span style="font-size:10px;color:#7c6fb0;font-weight:600;">共 ${totalCount} 条 · 点击查看全部</span>
+    <div style="padding:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-xs);cursor:pointer;" onclick="openGravityDetail()">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <span style="font-size:13px;font-weight:600;color:var(--text);">🪐 引力曲线</span>
+        <span style="font-size:10px;color:var(--accent);font-weight:500;">${totalCount}条 · 查看全部</span>
       </div>
-      <div class="gravity-timeline">
-        ${timelineHtml}
-      </div>
+      ${recentHtml}
     </div>
   `;
 }
@@ -3610,35 +3600,47 @@ function renderRecords(task) {
     // Swipe gesture
     const content = wrap.querySelector('.record-swipe-content');
     const actions = wrap.querySelector('.record-swipe-actions');
-    let startX = 0, currentX = 0, isDragging = false, isOpen = false;
+    let startX = 0, startY = 0, currentX = 0, currentY = 0, isDragging = false, isOpen = false, isHorizontal = null;
 
     content.addEventListener('touchstart', e => {
       startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
       isDragging = true;
+      isHorizontal = null;
       content.style.transition = 'none';
     }, { passive: true });
 
     content.addEventListener('touchmove', e => {
       if (!isDragging) return;
       currentX = e.touches[0].clientX;
-      const diff = currentX - startX;
+      currentY = e.touches[0].clientY;
+      const diffX = currentX - startX;
+      const diffY = currentY - startY;
+
+      // Determine direction on first significant move
+      if (isHorizontal === null && (Math.abs(diffX) > 5 || Math.abs(diffY) > 5)) {
+        isHorizontal = Math.abs(diffX) > Math.abs(diffY);
+      }
+
+      // Only handle horizontal swipes
+      if (!isHorizontal) return;
+
+      e.preventDefault();
       if (isOpen) {
-        // If already open, allow closing (swipe right)
-        const offset = Math.max(-144, Math.min(0, diff - 144));
+        const offset = Math.max(-144, Math.min(0, diffX - 144));
         content.style.transform = `translateX(${offset}px)`;
       } else {
-        // Allow opening (swipe left)
-        const offset = Math.min(0, diff);
+        const offset = Math.min(0, diffX);
         content.style.transform = `translateX(${Math.max(-144, offset)}px)`;
       }
-    }, { passive: true });
+    }, { passive: false });
 
     content.addEventListener('touchend', () => {
+      if (!isDragging) return;
       isDragging = false;
       content.style.transition = 'transform 0.2s ease';
       const diff = currentX - startX;
       if (isOpen) {
-        // Close if swiped right enough
         if (diff > 50) {
           content.style.transform = 'translateX(0)';
           isOpen = false;
@@ -3646,7 +3648,6 @@ function renderRecords(task) {
           content.style.transform = 'translateX(-144px)';
         }
       } else {
-        // Open if swiped left enough
         if (diff < -50) {
           content.style.transform = 'translateX(-144px)';
           isOpen = true;
