@@ -1840,6 +1840,7 @@
               <div>· Tab状态保持：切换Tab后滚动位置不变</div>
               <div>· 引力曲线优化：改为3天紧凑显示</div>
               <div>· 触觉反馈增强：Tab切换/页面转场/下拉刷新不同强度震动</div>
+              <div>· 键盘适配：输入框聚焦自动滚动到可视区域</div>
             </div>
             <div style="margin-bottom:12px;">
               <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v1.3 · 2026-06-26</div>
@@ -5373,6 +5374,49 @@ document.addEventListener('keydown', e => {
     closeNewTaskModal();
   }
 });
+
+/* ======================== KEYBOARD ADAPTATION ======================== */
+(function initKeyboardAdapt() {
+  // Auto-scroll focused inputs into view (mobile keyboard popup)
+  document.addEventListener('focusin', e => {
+    const el = e.target;
+    if (!el) return;
+    const tag = el.tagName.toLowerCase();
+    if (tag !== 'textarea' && tag !== 'input') return;
+
+    // Small delay to let keyboard start opening
+    setTimeout(() => {
+      try {
+        el.scrollIntoViewIfNeeded ? el.scrollIntoViewIfNeeded(false) : el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      } catch(err) {}
+    }, 300);
+  });
+
+  // Visual viewport resize (more reliable than focus/blur for keyboard)
+  if (window.visualViewport) {
+    let initialHeight = window.visualViewport.height;
+    window.visualViewport.addEventListener('resize', () => {
+      const activeEl = document.activeElement;
+      if (!activeEl) return;
+      const tag = activeEl.tagName.toLowerCase();
+      if (tag !== 'textarea' && tag !== 'input') return;
+
+      const heightDiff = initialHeight - window.visualViewport.height;
+      if (heightDiff > 100) {
+        // Keyboard opened — scroll active element into view
+        setTimeout(() => {
+          try {
+            activeEl.scrollIntoViewIfNeeded ? activeEl.scrollIntoViewIfNeeded(false) : activeEl.scrollIntoView({ block: 'center', behavior: 'smooth' });
+          } catch(err) {}
+        }, 100);
+      }
+    });
+    // Update height on orientation change
+    window.visualViewport.addEventListener('resize', () => {
+      initialHeight = window.visualViewport.height;
+    });
+  }
+})();
 
 /* ======================== INIT ======================== */
 if ('serviceWorker' in navigator) {
