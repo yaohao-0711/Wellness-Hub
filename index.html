@@ -4076,6 +4076,31 @@ if ('serviceWorker' in navigator) {
   renderHome();
   updateSyncBadge('local');
 
+  // ====== 一次性任务合并（LUCK时刻 + 连接时刻 → 社交时刻）======
+  (function tryMergeTasks() {
+    if (localStorage.getItem('wellness_merge_done')) return;
+    const luck = tasksCache.find(t => t.name === 'LUCK时刻');
+    const conn = tasksCache.find(t => t.name === '连接时刻');
+    if (!luck || !conn) return;
+    // 备份当前数据
+    const backup = JSON.stringify({ tasks: tasksCache.map(t => ({
+      id: t.id, name: t.name, created_at: t.created_at,
+      records: (t.records || []).map(r => ({ ...r }))
+    })) });
+    localStorage.setItem('wellness_backup_merge', backup);
+    // 把连接时刻的记录移入LUCK时刻
+    (conn.records || []).forEach(r => { r.task_id = luck.id; });
+    luck.records = [...(luck.records || []), ...(conn.records || [])];
+    // 重命名为社交时刻
+    luck.name = '社交时刻';
+    // 删除连接时刻
+    tasksCache = tasksCache.filter(t => t.id !== conn.id);
+    // 保存并标记完成
+    saveToLocal();
+    localStorage.setItem('wellness_merge_done', '1');
+    showToast('✅ 已合并：LUCK时刻+连接时刻→社交时刻');
+  })();
+
   // Then try cloud in background
   try {
     cloudAvailable = await testCloudConnection();
