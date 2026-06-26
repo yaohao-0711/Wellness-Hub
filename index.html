@@ -1479,16 +1479,23 @@
       animation: slideInLeft .25s cubic-bezier(.2,.9,.3,1) forwards;
     }
     @keyframes slideInRight {
-      from { transform: translateX(100%); opacity: 0.6; }
-      to { transform: translateX(0); opacity: 1; }
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
     }
-    @keyframes slideInLeft {
-      from { transform: translateX(-30%); opacity: 0.6; }
-      to { transform: translateX(0); opacity: 1; }
+    @keyframes slideOutRight {
+      from { transform: translateX(0); }
+      to { transform: translateX(100%); }
+    }
+    .view { animation: none; }
+    .view.slide-in {
+      animation: slideInRight 0.25s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+    }
+    .view.slide-out {
+      animation: slideOutRight 0.25s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
     }
     .tab-view { animation: none; }
     .tab-view.fade-in {
-      animation: fadeTabIn .2s ease forwards;
+      animation: fadeTabIn 0.2s ease forwards;
     }
     @keyframes fadeTabIn {
       from { opacity: 0; transform: translateY(6px); }
@@ -3204,18 +3211,19 @@ function showToast(msg) {
 
 function setView(id) {
   const oldView = document.querySelector('.view.active');
-  document.querySelectorAll('.view').forEach(v => { v.classList.remove('active'); v.classList.remove('slide-in-right'); v.classList.remove('slide-in-left'); });
+  document.querySelectorAll('.view').forEach(v => { v.classList.remove('active'); v.classList.remove('slide-in'); v.classList.remove('slide-out'); });
   document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
   const newView = document.getElementById(id);
   newView.classList.add('active');
-  // Add slide animation
+  // Add slide animation for sub-views
   if (oldView && oldView !== newView) {
-    newView.classList.add('slide-in-right');
-    newView.addEventListener('animationend', () => newView.classList.remove('slide-in-right'), { once: true });
+    newView.classList.add('slide-in');
+    newView.addEventListener('animationend', () => newView.classList.remove('slide-in'), { once: true });
   }
-  // Hide tab bar when entering sub-views (detail, heatmap, anniversary)
+  // Hide tab bar when entering sub-views
   const tabBar = document.getElementById('tab-bar');
-  if (id === 'view-detail' || id === 'view-heatmap' || id === 'view-anniversary' || id === 'view-anni-detail' || id === 'view-todo-detail' || id === 'view-settings' || id === 'view-avatar-lightbox' || id === 'view-profile-item' || id === 'view-custom-quotes') {
+  const subViews = ['view-detail', 'view-heatmap', 'view-anniversary', 'view-anni-detail', 'view-todo-detail', 'view-settings', 'view-avatar-lightbox', 'view-profile-item', 'view-custom-quotes'];
+  if (subViews.includes(id)) {
     tabBar.classList.add('hidden');
   } else {
     tabBar.classList.remove('hidden');
