@@ -1279,6 +1279,32 @@
     .toggle-switch.on::after { transform: translateX(20px); }
     /* Font size options */
 
+    /* ===== CUSTOM QUOTES LIST ===== */
+    .cq-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 14px; margin-bottom: 8px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); box-shadow: var(--shadow-sm);
+    }
+    .cq-text {
+      flex: 1; font-size: 14px; color: var(--text);
+      line-height: 1.5; word-break: break-word;
+      padding-right: 12px;
+    }
+    .cq-del {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--surface2); border: none;
+      color: var(--text3); font-size: 14px;
+      cursor: pointer; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .2s;
+    }
+    .cq-del:hover { background: var(--danger); color: #fff; }
+    .cq-empty {
+      text-align: center; padding: 40px 20px;
+      color: var(--text3); font-size: 14px;
+    }
+
     /* ===== RESPONSIVE ===== */
     @media (max-width: 400px) {
       .tasks-grid { grid-template-columns: repeat(2, 1fr); }
@@ -1298,7 +1324,7 @@
     <div class="welcome-logo">🏠</div>
     <div class="welcome-app-name">心理屋</div>
     <div class="welcome-quote" id="welcome-quote">坚持就是胜利</div>
-    <div class="welcome-sub">每一天的努力，都算数</div>
+    <div class="welcome-sub" id="welcome-sub">每一天的努力，都算数</div>
     <button class="welcome-skip" onclick="skipWelcome()">跳过</button>
   </div>
 </div>
@@ -1480,16 +1506,127 @@
         </div>
       </div>
 
+      <div class="settings-section">个性化</div>
+      <div class="settings-card">
+        <div class="settings-item" onclick="openWelcomeToggleSetting()" style="cursor:pointer">
+          <div class="settings-item-left">
+            <div class="settings-item-label">🏠 欢迎弹窗</div>
+            <div class="settings-item-desc">启动时显示欢迎页面</div>
+          </div>
+          <button class="toggle-switch" id="toggle-welcome" onclick="event.stopPropagation();toggleWelcomeShow()"></button>
+        </div>
+        <div class="settings-item" onclick="openSubtitleEditor()" style="cursor:pointer">
+          <div class="settings-item-left">
+            <div class="settings-item-label">✏️ 欢迎语</div>
+            <div class="settings-item-desc" id="settings-subtitle-preview">每一天的努力，都算数</div>
+          </div>
+          <span style="color:var(--text3);font-size:14px">›</span>
+        </div>
+        <div class="settings-item" onclick="openCustomQuotes()" style="cursor:pointer">
+          <div class="settings-item-left">
+            <div class="settings-item-label">💬 我的语录</div>
+            <div class="settings-item-desc" id="settings-quotes-count">自定义语录加入轮播</div>
+          </div>
+          <span style="color:var(--text3);font-size:14px">›</span>
+        </div>
+      </div>
+
       <div class="settings-section">关于</div>
       <div class="settings-card">
         <div class="settings-item">
           <div class="settings-item-left">
-            <div class="settings-item-label">心理小屋</div>
-            <div class="settings-item-desc">v1.0 · 你的心灵栖息地</div>
+            <div class="settings-item-label">🏠 心理小屋</div>
+            <div class="settings-item-desc">v1.1 · 你的心灵栖息地</div>
+          </div>
+        </div>
+        <div class="settings-item" onclick="toggleChangelog()" style="cursor:pointer">
+          <div class="settings-item-left">
+            <div class="settings-item-label">📋 更新日志</div>
+            <div class="settings-item-desc">查看版本历史</div>
+          </div>
+          <span style="color:var(--text3);font-size:14px" id="changelog-arrow">›</span>
+        </div>
+        <div id="changelog-content" style="display:none;padding:0 16px 16px;">
+          <div style="font-size:13px;color:var(--text2);line-height:1.8;">
+            <div style="margin-bottom:12px;">
+              <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v1.1 · 2026-06-26</div>
+              <div>· 新增个性化设置：自定义欢迎语、自定义语录、欢迎弹窗开关</div>
+              <div>· 新增更新日志、反馈入口、开源致谢</div>
+            </div>
+            <div>
+              <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v1.0 · 2026-06</div>
+              <div>· 心理小屋首次发布</div>
+              <div>· 记录页：文字+图片+语音记录</div>
+              <div>· 待办页：带照片、筛选、详情编辑</div>
+              <div>· 日历页：月历+纪念&倒数日</div>
+              <div>· 万有引力：每日期待/引力轨迹</div>
+              <div>· 个人档案：心理困惑/待探究</div>
+              <div>· Supabase 云端同步</div>
+              <div>· PWA 支持</div>
+            </div>
+          </div>
+        </div>
+        <div class="settings-item" onclick="window.open('https://github.com/yaohao-0711/Wellness-Hub/issues','_blank')" style="cursor:pointer">
+          <div class="settings-item-left">
+            <div class="settings-item-label">💡 反馈建议</div>
+            <div class="settings-item-desc">在 GitHub 上提交问题或建议</div>
+          </div>
+          <span style="color:var(--text3);font-size:14px">↗</span>
+        </div>
+      </div>
+
+      <div class="settings-section">开源致谢</div>
+      <div class="settings-card">
+        <div class="settings-item">
+          <div class="settings-item-left">
+            <div class="settings-item-label" style="font-size:13px;font-weight:400;color:var(--text2);line-height:1.7;">
+              感谢以下技术与资源：<br>
+              <span style="color:var(--accent)">Supabase</span> — 云端数据同步<br>
+              <span style="color:var(--accent)">PWA</span> — 离线访问支持<br>
+              <span style="color:var(--accent)">心理学名言</span> — 来自卡尔·荣格、卡尔·罗杰斯、维克多·弗兰克尔、马丁·塞利格曼等心理学大师<br>
+              <span style="color:var(--accent)">心理量表灵感</span> — PHQ-9、GAD-7 等标准化量表
+            </div>
           </div>
         </div>
       </div>
 
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SUBTITLE EDITOR MODAL ===================== -->
+<div class="modal-overlay" id="modal-subtitle" onclick="if(event.target===event.currentTarget)this.classList.remove('open')">
+  <div class="modal-sheet">
+    <h2>修改欢迎语</h2>
+    <div class="anni-form-row">
+      <label>欢迎弹窗副标题</label>
+      <input class="input-field" id="subtitle-input" type="text" placeholder="输入你的欢迎语…" maxlength="30" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="resetSubtitle()">恢复默认</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-subtitle').classList.remove('open')">取消</button>
+      <button class="btn btn-primary" onclick="saveSubtitle()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== CUSTOM QUOTES PAGE ===================== -->
+<div id="view-custom-quotes" class="view">
+  <div class="topbar">
+    <button class="back-btn" onclick="openSettings()">‹</button>
+    <h1>我的语录</h1>
+  </div>
+  <div class="scroll-area">
+    <div style="padding:16px 16px 80px;">
+      <div style="font-size:13px;color:var(--text3);margin-bottom:16px;">自定义语录会和内置语录一起轮播显示</div>
+      <div id="custom-quotes-list"></div>
+      <div style="margin-top:16px;">
+        <div style="display:flex;gap:8px;">
+          <input class="input-field" id="new-quote-input" type="text" placeholder="输入一条新语录…" maxlength="60"
+            style="flex:1" onkeydown="if(event.key==='Enter')addCustomQuote()" />
+          <button class="btn btn-primary" onclick="addCustomQuote()" style="flex-shrink:0">添加</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -2240,9 +2377,11 @@ const QUOTES = [
 ];
 
 function getNextQuote() {
+  const custom = loadCustomQuotes();
+  const allQuotes = [...QUOTES, ...custom];
   let idx = parseInt(localStorage.getItem(QUOTE_KEY) || '0', 10);
-  const quote = QUOTES[idx % QUOTES.length];
-  localStorage.setItem(QUOTE_KEY, String((idx + 1) % QUOTES.length));
+  const quote = allQuotes[idx % allQuotes.length];
+  localStorage.setItem(QUOTE_KEY, String((idx + 1) % allQuotes.length));
   return quote;
 }
 
@@ -2645,7 +2784,7 @@ function setView(id) {
   document.getElementById(id).classList.add('active');
   // Hide tab bar when entering sub-views (detail, heatmap, anniversary)
   const tabBar = document.getElementById('tab-bar');
-  if (id === 'view-detail' || id === 'view-heatmap' || id === 'view-anniversary' || id === 'view-anni-detail' || id === 'view-todo-detail' || id === 'view-settings' || id === 'view-avatar-lightbox' || id === 'view-profile-item') {
+  if (id === 'view-detail' || id === 'view-heatmap' || id === 'view-anniversary' || id === 'view-anni-detail' || id === 'view-todo-detail' || id === 'view-settings' || id === 'view-avatar-lightbox' || id === 'view-profile-item' || id === 'view-custom-quotes') {
     tabBar.classList.add('hidden');
   } else {
     tabBar.classList.remove('hidden');
@@ -3715,6 +3854,7 @@ function readFileAsDataURL(file) {
 function openSettings() {
   setView('view-settings');
   applyTheme(getTheme());
+  updateSettingsPreviews();
 }
 
 // ===== SETTINGS: Theme =====
@@ -3732,6 +3872,140 @@ function toggleTheme() {
   const next = getTheme() === 'dark' ? 'light' : 'dark';
   localStorage.setItem(THEME_KEY, next);
   applyTheme(next);
+}
+
+// ===== SETTINGS: Welcome Toggle =====
+const WELCOME_SHOW_KEY = 'wellness_welcome_show';
+
+function getWelcomeShow() {
+  const v = localStorage.getItem(WELCOME_SHOW_KEY);
+  return v === null ? true : v === 'true';
+}
+
+function toggleWelcomeShow() {
+  const next = !getWelcomeShow();
+  localStorage.setItem(WELCOME_SHOW_KEY, String(next));
+  const toggle = document.getElementById('toggle-welcome');
+  if (toggle) toggle.classList.toggle('on', next);
+}
+
+function openWelcomeToggleSetting() {
+  // Already handled by inline onclick on the toggle
+}
+
+// ===== SETTINGS: Custom Subtitle =====
+const SUBTITLE_KEY = 'wellness_subtitle';
+const DEFAULT_SUBTITLE = '每一天的努力，都算数';
+
+function getSubtitle() {
+  return localStorage.getItem(SUBTITLE_KEY) || DEFAULT_SUBTITLE;
+}
+
+function openSubtitleEditor() {
+  const current = getSubtitle();
+  document.getElementById('subtitle-input').value = current;
+  document.getElementById('modal-subtitle').classList.add('open');
+  setTimeout(() => document.getElementById('subtitle-input').focus(), 100);
+}
+
+function saveSubtitle() {
+  const val = document.getElementById('subtitle-input').value.trim();
+  if (!val) { showToast('欢迎语不能为空'); return; }
+  localStorage.setItem(SUBTITLE_KEY, val);
+  document.getElementById('modal-subtitle').classList.remove('open');
+  updateSettingsPreviews();
+  showToast('已保存');
+}
+
+function resetSubtitle() {
+  localStorage.removeItem(SUBTITLE_KEY);
+  document.getElementById('subtitle-input').value = DEFAULT_SUBTITLE;
+  document.getElementById('modal-subtitle').classList.remove('open');
+  updateSettingsPreviews();
+  showToast('已恢复默认');
+}
+
+function updateSettingsPreviews() {
+  const subEl = document.getElementById('settings-subtitle-preview');
+  if (subEl) subEl.textContent = getSubtitle();
+  const countEl = document.getElementById('settings-quotes-count');
+  if (countEl) {
+    const custom = loadCustomQuotes();
+    countEl.textContent = custom.length > 0 ? `已添加 ${custom.length} 条自定义语录` : '自定义语录加入轮播';
+  }
+  // Update welcome toggle state
+  const welcomeToggle = document.getElementById('toggle-welcome');
+  if (welcomeToggle) welcomeToggle.classList.toggle('on', getWelcomeShow());
+}
+
+// ===== SETTINGS: Custom Quotes =====
+const CUSTOM_QUOTES_KEY = 'wellness_custom_quotes';
+
+function loadCustomQuotes() {
+  try {
+    const raw = localStorage.getItem(CUSTOM_QUOTES_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) { return []; }
+}
+
+function saveCustomQuotes(list) {
+  localStorage.setItem(CUSTOM_QUOTES_KEY, JSON.stringify(list));
+}
+
+function openCustomQuotes() {
+  setView('view-custom-quotes');
+  renderCustomQuotesList();
+}
+
+function renderCustomQuotesList() {
+  const list = loadCustomQuotes();
+  const container = document.getElementById('custom-quotes-list');
+  if (!container) return;
+
+  if (list.length === 0) {
+    container.innerHTML = '<div class="cq-empty">还没有自定义语录<br><span style="font-size:12px">在下方输入框添加吧 ✨</span></div>';
+    return;
+  }
+
+  container.innerHTML = list.map((q, i) => `
+    <div class="cq-item">
+      <div class="cq-text">${escapeHtml(q)}</div>
+      <button class="cq-del" onclick="deleteCustomQuote(${i})" title="删除">✕</button>
+    </div>
+  `).join('');
+}
+
+function addCustomQuote() {
+  const input = document.getElementById('new-quote-input');
+  const text = input.value.trim();
+  if (!text) { showToast('请输入语录内容'); return; }
+  const list = loadCustomQuotes();
+  list.push(text);
+  saveCustomQuotes(list);
+  input.value = '';
+  renderCustomQuotesList();
+  showToast('已添加');
+}
+
+function deleteCustomQuote(index) {
+  const list = loadCustomQuotes();
+  list.splice(index, 1);
+  saveCustomQuotes(list);
+  renderCustomQuotesList();
+  showToast('已删除');
+}
+
+// ===== SETTINGS: Changelog Toggle =====
+function toggleChangelog() {
+  const content = document.getElementById('changelog-content');
+  const arrow = document.getElementById('changelog-arrow');
+  if (content.style.display === 'none') {
+    content.style.display = 'block';
+    arrow.textContent = '⌄';
+  } else {
+    content.style.display = 'none';
+    arrow.textContent = '›';
+  }
 }
 
 // Name
@@ -4160,9 +4434,14 @@ if ('serviceWorker' in navigator) {
   // Apply saved settings
   applyTheme(getTheme());
 
-  // Show welcome modal every time with rotating quote
+  // Show welcome modal (respect user preference)
   document.getElementById('welcome-quote').textContent = getNextQuote();
-  document.getElementById('welcome-overlay').style.display = 'flex';
+  document.getElementById('welcome-sub').textContent = getSubtitle();
+  if (getWelcomeShow()) {
+    document.getElementById('welcome-overlay').style.display = 'flex';
+  } else {
+    document.getElementById('welcome-overlay').style.display = 'none';
+  }
 
 
   // First load local data immediately (no loading screen!)
