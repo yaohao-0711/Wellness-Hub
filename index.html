@@ -3151,9 +3151,25 @@ function renderLetterSection() {
     waiting.forEach(l => {
       const deliverDate = new Date(l.deliverAt);
       const daysLeft = Math.ceil((deliverDate - now) / (1000*60*60*24));
-      html += `<div class="letter-list-item" style="margin-bottom:8px;">
+      html += `<div class="letter-list-item" style="margin-bottom:8px;position:relative;">
         <div class="letter-status waiting">⏳ 还有 ${daysLeft} 天送达</div>
-        <div class="letter-date">${l.createdAt} 写于 ${formatLetterDate(l.createdAt)}</div>
+        <div class="letter-date">${formatLetterDate(l.createdAt)} 写于</div>
+        <button onclick="event.stopPropagation();deleteLetter('${l.id}')" style="position:absolute;top:12px;right:12px;background:transparent;border:none;color:var(--text-quaternary);font-size:14px;cursor:pointer;padding:4px 8px;border-radius:6px;" title="删除">✕</button>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Opened letters
+  if (opened.length > 0) {
+    html += `<div style="margin-top:10px;">`;
+    opened.slice().reverse().forEach(l => {
+      const preview = l.content.length > 40 ? l.content.substring(0, 40) + '...' : l.content;
+      html += `<div class="letter-list-item" style="margin-bottom:8px;position:relative;opacity:0.7;">
+        <div class="letter-status delivered">✅ 已读</div>
+        <div class="letter-date">${formatLetterDate(l.createdAt)} → ${formatLetterDate(l.openedAt || l.deliverAt)}</div>
+        <div class="letter-preview">${escapeHtml(preview)}</div>
+        <button onclick="event.stopPropagation();deleteLetter('${l.id}')" style="position:absolute;top:12px;right:12px;background:transparent;border:none;color:var(--text-quaternary);font-size:14px;cursor:pointer;padding:4px 8px;border-radius:6px;" title="删除">✕</button>
       </div>`;
     });
     html += `</div>`;
@@ -3263,6 +3279,16 @@ function closeLetterReading(e) {
   if (e && e.target !== document.getElementById('letter-reading-overlay')) return;
   document.getElementById('letter-reading-overlay').classList.remove('open');
   renderLetterSection();
+}
+
+function deleteLetter(id) {
+  if (!confirm('确定删除这封信？')) return;
+  const letters = loadLetters();
+  const filtered = letters.filter(l => l.id !== id);
+  saveLetters(filtered);
+  renderLetterSection();
+  showToast('信已删除');
+  hapticFeedback([10, 50, 10]);
 }
 
 // Check for deliverable letters on init
