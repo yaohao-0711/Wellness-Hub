@@ -10,10 +10,12 @@
 - 喜欢实用的功能：个性化设置、关于页信息
 - 开发流程：先讨论方案，同意后再实现
 - 美学参考：Apple HIG、Material Design 3，偏好warm minimal风格
+- **重要：每次功能改动必须同步更新index.html里的更新日志！**
+- 做完一个任务就停下来报告，不要一口气堆着做
 
 ## 设计系统
-- 主色调: #8b6f47（暖棕），深色模式 #d4a86a
-- 背景: #faf7f2（浅）/ #141210（深）
+- 主色调: #5856d6（紫色），深色模式 #7d7aff
+- 背景: #f5f5f7（浅）/ #1c1c1e（深）
 - 文字层级: text > text-secondary > text-tertiary > text-quaternary
 - 圆角: 8/12/16/20/24px
 - 阴影: xs/sm/md/lg/xl 五级
