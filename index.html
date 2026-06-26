@@ -51,14 +51,14 @@
       --transition-spring: 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
-    /* ===== DARK MODE — iOS dark, better contrast ===== */
+    /* ===== DARK MODE — Natural dark, like iOS system apps ===== */
     [data-theme="dark"] {
-      --bg: #000000;
-      --surface: #252528;
-      --surface2: #323236;
-      --surface3: #3e3e42;
-      --border: rgba(255,255,255,0.08);
-      --border-strong: rgba(255,255,255,0.15);
+      --bg: #1c1c1e;
+      --surface: #2c2c2e;
+      --surface2: #3a3a3c;
+      --surface3: #48484a;
+      --border: rgba(255,255,255,0.06);
+      --border-strong: rgba(255,255,255,0.12);
       --accent: #7d7aff;
       --accent-hover: #6e6bfa;
       --accent-soft: rgba(125,122,255,0.12);
@@ -66,20 +66,20 @@
       --accent3: #ff9f0a;
       --accent-glow: rgba(125,122,255,0.10);
       --text: #ffffff;
-      --text-secondary: #98989d;
-      --text-tertiary: #636366;
-      --text-quaternary: #48484a;
+      --text-secondary: #ebebf5;
+      --text-tertiary: #8e8e93;
+      --text-quaternary: #636366;
       --danger: #ff453a;
       --danger-soft: rgba(255,69,58,0.15);
       --green: #30d158;
       --green-soft: rgba(48,209,88,0.15);
       --purple: #7d7aff;
       --purple-soft: rgba(125,122,255,0.12);
-      --shadow-xs: 0 1px 2px rgba(0,0,0,0.3);
-      --shadow-sm: 0 2px 8px rgba(0,0,0,0.4);
-      --shadow-md: 0 4px 12px rgba(0,0,0,0.5);
-      --shadow-lg: 0 8px 24px rgba(0,0,0,0.6);
-      --shadow-xl: 0 16px 48px rgba(0,0,0,0.7);
+      --shadow-xs: 0 1px 2px rgba(0,0,0,0.2);
+      --shadow-sm: 0 1px 4px rgba(0,0,0,0.25);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.3);
+      --shadow-lg: 0 8px 24px rgba(0,0,0,0.4);
+      --shadow-xl: 0 16px 48px rgba(0,0,0,0.5);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -746,7 +746,7 @@
 
     /* ===== SYNC BADGE ===== */
     .sync-badge {
-      position: fixed; top: 56px; right: 12px; z-index: 150;
+      position: fixed; top: 56px; left: 12px; z-index: 150;
       background: var(--surface); border: none;
       border-radius: 100px; padding: 4px 10px;
       font-size: 11px; color: var(--text-tertiary);
@@ -1740,7 +1740,7 @@
           <span style="color:var(--text3);font-size:14px" id="changelog-arrow">›</span>
         </div>
         <div id="changelog-content" style="display:none;padding:0 16px 16px;">
-          <div style="font-size:13px;color:var(--text2);line-height:1.8;">
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
             <div style="margin-bottom:12px;">
               <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v1.3 · 2026-06-26</div>
               <div>· 全新设计系统：现代灰白 + 紫色强调色</div>
@@ -1771,6 +1771,66 @@
               <div>· 个人档案：心理困惑/待探究</div>
               <div>· Supabase 云端同步</div>
               <div>· PWA 支持</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-item" onclick="toggleGuide()" style="cursor:pointer">
+          <div class="settings-item-left">
+            <div class="settings-item-label">📖 使用指南</div>
+            <div class="settings-item-desc">了解心理小屋的功能与使用技巧</div>
+          </div>
+          <span style="color:var(--text3);font-size:14px" id="guide-arrow">›</span>
+        </div>
+        <div id="guide-content" style="display:none;padding:0 16px 16px;">
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
+            <div style="margin-bottom:16px;">
+              <div style="font-weight:600;color:var(--accent);margin-bottom:8px;">🏠 什么是心理小屋？</div>
+              <div>心理小屋是一款私密的心理健康记录工具。它帮你记录每天的心情、想法和成长，是你的心灵栖息地。</div>
+            </div>
+            <div style="margin-bottom:16px;">
+              <div style="font-weight:600;color:var(--accent);margin-bottom:8px;">📝 记录页</div>
+              <div>• 创建不同的练习主题（如情绪日记、感恩记录等）</div>
+              <div>• 每个主题下可以添加文字、图片、语音记录</div>
+              <div>• 支持搜索和排序，方便回顾</div>
+              <div>• 热力图展示你的记录频率</div>
+            </div>
+            <div style="margin-bottom:16px;">
+              <div style="font-weight:600;color:var(--accent);margin-bottom:8px;">🪐 万有引力</div>
+              <div>• 每晚写下对明天的期待</div>
+              <div>• 积累形成你的"引力轨迹"</div>
+              <div>• 回顾过去7天的期待，感受成长</div>
+            </div>
+            <div style="margin-bottom:16px;">
+              <div style="font-weight:600;color:var(--accent);margin-bottom:8px;">✅ 待办页</div>
+              <div>• 管理日常任务和心理练习</div>
+              <div>• 支持截止日期和照片附件</div>
+              <div>• 完成后自动归档</div>
+            </div>
+            <div style="margin-bottom:16px;">
+              <div style="font-weight:600;color:var(--accent);margin-bottom:8px;">📅 日历页</div>
+              <div>• 月历视图，一目了然看到记录日</div>
+              <div>• 纪念日和倒数日功能</div>
+              <div>• 点击日期查看当天记录</div>
+            </div>
+            <div style="margin-bottom:16px;">
+              <div style="font-weight:600;color:var(--accent);margin-bottom:8px;">🧑 个人中心</div>
+              <div>• 心理困惑和待探究主题</div>
+              <div>• 成就系统，激励持续记录</div>
+              <div>• 个性化设置（深色模式、自定义语录等）</div>
+            </div>
+            <div style="margin-bottom:16px;">
+              <div style="font-weight:600;color:var(--accent);margin-bottom:8px;">💡 使用技巧</div>
+              <div>• 每天固定时间记录，养成习惯</div>
+              <div>• 不必追求完美，真实记录最重要</div>
+              <div>• 定期回顾，你会发现自己的成长</div>
+              <div>• 使用万有引力培养对未来的期待感</div>
+            </div>
+            <div>
+              <div style="font-weight:600;color:var(--accent);margin-bottom:8px;">🔒 隐私说明</div>
+              <div>• 所有数据存储在本地浏览器中</div>
+              <div>• 可选开启云端同步（Supabase）</div>
+              <div>• 你的记录只有你自己能看到</div>
             </div>
           </div>
         </div>
@@ -4612,6 +4672,18 @@ function renderAchievements() {
 function toggleChangelog() {
   const content = document.getElementById('changelog-content');
   const arrow = document.getElementById('changelog-arrow');
+  if (content.style.display === 'none') {
+    content.style.display = 'block';
+    arrow.textContent = '⌄';
+  } else {
+    content.style.display = 'none';
+    arrow.textContent = '›';
+  }
+}
+
+function toggleGuide() {
+  const content = document.getElementById('guide-content');
+  const arrow = document.getElementById('guide-arrow');
   if (content.style.display === 'none') {
     content.style.display = 'block';
     arrow.textContent = '⌄';
