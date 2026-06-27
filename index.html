@@ -255,6 +255,18 @@
     .home-header .add-task-btn {
       position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
     }
+    .edit-mode-btn {
+      position: absolute; left: 20px; top: 50%; transform: translateY(-50%);
+      background: transparent; border: 1.5px solid var(--accent);
+      color: var(--accent); border-radius: 100px;
+      padding: 4px 14px; font-size: 13px; font-weight: 600;
+      cursor: pointer; font-family: inherit;
+      transition: all var(--transition-fast);
+    }
+    .edit-mode-btn:active { transform: translateY(-50%) scale(0.95); }
+    .edit-mode-btn.active {
+      background: var(--accent); color: #fff;
+    }
     .add-task-btn {
       background: linear-gradient(135deg, #8b7aff, #6c5ce7);
       color: #fff; border: none; border-radius: 50%;
@@ -286,6 +298,53 @@
       box-shadow: var(--shadow-sm);
       -webkit-tap-highlight-color: transparent;
     }
+    /* Edit mode styles */
+    .task-card.edit-mode {
+      cursor: grab;
+      position: relative;
+    }
+    .task-card.edit-mode:active {
+      cursor: grabbing;
+    }
+    .task-card .drag-handle {
+      display: none;
+      position: absolute; left: 8px; top: 50%; transform: translateY(-50%);
+      color: var(--text-tertiary); font-size: 18px;
+      padding: 4px;
+    }
+    .task-card.edit-mode .drag-handle {
+      display: flex;
+    }
+    .task-card.edit-mode .delete-btn {
+      display: flex !important;
+    }
+    .task-card.dragging {
+      opacity: 0.5;
+      transform: scale(1.02);
+      box-shadow: var(--shadow-lg);
+      z-index: 10;
+    }
+    .task-card.drag-over {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+    .edit-mode-bar {
+      display: none;
+      position: fixed; bottom: 60px; left: 20px; right: 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      text-align: center;
+      font-size: 13px; color: var(--text-secondary);
+      box-shadow: var(--shadow-md);
+      z-index: 110;
+      backdrop-filter: blur(12px);
+    }
+    .edit-mode-bar.show {
+      display: block;
+    }
+
     .task-card::before {
       content: ''; position: absolute; inset: 0;
       background: linear-gradient(135deg, rgba(139,122,255,0.08) 0%, transparent 50%);
@@ -1977,7 +2036,8 @@
       <div class="greeting">心理小屋</div>
       <div class="date-label" id="home-date"></div>
     </div>
-    <button class="add-task-btn" onclick="openNewTaskModal()" title="新建任务">+</button>
+    <button class="edit-mode-btn" id="edit-mode-btn" onclick="toggleEditMode()" title="编辑排序">编辑</button>
+    <button class="add-task-btn" onclick="openNewTaskModal()" title="新建任务" id="add-task-btn">+</button>
   </div>
   <div class="tasks-grid" id="tasks-grid"></div>
 
@@ -2709,6 +2769,11 @@
       </div>
     </div>
   </div>
+</div>
+
+<!-- ===================== EDIT MODE BAR ===================== -->
+<div class="edit-mode-bar" id="edit-mode-bar">
+  拖拽卡片排序，点 ✕ 删除
 </div>
 
 <!-- ===================== BOTTOM TAB BAR ===================== -->
@@ -4100,10 +4165,13 @@ function renderHome() {
     }).length;
     const colors = TASK_COLORS[idx % TASK_COLORS.length];
     const card = document.createElement('div');
-    card.className = 'task-card';
+    card.className = 'task-card' + (editModeActive ? ' edit-mode' : '');
+    card.setAttribute('data-task-id', task.id);
+    card.setAttribute('draggable', editModeActive ? 'true' : 'false');
     card.style.background = colors.bg;
     card.style.borderLeft = `4px solid ${colors.main}`;
     card.innerHTML = `
+      <div class="drag-handle">⠿</div>
       ${todayCount > 0 ? '<div class="today-dot" title="今日已打卡"></div>' : ''}
       <div class="edit-hint">修改</div>
       <div class="task-name">${escapeHtml(task.name)}</div>
@@ -4112,44 +4180,146 @@ function renderHome() {
       <div class="task-stats" style="margin-top:6px">今日 ${todayCount} 条</div>
       <button class="delete-btn" title="删除任务" onclick="event.stopPropagation();deleteTask('${task.id}')">✕</button>
     `;
-    // Short press to open, long press to edit
-    let lpTimer = null;
-    let touchMoved = false;
-    let touchStartY = 0;
-    function startLP(e) {
-      touchMoved = false;
-      touchStartY = e.touches ? e.touches[0].clientY : 0;
-      card.classList.add('long-pressing');
-      lpTimer = setTimeout(() => {
-        card.classList.remove('long-pressing');
-        lpTimer = null;
-        openEditTaskModal(task.id, task.name);
-      }, 600);
-    }
-    function onTouchMove(e) {
-      const dy = Math.abs(e.touches[0].clientY - touchStartY);
-      if (dy < 10) return; // 小抖动不算，仍然算点击
-      touchMoved = true;
-      if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; }
-      card.classList.remove('long-pressing');
-    }
-    function endLP(isClick) {
-      card.classList.remove('long-pressing');
-      const wasShort = lpTimer !== null;
-      if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; }
-      if (wasShort && isClick && !touchMoved) {
-        openTask(task.id);
+
+    if (editModeActive) {
+      // Drag and drop for edit mode
+      card.addEventListener('dragstart', (e) => {
+        card.classList.add('dragging');
+        e.dataTransfer.setData('text/plain', task.id);
+        e.dataTransfer.effectAllowed = 'move';
+      });
+      card.addEventListener('dragend', () => {
+        card.classList.remove('dragging');
+        document.querySelectorAll('.task-card.drag-over').forEach(c => c.classList.remove('drag-over'));
+      });
+      card.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        card.classList.add('drag-over');
+      });
+      card.addEventListener('dragleave', () => {
+        card.classList.remove('drag-over');
+      });
+      card.addEventListener('drop', (e) => {
+        e.preventDefault();
+        card.classList.remove('drag-over');
+        const draggedId = e.dataTransfer.getData('text/plain');
+        if (draggedId && draggedId !== task.id) {
+          reorderTasks(draggedId, task.id);
+        }
+      });
+      // Touch drag for mobile
+      let touchStartY = 0;
+      let touchStartX = 0;
+      let dragging = false;
+      card.addEventListener('touchstart', (e) => {
+        touchStartY = e.touches[0].clientY;
+        touchStartX = e.touches[0].clientX;
+        dragging = false;
+      }, {passive: true});
+      card.addEventListener('touchmove', (e) => {
+        const dy = Math.abs(e.touches[0].clientY - touchStartY);
+        const dx = Math.abs(e.touches[0].clientX - touchStartX);
+        if (dy > 10 || dx > 10) {
+          dragging = true;
+          card.classList.add('dragging');
+        }
+      }, {passive: true});
+      card.addEventListener('touchend', (e) => {
+        if (!dragging) return;
+        card.classList.remove('dragging');
+        const touch = e.changedTouches[0];
+        const target = document.elementFromPoint(touch.clientX, touch.clientY);
+        if (target) {
+          const targetCard = target.closest('.task-card');
+          if (targetCard && targetCard !== card) {
+            const targetId = targetCard.getAttribute('data-task-id');
+            if (targetId) {
+              reorderTasks(task.id, targetId);
+            }
+          }
+        }
+      });
+    } else {
+      // Normal mode: short press to open, long press to edit
+      let lpTimer = null;
+      let touchMoved = false;
+      let normalTouchStartY = 0;
+      function startLP(e) {
+        touchMoved = false;
+        normalTouchStartY = e.touches ? e.touches[0].clientY : 0;
+        card.classList.add('long-pressing');
+        lpTimer = setTimeout(() => {
+          card.classList.remove('long-pressing');
+          lpTimer = null;
+          openEditTaskModal(task.id, task.name);
+        }, 600);
       }
+      function onTouchMove(e) {
+        const dy = Math.abs(e.touches[0].clientY - normalTouchStartY);
+        if (dy < 10) return;
+        touchMoved = true;
+        if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; }
+        card.classList.remove('long-pressing');
+      }
+      function endLP(isClick) {
+        card.classList.remove('long-pressing');
+        const wasShort = lpTimer !== null;
+        if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; }
+        if (wasShort && isClick && !touchMoved) {
+          openTask(task.id);
+        }
+      }
+      card.addEventListener('mousedown', startLP);
+      card.addEventListener('mouseup', () => endLP(true));
+      card.addEventListener('mouseleave', () => endLP(false));
+      card.addEventListener('touchstart', startLP, {passive:true});
+      card.addEventListener('touchmove', onTouchMove, {passive:true});
+      card.addEventListener('touchend', () => endLP(true));
+      card.addEventListener('touchcancel', () => endLP(false));
     }
-    card.addEventListener('mousedown', startLP);
-    card.addEventListener('mouseup', () => endLP(true));
-    card.addEventListener('mouseleave', () => endLP(false));
-    card.addEventListener('touchstart', startLP, {passive:true});
-    card.addEventListener('touchmove', onTouchMove, {passive:true});
-    card.addEventListener('touchend', () => endLP(true));
-    card.addEventListener('touchcancel', () => endLP(false));
     grid.appendChild(card);
   });
+}
+
+// Edit mode state
+let editModeActive = false;
+
+function toggleEditMode() {
+  editModeActive = !editModeActive;
+  const btn = document.getElementById('edit-mode-btn');
+  const bar = document.getElementById('edit-mode-bar');
+  const addBtn = document.getElementById('add-task-btn');
+
+  if (editModeActive) {
+    btn.textContent = '完成';
+    btn.classList.add('active');
+    bar.classList.add('show');
+    addBtn.style.display = 'none';
+  } else {
+    btn.textContent = '编辑';
+    btn.classList.remove('active');
+    bar.classList.remove('show');
+    addBtn.style.display = 'flex';
+  }
+  renderHome();
+}
+
+function reorderTasks(draggedId, targetId) {
+  const draggedIdx = tasksCache.findIndex(t => t.id === draggedId);
+  const targetIdx = tasksCache.findIndex(t => t.id === targetId);
+  if (draggedIdx === -1 || targetIdx === -1) return;
+
+  // Remove dragged item and insert at target position
+  const [draggedTask] = tasksCache.splice(draggedIdx, 1);
+  tasksCache.splice(targetIdx, 0, draggedTask);
+
+  // Save to local
+  saveToLocal();
+
+  // Re-render
+  renderHome();
+  showToast('排序已更新');
 }
 
 let editingTaskId = null;
