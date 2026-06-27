@@ -6529,6 +6529,14 @@ if ('serviceWorker' in navigator) {
       console.error('[Merge] 失败:', e);
     }
   })();
+
+  // ====== 显示社交时刻合并完成提示 ======
+  if (!tasksCache.find(t => t.name === 'LUCK时刻') && !tasksCache.find(t => t.name === '连接时刻')) {
+    const socialTask = tasksCache.find(t => t.name === '社交时刻');
+    if (socialTask) {
+      console.log('[Merge] 社交时刻已存在，共', socialTask.records.length, '条记录');
+    }
+  }
 })();
 </script>
 </body>
