@@ -2742,7 +2742,14 @@
 <div class="toast" id="toast"></div>
 
 <script>
-/* ======================== SUPABASE CONFIG ======================== */
+/* ======================== CLOUD SYNC CONFIG ======================== */
+// Using GitHub Gist as free cloud storage
+const GITHUB_USERNAME = 'yaohao-0711';
+const GIST_API = 'https://api.github.com/gists';
+// Public gist ID will be stored in localStorage after first sync
+const GIST_ID_KEY = 'wellness_gist_id';
+
+/* ======================== SUPABASE CONFIG (legacy, kept for reference) ======================== */
 const SUPABASE_URL = 'https://raorwfllxyydlolusisk.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhb3J3ZmxseHZ5ZGxvbHVzaXNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzMzUyOTksImV4cCI6MjA5NTkxMTI5OX0.Y5uUyUZDhpROh8tVfETc5FxfsVZZloXqk_sGsiYM-cU';
 const API = SUPABASE_URL + '/rest/v1';
@@ -5869,82 +5876,102 @@ function syncExportToCloud(category, data) {
 
 async function manualSyncToCloud() {
   const statusEl = document.getElementById('sync-status-desc');
-  statusEl.textContent = '正在连接...';
+  statusEl.textContent = '正在准备数据...';
   
   try {
-    cloudAvailable = await testCloudConnection();
-    if (!cloudAvailable) {
-      statusEl.textContent = '❌ 云端不可用，请检查网络';
-      showToast('云端连接失败');
-      return;
-    }
-
-    statusEl.textContent = '正在上传数据...';
-    
-    // Sync all local tasks and records to cloud
+    // Collect all local data
     const localData = loadLocalData();
-    if (!localData.tasks || localData.tasks.length === 0) {
-      statusEl.textContent = '没有本地数据需要同步';
-      showToast('没有数据需要同步');
-      return;
-    }
-
-    let syncedTasks = 0;
-    let syncedRecords = 0;
-
-    for (const task of localData.tasks) {
-      try {
-        // Check if task exists in cloud
-        const existing = await apiFetch('tasks', 'GET', null,
-          'name=eq.' + encodeURIComponent(task.name));
-        let cloudTask;
-        
-        if (existing && existing.length > 0) {
-          cloudTask = existing[0];
-        } else {
-          const result = await apiFetch('tasks', 'POST', { name: task.name });
-          cloudTask = Array.isArray(result) ? result[0] : result;
-          syncedTasks++;
-        }
-
-        // Sync records
-        if (task.records && task.records.length > 0) {
-          for (const rec of task.records) {
-            try {
-              await apiFetch('records', 'POST', {
-                task_id: cloudTask.id,
-                text: rec.text || '',
-                images: rec.images || [],
-                created_at: rec.created_at || rec.ts || new Date().toISOString()
-              });
-              syncedRecords++;
-            } catch(e) { /* skip duplicate */ }
-          }
-        }
-      } catch(e) {
-        console.error('Sync task error:', e);
-      }
-    }
-
-    statusEl.textContent = `✅ 同步完成！${syncedTasks}个任务，${syncedRecords}条记录`;
-    updateSyncBadge('cloud');
-    showToast('数据已同步到云端');
+    const todos = loadTodos();
+    const gravity = getGravityHistory();
+    const profile = loadProfile();
+    const letters = loadLetters();
     
-    // Now reload from cloud to ensure consistency
-    const tasks = await apiFetch('tasks', 'GET', null, 'select=*&order=created_at.asc');
-    for (const t of tasks) {
-      const records = await apiFetch('records', 'GET', null,
-        'task_id=eq.' + t.id + '&order=created_at.asc');
-      t.records = records || [];
+    const syncPayload = {
+      tasks: localData.tasks || [],
+      todos: todos,
+      gravity: gravity,
+      profile: profile,
+      letters: letters,
+      syncedAt: new Date().toISOString(),
+      version: '2.0'
+    };
+
+    const dataStr = JSON.stringify(syncPayload);
+    statusEl.textContent = '正在上传到 GitHub Gist...';
+
+    // Check if we already have a gist ID
+    const existingGistId = localStorage.getItem(GIST_ID_KEY);
+    
+    let result;
+    if (existingGistId) {
+      // Update existing gist
+      result = await fetch(GIST_API + '/' + existingGistId, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          description: 'Wellness Hub 心理小屋数据同步',
+          files: {
+            'wellness-data.json': { content: dataStr }
+          }
+        })
+      });
+    } else {
+      // Create new public gist
+      result = await fetch(GIST_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          description: 'Wellness Hub 心理小屋数据同步 - ' + GITHUB_USERNAME,
+          public: true,
+          files: {
+            'wellness-data.json': { content: dataStr }
+          }
+        })
+      });
     }
-    tasksCache = tasks;
-    saveToLocal();
-    renderHome();
+
+    if (!result.ok) {
+      const err = await result.json();
+      throw new Error(err.message || '上传失败');
+    }
+
+    const gistData = await result.json();
+    const gistId = gistData.id;
+    
+    // Save gist ID for future updates
+    localStorage.setItem(GIST_ID_KEY, gistId);
+    
+    // Generate the raw URL for reading
+    const rawUrl = `https://gist.githubusercontent.com/${GITHUB_USERNAME}/${gistId}/raw/wellness-data.json`;
+    
+    statusEl.textContent = '✅ 同步完成！Gist ID: ' + gistId.slice(0,8) + '...';
+    updateSyncBadge('cloud');
+    showToast('数据已同步到 GitHub Gist');
+    
+    // Store the raw URL for other devices to read
+    localStorage.setItem('wellness_cloud_url', rawUrl);
+    
+    console.log('Sync URL:', rawUrl);
     
   } catch(e) {
     statusEl.textContent = '❌ 同步失败: ' + e.message;
-    showToast('同步失败');
+    showToast('同步失败: ' + e.message);
     console.error('Manual sync error:', e);
+  }
+}
+
+// Load data from GitHub Gist
+async function loadFromCloud() {
+  const rawUrl = localStorage.getItem('wellness_cloud_url');
+  if (!rawUrl) return null;
+  
+  try {
+    const res = await fetch(rawUrl + '?t=' + Date.now());
+    if (!res.ok) return null;
+    return await res.json();
+  } catch(e) {
+    console.log('Cloud load failed:', e);
+    return null;
   }
 }
 
@@ -6438,40 +6465,19 @@ if ('serviceWorker' in navigator) {
   renderHome();
   updateSyncBadge('local');
 
-  // Then try cloud in background
+  // Try to load from GitHub Gist cloud
   try {
-    cloudAvailable = await testCloudConnection();
-    if (cloudAvailable) {
-      updateSyncBadge('cloud');
-      const tasks = await apiFetch('tasks', 'GET', null, 'select=*&order=created_at.asc');
-      for (const t of tasks) {
-        const records = await apiFetch('records', 'GET', null,
-          'task_id=eq.' + t.id + '&order=created_at.asc');
-        t.records = records || [];
-      }
-      tasksCache = tasks;
+    const cloudData = await loadFromCloud();
+    if (cloudData && cloudData.tasks && cloudData.tasks.length > 0) {
+      // Merge cloud data with local data (cloud takes precedence for tasks)
+      tasksCache = cloudData.tasks;
       saveToLocal();
       renderHome();
-
-      // If local has data but cloud is empty, sync local → cloud
-      if (localData.tasks && localData.tasks.length > 0 && tasks.length === 0) {
-        await syncLocalToCloud();
-        const reloaded = await apiFetch('tasks', 'GET', null, 'select=*&order=created_at.asc');
-        for (const t of reloaded) {
-          const recs = await apiFetch('records', 'GET', null,
-            'task_id=eq.' + t.id + '&order=created_at.asc');
-          t.records = recs || [];
-        }
-        tasksCache = reloaded;
-        saveToLocal();
-        renderHome();
-      }
-    } else {
-      // Cloud not available — try to sync local data to cloud via manual trigger
-      console.log('Cloud unavailable, data stays local');
+      updateSyncBadge('cloud');
+      console.log('Loaded from GitHub Gist cloud');
     }
   } catch(e) {
-    console.log('Cloud unavailable, using local only');
+    console.log('Cloud load failed, using local:', e);
   }
 
   // ====== 任务合并：LUCK时刻 + 连接时刻 → 社交时刻 ======
