@@ -2358,10 +2358,10 @@
             </div>
           </div>
         </div>
-        <div class="settings-item" onclick="exportAllData()" style="cursor:pointer">
+        <div class="settings-item" onclick="document.getElementById('export-data-overlay').classList.add('open')" style="cursor:pointer">
           <div class="settings-item-left">
             <div class="settings-item-label">📋 导出数据</div>
-            <div class="settings-item-desc">查看所有本地数据（可复制）</div>
+            <div class="settings-item-desc">分类查看数据，自动同步到电脑</div>
           </div>
           <span style="color:var(--text3);font-size:14px">›</span>
         </div>
@@ -2377,9 +2377,65 @@
     <button class="back-btn" onclick="document.getElementById('export-data-overlay').classList.remove('open')">‹</button>
     <h1>我的数据</h1>
   </div>
-  <div style="flex:1;padding:20px;overflow-y:auto;">
-    <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:12px;">长按选中文字 → 复制</div>
-    <pre id="export-data-text" style="font-size:13px;line-height:1.7;color:var(--text);white-space:pre-wrap;word-break:break-all;background:var(--surface);padding:16px;border-radius:var(--radius);border:1px solid var(--border);"></pre>
+  <div style="flex:1;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;">
+    <div style="font-size:12px;color:var(--text-tertiary);">点击分类查看，数据自动同步到云端</div>
+
+    <button class="settings-item" onclick="exportCategory('tasks')" style="cursor:pointer;background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);">
+      <div class="settings-item-left">
+        <div class="settings-item-label">📝 任务列表</div>
+        <div class="settings-item-desc" id="export-tasks-count"></div>
+      </div>
+      <span style="color:var(--text3);font-size:14px">›</span>
+    </button>
+
+    <button class="settings-item" onclick="exportCategory('records')" style="cursor:pointer;background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);">
+      <div class="settings-item-left">
+        <div class="settings-item-label">💬 记录内容</div>
+        <div class="settings-item-desc" id="export-records-count"></div>
+      </div>
+      <span style="color:var(--text3);font-size:14px">›</span>
+    </button>
+
+    <button class="settings-item" onclick="exportCategory('gravity')" style="cursor:pointer;background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);">
+      <div class="settings-item-left">
+        <div class="settings-item-label">🪐 万有引力</div>
+        <div class="settings-item-desc" id="export-gravity-count"></div>
+      </div>
+      <span style="color:var(--text3);font-size:14px">›</span>
+    </button>
+
+    <button class="settings-item" onclick="exportCategory('todos')" style="cursor:pointer;background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);">
+      <div class="settings-item-left">
+        <div class="settings-item-label">✅ 待办</div>
+        <div class="settings-item-desc" id="export-todos-count"></div>
+      </div>
+      <span style="color:var(--text3);font-size:14px">›</span>
+    </button>
+
+    <button class="settings-item" onclick="exportCategory('profile')" style="cursor:pointer;background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);">
+      <div class="settings-item-left">
+        <div class="settings-item-label">🧑 个人档案</div>
+        <div class="settings-item-desc" id="export-profile-count"></div>
+      </div>
+      <span style="color:var(--text3);font-size:14px">›</span>
+    </button>
+
+    <button class="settings-item" onclick="exportCategory('letters')" style="cursor:pointer;background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);">
+      <div class="settings-item-left">
+        <div class="settings-item-label">💌 写给未来的信</div>
+        <div class="settings-item-desc" id="export-letters-count"></div>
+      </div>
+      <span style="color:var(--text3);font-size:14px">›</span>
+    </button>
+
+    <!-- Category detail view -->
+    <div id="export-detail" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="font-size:14px;font-weight:600;color:var(--text);" id="export-detail-title"></div>
+        <button onclick="copyExportData()" style="background:var(--accent);color:#fff;border:none;border-radius:100px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">📋 复制</button>
+      </div>
+      <pre id="export-detail-text" style="font-size:13px;line-height:1.7;color:var(--text);white-space:pre-wrap;word-break:break-all;background:var(--surface);padding:16px;border-radius:var(--radius);border:1px solid var(--border);max-height:60vh;overflow-y:auto;"></pre>
+    </div>
   </div>
 </div>
 
@@ -5658,48 +5714,140 @@ function toggleGuide() {
 }
 
 function exportAllData() {
-  let output = '';
+  // Update category counts
   const d = loadLocalData();
   const todos = loadTodos();
   const gravity = getGravityHistory();
   const profile = loadProfile();
   const letters = loadLetters();
 
-  output += '=== 任务与记录 ===\n';
-  (d.tasks || []).forEach(t => {
-    output += '\n【' + (t.name || '未命名') + '】共' + (t.records||[]).length + '条记录\n';
-    (t.records || []).forEach(r => {
-      const ts = r.created_at || r.ts || '';
-      output += '  ' + ts + ' | ' + (r.text || '(语音/图片)') + '\n';
-    });
-  });
+  const taskCount = (d.tasks||[]).length;
+  const recordCount = (d.tasks||[]).reduce((s,t) => s + (t.records||[]).length, 0);
+  const gravityCount = Object.keys(gravity).length;
+  const todoCount = todos.length;
+  const confusionCount = (profile.confusions||[]).length;
+  const letterCount = letters.length;
 
-  output += '\n=== 待办 ===\n';
-  todos.forEach(t => {
-    output += (t.completed?'✅':'⬜') + ' ' + (t.text||'') + (t.deadline?' (截止:'+t.deadline+')':'') + '\n';
-  });
+  document.getElementById('export-tasks-count').textContent = taskCount + ' 个任务';
+  document.getElementById('export-records-count').textContent = recordCount + ' 条记录';
+  document.getElementById('export-gravity-count').textContent = gravityCount + ' 天期待';
+  document.getElementById('export-todos-count').textContent = todoCount + ' 条待办';
+  document.getElementById('export-profile-count').textContent = confusionCount + ' 个困惑主题';
+  document.getElementById('export-letters-count').textContent = letterCount + ' 封信';
 
-  output += '\n=== 万有引力(每日期待) ===\n';
-  Object.entries(gravity).sort().forEach(([k,v]) => {
-    output += k + ': ' + v + '\n';
-  });
-
-  output += '\n=== 个人档案 ===\n';
-  output += '名字: ' + (profile.name||'未设置') + '\n';
-  output += '困惑: ' + ((profile.confusions||[]).map(c=>c.title).join(', ') || '无') + '\n';
-  output += '心态: ' + ((profile.mindsets||[]).map(m=>m.title).join(', ') || '无') + '\n';
-
-  output += '\n=== 给未来的信 ===\n';
-  if (letters.length === 0) { output += '(无)\n'; }
-  letters.forEach(l => {
-    const from = l.createdAt ? l.createdAt.slice(0,10) : '?';
-    const to = l.deliverAt ? l.deliverAt.slice(0,10) : '?';
-    output += '[' + from + ' → ' + to + '] ' + (l.opened?'已读':'未读') + '\n';
-    output += '  ' + (l.content||'').slice(0,200) + '\n';
-  });
-
-  document.getElementById('export-data-text').textContent = output;
+  document.getElementById('export-detail').style.display = 'none';
   document.getElementById('export-data-overlay').classList.add('open');
+}
+
+function exportCategory(cat) {
+  const d = loadLocalData();
+  const todos = loadTodos();
+  const gravity = getGravityHistory();
+  const profile = loadProfile();
+  const letters = loadLetters();
+  let output = '';
+  let title = '';
+
+  if (cat === 'tasks') {
+    title = '📝 任务列表';
+    (d.tasks || []).forEach((t, i) => {
+      output += (i+1) + '. ' + (t.name||'未命名') + ' — ' + (t.records||[]).length + ' 条记录\n';
+    });
+    if (!output) output = '(无任务)';
+  }
+
+  if (cat === 'records') {
+    title = '💬 记录内容';
+    (d.tasks || []).forEach(t => {
+      output += '【' + (t.name||'未命名') + '】\n';
+      (t.records || []).forEach(r => {
+        const ts = r.created_at || r.ts || '';
+        const date = ts ? ts.slice(0,10) : '?';
+        output += '  ' + date + ' | ' + (r.text || '(语音/图片)') + '\n';
+      });
+      output += '\n';
+    });
+    if (!output) output = '(无记录)';
+  }
+
+  if (cat === 'gravity') {
+    title = '🪐 万有引力';
+    Object.entries(gravity).sort().forEach(([k,v]) => {
+      output += k + ': ' + v + '\n';
+    });
+    if (!output) output = '(无期待记录)';
+  }
+
+  if (cat === 'todos') {
+    title = '✅ 待办';
+    todos.forEach(t => {
+      output += (t.completed?'✅':'⬜') + ' ' + (t.text||'') + (t.deadline?' (截止:'+t.deadline+')':'') + '\n';
+    });
+    if (!output) output = '(无待办)';
+  }
+
+  if (cat === 'profile') {
+    title = '🧑 个人档案';
+    output += '名字: ' + (profile.name||'未设置') + '\n\n';
+    output += '困惑主题:\n';
+    (profile.confusions||[]).forEach(c => {
+      output += '  · ' + c.title + (c.content ? ': ' + c.content.slice(0,100) : '') + '\n';
+    });
+    if (!(profile.confusions||[]).length) output += '  (无)\n';
+    output += '\n心态/待探究:\n';
+    (profile.mindsets||[]).forEach(m => {
+      output += '  · ' + m.title + (m.content ? ': ' + m.content.slice(0,100) : '') + '\n';
+    });
+    if (!(profile.mindsets||[]).length) output += '  (无)\n';
+  }
+
+  if (cat === 'letters') {
+    title = '💌 写给未来的信';
+    if (letters.length === 0) { output = '(无信件)'; }
+    letters.forEach((l, i) => {
+      const from = l.createdAt ? l.createdAt.slice(0,10) : '?';
+      const to = l.deliverAt ? l.deliverAt.slice(0,10) : '?';
+      output += (i+1) + '. [' + from + ' → ' + to + '] ' + (l.opened?'已读':'未读') + '\n';
+      output += l.content + '\n\n';
+    });
+  }
+
+  document.getElementById('export-detail-title').textContent = title;
+  document.getElementById('export-detail-text').textContent = output;
+  document.getElementById('export-detail').style.display = 'block';
+
+  // Auto-sync to Supabase if available
+  syncExportToCloud(cat, output);
+}
+
+function copyExportData() {
+  const text = document.getElementById('export-detail-text').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('已复制到剪贴板');
+  }).catch(() => {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('已复制到剪贴板');
+  });
+}
+
+function syncExportToCloud(category, data) {
+  // Store in a temporary Supabase table for cross-device access
+  // This is optional — if cloud is available, we sync
+  if (!cloudAvailable) return;
+  try {
+    apiFetch('export_data', 'POST', {
+      category: category,
+      content: data,
+      device: 'mobile',
+      created_at: new Date().toISOString()
+    }).catch(() => {}); // Silent fail
+  } catch(e) {}
 }
 
 // Name
