@@ -6490,14 +6490,45 @@ if ('serviceWorker' in navigator) {
 
   // Try to load from GitHub Gist cloud
   try {
-    const cloudData = await loadFromCloud();
-    if (cloudData && cloudData.tasks && cloudData.tasks.length > 0) {
-      // Merge cloud data with local data (cloud takes precedence for tasks)
-      tasksCache = cloudData.tasks;
-      saveToLocal();
-      renderHome();
-      updateSyncBadge('cloud');
-      console.log('Loaded from GitHub Gist cloud');
+    const gistId = localStorage.getItem(GIST_ID_KEY);
+    const rawUrl = localStorage.getItem('wellness_cloud_url');
+    
+    if (gistId && rawUrl) {
+      const res = await fetch(rawUrl + '?t=' + Date.now());
+      if (res.ok) {
+        const cloudData = await res.json();
+        if (cloudData && cloudData.tasks && cloudData.tasks.length > 0) {
+          tasksCache = cloudData.tasks;
+          saveToLocal();
+          renderHome();
+          updateSyncBadge('cloud');
+          console.log('Loaded from GitHub Gist cloud');
+        }
+      }
+    } else {
+      // Try to auto-detect gist from user's gists
+      const gistsRes = await fetch('https://api.github.com/users/yaohao-0711/gists');
+      if (gistsRes.ok) {
+        const gists = await gistsRes.json();
+        const wellnessGist = gists.find(g => g.description && g.description.includes('Wellness Hub'));
+        if (wellnessGist) {
+          localStorage.setItem(GIST_ID_KEY, wellnessGist.id);
+          const rawUrl = `https://gist.githubusercontent.com/yaohao-0711/${wellnessGist.id}/raw/wellness-data.json`;
+          localStorage.setItem('wellness_cloud_url', rawUrl);
+          
+          const dataRes = await fetch(rawUrl + '?t=' + Date.now());
+          if (dataRes.ok) {
+            const cloudData = await dataRes.json();
+            if (cloudData && cloudData.tasks && cloudData.tasks.length > 0) {
+              tasksCache = cloudData.tasks;
+              saveToLocal();
+              renderHome();
+              updateSyncBadge('cloud');
+              console.log('Auto-loaded from GitHub Gist cloud');
+            }
+          }
+        }
+      }
     }
   } catch(e) {
     console.log('Cloud load failed, using local:', e);
