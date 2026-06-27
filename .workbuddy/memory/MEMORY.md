@@ -14,10 +14,13 @@
 - 做完一个任务就停下来报告，不要一口气堆着做
 
 ## 设计系统
-- 主色调: #5856d6（紫色），深色模式 #7d7aff
-- 背景: #f5f5f7（浅）/ #1c1c1e（深）
+- 主色调: #8b7aff（深色）/ #6c5ce7（浅色）
+- 背景: 深蓝渐变 #0a0a1a → #12122a → #1a1035（深色）/ #f5f3ff 薰衣草紫（浅色）
 - 文字层级: text > text-secondary > text-tertiary > text-quaternary
-- 圆角: 8/12/16/20/24px
-- 阴影: xs/sm/md/lg/xl 五级
+- 圆角: 10/14/16/20/24px
+- 阴影: xs/sm/md/lg/xl 五级（深色更强）
 - 动画: fast(150ms)/normal(250ms)/spring(350ms, cubic-bezier回弹)
-- 毛玻璃: blur(20px) 用于topbar和tabbar
+- 毛玻璃: blur(24px) 用于topbar和tabbar
+- 卡片: 半透明背景 + backdrop-filter blur(12px) + 紫色边框
+- 按钮: linear-gradient(135deg, #8b7aff, #6c5ce7) + 紫色光晕阴影
+- 星空装饰: 闪烁星星 + 宇宙光晕球 + 流星动画
