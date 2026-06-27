@@ -2361,7 +2361,14 @@
         <div class="settings-item" onclick="document.getElementById('export-data-overlay').classList.add('open')" style="cursor:pointer">
           <div class="settings-item-left">
             <div class="settings-item-label">📋 导出数据</div>
-            <div class="settings-item-desc">分类查看数据，自动同步到电脑</div>
+            <div class="settings-item-desc">分类查看数据，可复制到电脑</div>
+          </div>
+          <span style="color:var(--text3);font-size:14px">›</span>
+        </div>
+        <div class="settings-item" onclick="manualSyncToCloud()" style="cursor:pointer">
+          <div class="settings-item-left">
+            <div class="settings-item-label">☁️ 手动同步到云端</div>
+            <div class="settings-item-desc" id="sync-status-desc">将本地数据上传到 Supabase，电脑也能看</div>
           </div>
           <span style="color:var(--text3);font-size:14px">›</span>
         </div>
@@ -5837,17 +5844,108 @@ function copyExportData() {
 }
 
 function syncExportToCloud(category, data) {
-  // Store in a temporary Supabase table for cross-device access
-  // This is optional — if cloud is available, we sync
+  // Use Supabase storage or a simple key-value approach
+  // For now, we'll use the existing tasks/records tables to store export data
   if (!cloudAvailable) return;
   try {
-    apiFetch('export_data', 'POST', {
-      category: category,
-      content: data,
-      device: 'mobile',
-      created_at: new Date().toISOString()
-    }).catch(() => {}); // Silent fail
-  } catch(e) {}
+    // Store export data as a special task with a marker
+    const exportTaskName = '__export__' + category;
+    const existing = tasksCache.find(t => t.name === exportTaskName);
+    if (existing) {
+      // Update existing export record
+      if (existing.records && existing.records.length > 0) {
+        updateRecordDB(existing.records[0].id, { text: data });
+      }
+    } else {
+      // Create new export task
+      createTaskDB(exportTaskName).then(task => {
+        if (task) {
+          createRecordDB(task.id, data, []);
+        }
+      });
+    }
+  } catch(e) { /* silent fail */ }
+}
+
+async function manualSyncToCloud() {
+  const statusEl = document.getElementById('sync-status-desc');
+  statusEl.textContent = '正在连接...';
+  
+  try {
+    cloudAvailable = await testCloudConnection();
+    if (!cloudAvailable) {
+      statusEl.textContent = '❌ 云端不可用，请检查网络';
+      showToast('云端连接失败');
+      return;
+    }
+
+    statusEl.textContent = '正在上传数据...';
+    
+    // Sync all local tasks and records to cloud
+    const localData = loadLocalData();
+    if (!localData.tasks || localData.tasks.length === 0) {
+      statusEl.textContent = '没有本地数据需要同步';
+      showToast('没有数据需要同步');
+      return;
+    }
+
+    let syncedTasks = 0;
+    let syncedRecords = 0;
+
+    for (const task of localData.tasks) {
+      try {
+        // Check if task exists in cloud
+        const existing = await apiFetch('tasks', 'GET', null,
+          'name=eq.' + encodeURIComponent(task.name));
+        let cloudTask;
+        
+        if (existing && existing.length > 0) {
+          cloudTask = existing[0];
+        } else {
+          const result = await apiFetch('tasks', 'POST', { name: task.name });
+          cloudTask = Array.isArray(result) ? result[0] : result;
+          syncedTasks++;
+        }
+
+        // Sync records
+        if (task.records && task.records.length > 0) {
+          for (const rec of task.records) {
+            try {
+              await apiFetch('records', 'POST', {
+                task_id: cloudTask.id,
+                text: rec.text || '',
+                images: rec.images || [],
+                created_at: rec.created_at || rec.ts || new Date().toISOString()
+              });
+              syncedRecords++;
+            } catch(e) { /* skip duplicate */ }
+          }
+        }
+      } catch(e) {
+        console.error('Sync task error:', e);
+      }
+    }
+
+    statusEl.textContent = `✅ 同步完成！${syncedTasks}个任务，${syncedRecords}条记录`;
+    updateSyncBadge('cloud');
+    showToast('数据已同步到云端');
+    
+    // Now reload from cloud to ensure consistency
+    const tasks = await apiFetch('tasks', 'GET', null, 'select=*&order=created_at.asc');
+    for (const t of tasks) {
+      const records = await apiFetch('records', 'GET', null,
+        'task_id=eq.' + t.id + '&order=created_at.asc');
+      t.records = records || [];
+    }
+    tasksCache = tasks;
+    saveToLocal();
+    renderHome();
+    
+  } catch(e) {
+    statusEl.textContent = '❌ 同步失败: ' + e.message;
+    showToast('同步失败');
+    console.error('Manual sync error:', e);
+  }
 }
 
 // Name
@@ -6344,6 +6442,7 @@ if ('serviceWorker' in navigator) {
   try {
     cloudAvailable = await testCloudConnection();
     if (cloudAvailable) {
+      updateSyncBadge('cloud');
       const tasks = await apiFetch('tasks', 'GET', null, 'select=*&order=created_at.asc');
       for (const t of tasks) {
         const records = await apiFetch('records', 'GET', null,
@@ -6353,8 +6452,8 @@ if ('serviceWorker' in navigator) {
       tasksCache = tasks;
       saveToLocal();
       renderHome();
-      updateSyncBadge('cloud');
 
+      // If local has data but cloud is empty, sync local → cloud
       if (localData.tasks && localData.tasks.length > 0 && tasks.length === 0) {
         await syncLocalToCloud();
         const reloaded = await apiFetch('tasks', 'GET', null, 'select=*&order=created_at.asc');
@@ -6367,6 +6466,9 @@ if ('serviceWorker' in navigator) {
         saveToLocal();
         renderHome();
       }
+    } else {
+      // Cloud not available — try to sync local data to cloud via manual trigger
+      console.log('Cloud unavailable, data stays local');
     }
   } catch(e) {
     console.log('Cloud unavailable, using local only');
