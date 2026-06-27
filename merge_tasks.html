@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>合并任务 - 心理小屋</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, "SF Pro Display", "PingFang SC", sans-serif;
+      background: #0a0a1a;
+      color: #f0eeff;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      text-align: center;
+      background: linear-gradient(135deg, #b8b0ff, #8b7aff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(139,122,255,0.10);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .card-count {
+      font-size: 12px;
+      color: #6e6b8a;
+      margin-bottom: 12px;
+    }
+    .card-records {
+      max-height: 200px;
+      overflow-y: auto;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #b0adcc;
+    }
+    .card-records div {
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #8b7aff, #6c5ce7);
+      color: #fff;
+      border: none;
+      border-radius: 100px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 20px;
+      font-family: inherit;
+      box-shadow: 0 4px 16px rgba(139,122,255,0.3);
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .status {
+      text-align: center;
+      font-size: 13px;
+      color: #6e6b8a;
+      margin-top: 12px;
+    }
+    .success {
+      color: #30d158;
+    }
+    .error {
+      color: #ff453a;
+    }
+    .info {
+      background: rgba(139,122,255,0.08);
+      border: 1px solid rgba(139,122,255,0.15);
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 13px;
+      color: #b0adcc;
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>合并任务工具</h1>
+    
+    <div class="info">
+      此工具将合并心理小屋中的 <strong>LUCK时刻</strong> 和 <strong>连接时刻</strong> 为一个新的任务 <strong>社交时刻</strong>。
+      <br><br>
+      合并后，两个任务的所有记录都会保存在新的"社交时刻"任务中。
+    </div>
+
+    <div id="task-luck" class="card" style="display:none;">
+      <div class="card-title">📊 LUCK时刻</div>
+      <div class="card-count" id="luck-count"></div>
+      <div class="card-records" id="luck-records"></div>
+    </div>
+
+    <div id="task-conn" class="card" style="display:none;">
+      <div class="card-title">📊 连接时刻</div>
+      <div class="card-count" id="conn-count"></div>
+      <div class="card-records" id="conn-records"></div>
+    </div>
+
+    <button id="merge-btn" class="btn" onclick="mergeTasks()" disabled>合并为「社交时刻」</button>
+    
+    <div id="status" class="status"></div>
+  </div>
+
+  <script>
+    const LS_KEY = 'checkin_app_data';
+    let localData = null;
+    let luckTask = null;
+    let connTask = null;
+
+    function loadLocalData() {
+      try {
+        const raw = localStorage.getItem(LS_KEY);
+        return raw ? JSON.parse(raw) : { tasks: [] };
+      } catch(e) {
+        return { tasks: [] };
+      }
+    }
+
+    function saveLocalData(data) {
+      localStorage.setItem(LS_KEY, JSON.stringify(data));
+    }
+
+    function init() {
+      localData = loadLocalData();
+      luckTask = localData.tasks.find(t => t.name === 'LUCK时刻');
+      connTask = localData.tasks.find(t => t.name === '连接时刻');
+
+      if (!luckTask && !connTask) {
+        document.getElementById('status').textContent = '未找到 LUCK时刻 或 连接时刻，可能已合并';
+        document.getElementById('status').className = 'status error';
+        return;
+      }
+
+      if (luckTask) {
+        document.getElementById('task-luck').style.display = 'block';
+        document.getElementById('luck-count').textContent = `${luckTask.records.length} 条记录`;
+        document.getElementById('luck-records').innerHTML = luckTask.records
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+          .map(r => `<div>${r.created_at.slice(0,10)} | ${escapeHtml(r.text || '(语音/图片)')}</div>`)
+          .join('');
+      }
+
+      if (connTask) {
+        document.getElementById('task-conn').style.display = 'block';
+        document.getElementById('conn-count').textContent = `${connTask.records.length} 条记录`;
+        document.getElementById('conn-records').innerHTML = connTask.records
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+          .map(r => `<div>${r.created_at.slice(0,10)} | ${escapeHtml(r.text || '(语音/图片)')}</div>`)
+          .join('');
+      }
+
+      if (luckTask || connTask) {
+        document.getElementById('merge-btn').disabled = false;
+      }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function mergeTasks() {
+      if (!confirm('确定要合并吗？合并后 LUCK时刻 和 连接时刻 将变为「社交时刻」。')) {
+        return;
+      }
+
+      try {
+        // Find or create the merged task
+        let mergedTask = localData.tasks.find(t => t.name === '社交时刻');
+        
+        if (!mergedTask) {
+          // Create new merged task
+          mergedTask = {
+            id: 'local_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
+            name: '社交时刻',
+            created_at: new Date().toISOString(),
+            records: []
+          };
+          localData.tasks.push(mergedTask);
+        }
+
+        // Merge records from LUCK时刻
+        if (luckTask) {
+          luckTask.records.forEach(r => {
+            r.task_id = mergedTask.id;
+          });
+          mergedTask.records = [...mergedTask.records, ...luckTask.records];
+          // Remove LUCK时刻 from tasks
+          localData.tasks = localData.tasks.filter(t => t.id !== luckTask.id);
+        }
+
+        // Merge records from 连接时刻
+        if (connTask) {
+          connTask.records.forEach(r => {
+            r.task_id = mergedTask.id;
+          });
+          mergedTask.records = [...mergedTask.records, ...connTask.records];
+          // Remove 连接时刻 from tasks
+          localData.tasks = localData.tasks.filter(t => t.id !== connTask.id);
+        }
+
+        // Sort records by date
+        mergedTask.records.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+        // Save
+        saveLocalData(localData);
+
+        // Update UI
+        document.getElementById('merge-btn').disabled = true;
+        document.getElementById('merge-btn').textContent = '✅ 合并完成';
+        document.getElementById('status').textContent = `已合并为「社交时刻」，共 ${mergedTask.records.length} 条记录`;
+        document.getElementById('status').className = 'status success';
+
+        // Hide old task cards
+        document.getElementById('task-luck').style.display = 'none';
+        document.getElementById('task-conn').style.display = 'none';
+
+        // Show merged task
+        setTimeout(() => {
+          const mergedCard = document.createElement('div');
+          mergedCard.className = 'card';
+          mergedCard.innerHTML = `
+            <div class="card-title">✅ 社交时刻（已合并）</div>
+            <div class="card-count">${mergedTask.records.length} 条记录</div>
+            <div class="card-records">${mergedTask.records
+              .map(r => `<div>${r.created_at.slice(0,10)} | ${escapeHtml(r.text || '(语音/图片)')}</div>`)
+              .join('')}</div>
+          `;
+          document.querySelector('.container').insertBefore(mergedCard, document.getElementById('merge-btn'));
+        }, 300);
+
+      } catch(e) {
+        document.getElementById('status').textContent = '合并失败: ' + e.message;
+        document.getElementById('status').className = 'status error';
+        console.error('Merge error:', e);
+      }
+    }
+
+    // Initialize
+    init();
+  </script>
+</body>
+</html>
