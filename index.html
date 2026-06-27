@@ -5904,10 +5904,13 @@ async function manualSyncToCloud() {
     
     let result;
     if (existingGistId) {
-      // Update existing gist
+      // Update existing gist (requires auth)
       result = await fetch(GIST_API + '/' + existingGistId, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'token ' + localStorage.getItem('wellness_github_token')
+        },
         body: JSON.stringify({
           description: 'Wellness Hub 心理小屋数据同步',
           files: {
@@ -5916,10 +5919,21 @@ async function manualSyncToCloud() {
         })
       });
     } else {
-      // Create new public gist
+      // Need GitHub token to create gist
+      const token = localStorage.getItem('wellness_github_token');
+      if (!token) {
+        // Prompt user for token
+        statusEl.textContent = '需要 GitHub Token';
+        showGitHubTokenModal();
+        return;
+      }
+      
       result = await fetch(GIST_API, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'token ' + token
+        },
         body: JSON.stringify({
           description: 'Wellness Hub 心理小屋数据同步 - ' + GITHUB_USERNAME,
           public: true,
@@ -5957,6 +5971,15 @@ async function manualSyncToCloud() {
     statusEl.textContent = '❌ 同步失败: ' + e.message;
     showToast('同步失败: ' + e.message);
     console.error('Manual sync error:', e);
+  }
+}
+
+function showGitHubTokenModal() {
+  const token = prompt('请输入 GitHub Personal Access Token（用于创建 Gist）：\n\n获取方式：GitHub → Settings → Developer settings → Personal access tokens → Generate new token\n\n权限勾选：gist');
+  if (token) {
+    localStorage.setItem('wellness_github_token', token);
+    showToast('Token 已保存，正在重试同步...');
+    manualSyncToCloud();
   }
 }
 
