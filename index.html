@@ -2358,9 +2358,28 @@
             </div>
           </div>
         </div>
+        <div class="settings-item" onclick="exportAllData()" style="cursor:pointer">
+          <div class="settings-item-left">
+            <div class="settings-item-label">📋 导出数据</div>
+            <div class="settings-item-desc">查看所有本地数据（可复制）</div>
+          </div>
+          <span style="color:var(--text3);font-size:14px">›</span>
+        </div>
       </div>
 
     </div>
+  </div>
+</div>
+
+<!-- ===================== EXPORT DATA OVERLAY ===================== -->
+<div class="letter-overlay" id="export-data-overlay">
+  <div class="topbar">
+    <button class="back-btn" onclick="document.getElementById('export-data-overlay').classList.remove('open')">‹</button>
+    <h1>我的数据</h1>
+  </div>
+  <div style="flex:1;padding:20px;overflow-y:auto;">
+    <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:12px;">长按选中文字 → 复制</div>
+    <pre id="export-data-text" style="font-size:13px;line-height:1.7;color:var(--text);white-space:pre-wrap;word-break:break-all;background:var(--surface);padding:16px;border-radius:var(--radius);border:1px solid var(--border);"></pre>
   </div>
 </div>
 
@@ -5636,6 +5655,51 @@ function toggleGuide() {
     content.style.display = 'none';
     arrow.textContent = '›';
   }
+}
+
+function exportAllData() {
+  let output = '';
+  const d = loadLocalData();
+  const todos = loadTodos();
+  const gravity = getGravityHistory();
+  const profile = loadProfile();
+  const letters = loadLetters();
+
+  output += '=== 任务与记录 ===\n';
+  (d.tasks || []).forEach(t => {
+    output += '\n【' + (t.name || '未命名') + '】共' + (t.records||[]).length + '条记录\n';
+    (t.records || []).forEach(r => {
+      const ts = r.created_at || r.ts || '';
+      output += '  ' + ts + ' | ' + (r.text || '(语音/图片)') + '\n';
+    });
+  });
+
+  output += '\n=== 待办 ===\n';
+  todos.forEach(t => {
+    output += (t.completed?'✅':'⬜') + ' ' + (t.text||'') + (t.deadline?' (截止:'+t.deadline+')':'') + '\n';
+  });
+
+  output += '\n=== 万有引力(每日期待) ===\n';
+  Object.entries(gravity).sort().forEach(([k,v]) => {
+    output += k + ': ' + v + '\n';
+  });
+
+  output += '\n=== 个人档案 ===\n';
+  output += '名字: ' + (profile.name||'未设置') + '\n';
+  output += '困惑: ' + ((profile.confusions||[]).map(c=>c.title).join(', ') || '无') + '\n';
+  output += '心态: ' + ((profile.mindsets||[]).map(m=>m.title).join(', ') || '无') + '\n';
+
+  output += '\n=== 给未来的信 ===\n';
+  if (letters.length === 0) { output += '(无)\n'; }
+  letters.forEach(l => {
+    const from = l.createdAt ? l.createdAt.slice(0,10) : '?';
+    const to = l.deliverAt ? l.deliverAt.slice(0,10) : '?';
+    output += '[' + from + ' → ' + to + '] ' + (l.opened?'已读':'未读') + '\n';
+    output += '  ' + (l.content||'').slice(0,200) + '\n';
+  });
+
+  document.getElementById('export-data-text').textContent = output;
+  document.getElementById('export-data-overlay').classList.add('open');
 }
 
 // Name
