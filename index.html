@@ -99,6 +99,7 @@
       font-family: -apple-system, "SF Pro Display", "SF Pro Text", "PingFang SC", "Microsoft YaHei", sans-serif;
       min-height: 100vh;
       overflow-x: hidden;
+      overscroll-behavior-x: none;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       font-feature-settings: "kern" 1, "liga" 1;
@@ -2315,7 +2316,7 @@
         <div class="settings-item">
           <div class="settings-item-left">
             <div class="settings-item-label">🏠 心理小屋</div>
-            <div class="settings-item-desc">v2.9 · 你的心灵栖息地</div>
+            <div class="settings-item-desc">v3.0 · 你的心灵栖息地</div>
           </div>
         </div>
         <div class="settings-item" onclick="setView('view-changelog')" style="cursor:pointer">
@@ -2455,6 +2456,11 @@
       <div class="settings-section">版本历史</div>
       <div class="settings-card" style="padding:16px;">
         <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
+          <div style="margin-bottom:16px;">
+            <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v3.0 · 2026-06-30 17:37</div>
+            <div>· 新增左边缘右滑返回手势：子页面右滑返回上一级</div>
+            <div>· 浏览器原生滑动手势被禁用，改用 App 内自定义手势</div>
+          </div>
           <div style="margin-bottom:16px;">
             <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v2.9 · 2026-06-30 17:22</div>
             <div>· 待办页面新增搜索框，可按内容实时过滤待办</div>
@@ -6699,6 +6705,35 @@ async function restoreFromCloud() {
       console.error('[Merge] 失败:', e);
     }
   })();
+
+  // ====== 左边缘右滑返回 ======
+  let _swipeX = 0;
+  document.addEventListener('touchstart', e => {
+    _swipeX = e.touches[0].clientX;
+  }, { passive: true });
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - _swipeX;
+    if (_swipeX < 30 && dx > 50) {
+      const active = document.querySelector('.view.active');
+      if (!active) return;
+      const id = active.id;
+      const swipeMap = {
+        'view-todo-detail': 'goBackToTodoTab()',
+        'view-settings': "switchTab('me')",
+        'view-changelog': "switchTab('me')",
+        'view-guide': "switchTab('me')",
+        'view-custom-quotes': "switchTab('me')",
+        'view-detail': "switchTab('record')",
+        'view-heatmap': "switchTab('record')",
+        'view-anniversary': "switchTab('calendar')",
+        'view-anni-detail': "switchTab('calendar')",
+        'view-avatar-lightbox': "switchTab('me')",
+        'view-profile-item': "switchTab('me')"
+      };
+      const fn = swipeMap[id];
+      if (fn) eval(fn);
+    }
+  }, { passive: true });
 
   // ====== 显示社交时刻合并完成提示 ======
   if (!tasksCache.find(t => t.name === 'LUCK时刻') && !tasksCache.find(t => t.name === '连接时刻')) {
