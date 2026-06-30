@@ -1285,6 +1285,28 @@
       color: #fff;
       box-shadow: 0 2px 12px rgba(139,122,255,0.3);
     }
+    .todo-search-bar {
+      margin-bottom: 16px;
+    }
+    .todo-search-input {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 100px;
+      border: 1px solid rgba(139,122,255,0.2);
+      background: var(--surface2);
+      color: var(--text);
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: all var(--transition-fast);
+    }
+    .todo-search-input::placeholder {
+      color: var(--text-quaternary);
+    }
+    .todo-search-input:focus {
+      border-color: rgba(139,122,255,0.5);
+      box-shadow: 0 0 0 3px rgba(139,122,255,0.1);
+    }
     .todo-fab {
       position: fixed;
       bottom: 76px; right: 20px;
@@ -2116,6 +2138,9 @@
       <button class="todo-filter" onclick="setTodoFilter('active')" id="todo-filter-active">进行中</button>
       <button class="todo-filter" onclick="setTodoFilter('completed')" id="todo-filter-completed">已完成</button>
     </div>
+    <div class="todo-search-bar">
+      <input type="text" class="todo-search-input" id="todo-search-input" placeholder="搜索待办内容…" oninput="onTodoSearchInput()" />
+    </div>
     <div id="todo-list" class="todo-list"></div>
   </div>
   <button class="todo-fab" onclick="openTodoModal()">+</button>
@@ -2290,7 +2315,7 @@
         <div class="settings-item">
           <div class="settings-item-left">
             <div class="settings-item-label">🏠 心理小屋</div>
-            <div class="settings-item-desc">v2.8 · 你的心灵栖息地</div>
+            <div class="settings-item-desc">v2.9 · 你的心灵栖息地</div>
           </div>
         </div>
         <div class="settings-item" onclick="setView('view-changelog')" style="cursor:pointer">
@@ -2430,6 +2455,10 @@
       <div class="settings-section">版本历史</div>
       <div class="settings-card" style="padding:16px;">
         <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
+          <div style="margin-bottom:16px;">
+            <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v2.9 · 2026-06-30 17:22</div>
+            <div>· 待办页面新增搜索框，可按内容实时过滤待办</div>
+          </div>
           <div style="margin-bottom:16px;">
             <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v2.8 · 2026-06-30 17:19</div>
             <div>· 使用指南改为独立页面，可自定义编辑内容</div>
@@ -5092,6 +5121,7 @@ function deleteAnni(id) {
 /* ======================== TODO ======================== */
 const TODO_KEY = 'wellness_todos';
 let todoFilter = 'all';
+let todoSearch = '';
 let todoPhotoData = null;
 
 function loadTodos() {
@@ -5148,6 +5178,12 @@ function createTodo() {
   closeTodoModal();
   renderTodos();
   showToast('已添加');
+}
+
+function onTodoSearchInput() {
+  const input = document.getElementById('todo-search-input');
+  todoSearch = input ? input.value.trim().toLowerCase() : '';
+  renderTodos();
 }
 
 function setTodoFilter(filter) {
@@ -5319,11 +5355,16 @@ function renderTodos() {
   if (todoFilter === 'active') displayList = list.filter(t => !t.completed);
   if (todoFilter === 'completed') displayList = list.filter(t => t.completed);
 
+  if (todoSearch) {
+    displayList = displayList.filter(t => (t.text || '').toLowerCase().includes(todoSearch));
+  }
+
   const container = document.getElementById('todo-list');
   if (!container) return;
 
   if (displayList.length === 0) {
     const emptyMap = { all: '暂无待办事项', active: '暂无进行中待办', completed: '暂无已完成待办' };
+    const searchSuffix = todoSearch ? `<br><span style="font-size:12px">没有匹配 "${escapeHtml(todoSearch)}" 的待办</span>` : `<br><span style="font-size:12px">点击右下角 + 添加</span>`;
     container.innerHTML = `<div class="todo-empty">
       <svg width="64" height="64" viewBox="0 0 64 64" fill="none" style="margin-bottom:12px;opacity:0.5;">
         <circle cx="32" cy="28" r="16" fill="none" stroke="var(--accent)" stroke-width="1.5" opacity="0.4"/>
@@ -5332,8 +5373,8 @@ function renderTodos() {
         <circle cx="18" cy="18" r="1.5" fill="var(--accent)" opacity="0.3"/>
         <circle cx="46" cy="22" r="1" fill="var(--accent)" opacity="0.2"/>
       </svg><br>
-      ${emptyMap[todoFilter] || '暂无待办事项'}<br>
-      <span style="font-size:12px">点击右下角 + 添加</span>
+      ${emptyMap[todoFilter] || '暂无待办事项'}
+      ${searchSuffix}
     </div>`;
     return;
   }
