@@ -2069,7 +2069,7 @@
     <div class="gravity-title">🪐 万有引力</div>
     <div class="gravity-prompt" id="gravity-prompt" onclick="toggleGravityInput()">✨ 对明天有什么期待？点击写下</div>
     <div class="gravity-input-wrap" id="gravity-input-wrap">
-      <textarea class="gravity-textarea" id="gravity-textarea" placeholder="写下你对明天的期待、目标或想法..." oninput="autoResize(this)"></textarea>
+      <textarea class="gravity-textarea" id="gravity-textarea" placeholder="写下你对明天的期待、目标或想法..." oninput="autoResize(this)" autocomplete="off"></textarea>
       <div class="gravity-save-row">
         <button class="gravity-save-btn" onclick="saveGravityFromUI()">保存期待</button>
       </div>
@@ -2107,7 +2107,7 @@
       </div>
       <div style="font-size:12px;color:var(--text-quaternary);margin-top:8px;" id="letter-deliver-date"></div>
     </div>
-    <textarea class="letter-textarea" id="letter-textarea" placeholder="亲爱的未来的我..." oninput="autoResize(this)"></textarea>
+    <textarea class="letter-textarea" id="letter-textarea" placeholder="亲爱的未来的我..." oninput="autoResize(this)" autocomplete="off"></textarea>
     <button class="letter-send-btn" onclick="sendLetter()">📮 寄出这封信</button>
   </div>
 </div>
@@ -2140,7 +2140,7 @@
       <button class="todo-filter" onclick="setTodoFilter('completed')" id="todo-filter-completed">已完成</button>
     </div>
     <div class="todo-search-bar">
-      <input type="text" class="todo-search-input" id="todo-search-input" placeholder="搜索待办内容…" oninput="onTodoSearchInput()" />
+      <input type="text" class="todo-search-input" id="todo-search-input" placeholder="搜索待办内容…" oninput="onTodoSearchInput()"  autocomplete="off" />
     </div>
     <div id="todo-list" class="todo-list"></div>
   </div>
@@ -2154,17 +2154,17 @@
     <div class="anni-form-row">
       <label>内容</label>
       <input class="input-field" id="todo-new-text" type="text" placeholder="输入待办事项…" maxlength="60"
-        onkeydown="if(event.key==='Enter')createTodo()" />
+        onkeydown="if(event.key==='Enter')createTodo()"  autocomplete="off" />
     </div>
     <div class="anni-form-row">
       <label>截止日期（可选）</label>
-      <input type="date" id="todo-new-deadline" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);font-family:inherit;font-size:14px;" />
+      <input type="date" id="todo-new-deadline" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);font-family:inherit;font-size:14px;"  autocomplete="off" />
     </div>
     <div class="anni-form-row">
       <button class="todo-photo-btn" onclick="document.getElementById('todo-photo-input').click()">
         📎 添加照片
       </button>
-      <input type="file" id="todo-photo-input" accept="image/*" style="display:none" onchange="onTodoPhotoSelect(this)" />
+      <input type="file" id="todo-photo-input" accept="image/*" style="display:none" onchange="onTodoPhotoSelect(this)"  autocomplete="off" />
       <img class="todo-photo-preview" id="todo-photo-preview" />
     </div>
     <div class="modal-actions">
@@ -2316,7 +2316,7 @@
         <div class="settings-item">
           <div class="settings-item-left">
             <div class="settings-item-label">🏠 心理小屋</div>
-            <div class="settings-item-desc">v3.0 · 你的心灵栖息地</div>
+            <div class="settings-item-desc">v3.1 · 你的心灵栖息地</div>
           </div>
         </div>
         <div class="settings-item" onclick="setView('view-changelog')" style="cursor:pointer">
@@ -2435,7 +2435,7 @@
     <h2>修改欢迎语</h2>
     <div class="anni-form-row">
       <label>欢迎弹窗副标题</label>
-      <input class="input-field" id="subtitle-input" type="text" placeholder="输入你的欢迎语…" maxlength="30" />
+      <input class="input-field" id="subtitle-input" type="text" placeholder="输入你的欢迎语…" maxlength="30"  autocomplete="off" />
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="resetSubtitle()">恢复默认</button>
@@ -2456,6 +2456,11 @@
       <div class="settings-section">版本历史</div>
       <div class="settings-card" style="padding:16px;">
         <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
+          <div style="margin-bottom:16px;">
+            <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v3.1 · 2026-06-30 22:21</div>
+            <div>· 移除 iOS 键盘上方自动填充工具栏（钥匙/钱包/联系人图标）</div>
+            <div>· 所有输入框和文本域添加 autocomplete="off"</div>
+          </div>
           <div style="margin-bottom:16px;">
             <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v3.0 · 2026-06-30 17:37</div>
             <div>· 新增左边缘右滑返回手势：子页面右滑返回上一级</div>
@@ -2596,7 +2601,7 @@
       <div style="margin-top:16px;">
         <div style="display:flex;gap:8px;">
           <input class="input-field" id="new-quote-input" type="text" placeholder="输入一条新语录…" maxlength="60"
-            style="flex:1" onkeydown="if(event.key==='Enter')addCustomQuote()" />
+            style="flex:1" onkeydown="if(event.key==='Enter')addCustomQuote()"  autocomplete="off" />
           <button class="btn btn-primary" onclick="addCustomQuote()" style="flex-shrink:0">添加</button>
         </div>
       </div>
@@ -2621,7 +2626,7 @@
     <span class="spinner" style="display:none;"></span>
   </div>
   <div class="record-search-bar" id="record-search-bar" style="display:none;">
-    <input type="text" id="record-search-input" placeholder="搜索记录内容…" oninput="onRecordSearchInput()" />
+    <input type="text" id="record-search-input" placeholder="搜索记录内容…" oninput="onRecordSearchInput()"  autocomplete="off" />
     <button onclick="clearRecordSearch()">✕</button>
   </div>
   <div class="scroll-area" id="detail-records">
@@ -2629,11 +2634,11 @@
   </div>
   <div class="add-record-area">
     <div class="voice-record-btn" id="voice-record-btn">按住 说话</div>
-    <textarea class="add-record-textarea" id="record-text" placeholder="记录今天的想法、感悟…" oninput="autoResize(this)"></textarea>
+    <textarea class="add-record-textarea" id="record-text" placeholder="记录今天的想法、感悟…" oninput="autoResize(this)" autocomplete="off"></textarea>
     <div class="img-previews" id="img-previews"></div>
     <div class="add-record-controls">
       <label class="img-upload-label" for="img-input" title="添加图片">🖼</label>
-      <input type="file" id="img-input" accept="image/*" multiple onchange="handleImages(this)" />
+      <input type="file" id="img-input" accept="image/*" multiple onchange="handleImages(this)"  autocomplete="off" />
       <button class="voice-toggle-btn" id="voice-toggle" onclick="toggleVoiceMode()" title="语音记录">🎤</button>
       <button class="submit-btn" id="submit-btn" onclick="submitRecord()">记录</button>
     </div>
@@ -2688,7 +2693,7 @@
     <div class="custom-task-section">
       <label>或自定义练习名称</label>
       <input class="input-field" id="new-task-name" type="text" placeholder="输入自定义名称…" maxlength="30"
-        onkeydown="if(event.key==='Enter')createTask()" />
+        onkeydown="if(event.key==='Enter')createTask()"  autocomplete="off" />
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeNewTaskModal()">取消</button>
@@ -2704,7 +2709,7 @@
     <div class="anni-form-row">
       <label>名称</label>
       <input class="input-field" id="edit-task-name" type="text" placeholder="输入新名称…" maxlength="30"
-        onkeydown="if(event.key==='Enter')saveEditTask()" />
+        onkeydown="if(event.key==='Enter')saveEditTask()"  autocomplete="off" />
     </div>
     <div class="modal-actions">
       <button class="btn btn-danger" onclick="confirmDeleteTask()">删除</button>
@@ -2745,7 +2750,7 @@
     <div class="anni-form-row">
       <label>内容</label>
       <textarea class="input-field" id="edit-record-text" style="min-height:120px;resize:vertical;" placeholder="输入内容…"
-        onkeydown="if(event.key==='Enter'&&event.ctrlKey)saveEditRecord()"></textarea>
+        onkeydown="if(event.key==='Enter'&&event.ctrlKey)saveEditRecord()" autocomplete="off"></textarea>
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="document.getElementById('modal-edit-record').classList.remove('open')">取消</button>
@@ -2763,7 +2768,7 @@
   <div class="scroll-area">
     <div class="anni-single-page" id="anni-single-page">
       <button class="anni-bg-picker-btn" onclick="document.getElementById('anni-bg-input').click()" title="更换背景">🖼</button>
-      <input type="file" id="anni-bg-input" accept="image/*" style="display:none" onchange="onAnniBgSelect(this)" />
+      <input type="file" id="anni-bg-input" accept="image/*" style="display:none" onchange="onAnniBgSelect(this)"  autocomplete="off" />
     </div>
   </div>
 </div>
@@ -2775,11 +2780,11 @@
     <div class="anni-form-row">
       <label>名称</label>
       <input class="input-field" id="anni-name" type="text" placeholder="例如：生日、在一起、考试…" maxlength="20"
-        onkeydown="if(event.key==='Enter')createAnni()" />
+        onkeydown="if(event.key==='Enter')createAnni()"  autocomplete="off" />
     </div>
     <div class="anni-form-row">
       <label>日期</label>
-      <input type="date" id="anni-date" />
+      <input type="date" id="anni-date"  autocomplete="off" />
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeAnniModal()">取消</button>
@@ -2795,7 +2800,7 @@
     <h2>修改名字</h2>
     <div class="anni-form-row">
       <label>你的名字</label>
-      <input class="input-field" id="name-input" type="text" placeholder="输入名字…" maxlength="12" />
+      <input class="input-field" id="name-input" type="text" placeholder="输入名字…" maxlength="12"  autocomplete="off" />
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="document.getElementById('modal-name').classList.remove('open')">取消</button>
@@ -2814,15 +2819,15 @@
     <div style="padding:16px 16px 80px;">
       <div class="anni-form-row">
         <label>标题</label>
-        <input class="input-field" id="profile-item-title" type="text" placeholder="输入标题…" maxlength="20" />
+        <input class="input-field" id="profile-item-title" type="text" placeholder="输入标题…" maxlength="20"  autocomplete="off" />
       </div>
       <div class="anni-form-row">
         <label>内容</label>
-        <textarea class="input-field" id="profile-item-content" style="min-height:120px;resize:vertical;" placeholder="记录你的想法、感受、观察…"></textarea>
+        <textarea class="input-field" id="profile-item-content" style="min-height:120px;resize:vertical;" placeholder="记录你的想法、感受、观察…" autocomplete="off"></textarea>
       </div>
       <div class="anni-form-row">
         <label>应对策略</label>
-        <textarea class="input-field" id="profile-item-strategy" style="min-height:120px;resize:vertical;" placeholder="写下你的应对方法、行动计划或资源…"></textarea>
+        <textarea class="input-field" id="profile-item-strategy" style="min-height:120px;resize:vertical;" placeholder="写下你的应对方法、行动计划或资源…" autocomplete="off"></textarea>
       </div>
       <div class="modal-actions" style="margin-top:20px;">
         <button class="btn btn-ghost" onclick="closeProfileItem()">取消</button>
@@ -5017,7 +5022,7 @@ function openAnniDetail(id) {
   }
   page.innerHTML = `
     <button class="anni-bg-picker-btn" onclick="document.getElementById('anni-bg-input').click()" title="更换背景">🖼</button>
-    <input type="file" id="anni-bg-input" accept="image/*" style="display:none" onchange="onAnniBgSelect(this)" />
+    <input type="file" id="anni-bg-input" accept="image/*" style="display:none" onchange="onAnniBgSelect(this)"  autocomplete="off" />
     <div class="anni-single-name">${escapeHtml(item.name)}${suffix}</div>
     <div class="anni-single-num">${absDays}</div>
     <div class="anni-single-unit">${unit}</div>
@@ -5282,7 +5287,7 @@ function renderTodoDetailView(item, isEdit) {
     deadlineEditHtml = `
       <div style="margin-top:12px;">
         <label style="font-size:13px;color:var(--text2);display:block;margin-bottom:6px;">截止日期</label>
-        <input type="date" id="todo-edit-deadline" value="${item.deadline || ''}" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);font-family:inherit;font-size:14px;" />
+        <input type="date" id="todo-edit-deadline" value="${item.deadline || ''}" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);font-family:inherit;font-size:14px;"  autocomplete="off" />
       </div>
     `;
   }
@@ -5293,11 +5298,11 @@ function renderTodoDetailView(item, isEdit) {
         ${editingTodoPhoto ? `<img class="todo-edit-photo-preview" src="${editingTodoPhoto}" onclick="openLightbox('${editingTodoPhoto}')" />` : ''}
         <label class="todo-edit-photo-btn">
           📷 ${editingTodoPhoto ? '更换照片' : '添加照片'}
-          <input type="file" accept="image/*" style="display:none" onchange="handleTodoEditPhoto(this)">
+          <input type="file" accept="image/*" style="display:none" onchange="handleTodoEditPhoto(this)" autocomplete="off">
         </label>
         ${editingTodoPhoto ? `<button class="btn btn-ghost" style="margin-left:8px;font-size:12px;padding:6px 10px;" onclick="editingTodoPhoto=null;renderTodoDetailView(loadTodos().find(t=>t.id===editingTodoId),true)">移除照片</button>` : ''}
       </div>
-      <textarea class="todo-edit-textarea" id="todo-edit-text">${escapeHtml(item.text)}</textarea>
+      <textarea class="todo-edit-textarea" id="todo-edit-text" autocomplete="off">${escapeHtml(item.text)}</textarea>
       ${deadlineEditHtml}
       <div style="margin-top:16px;display:flex;gap:10px;">
         <button class="btn btn-primary" onclick="saveTodoEdit()">保存</button>
