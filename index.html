@@ -2290,7 +2290,7 @@
         <div class="settings-item">
           <div class="settings-item-left">
             <div class="settings-item-label">🏠 心理小屋</div>
-            <div class="settings-item-desc">v2.6 · 你的心灵栖息地</div>
+            <div class="settings-item-desc">v2.7 · 你的心灵栖息地</div>
           </div>
         </div>
         <div class="settings-item" onclick="setView('view-changelog')" style="cursor:pointer">
@@ -2482,6 +2482,10 @@
       <div class="settings-section">版本历史</div>
       <div class="settings-card" style="padding:16px;">
         <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
+          <div style="margin-bottom:16px;">
+            <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v2.7 · 2026-06-30 17:11</div>
+            <div>· 暗色模式下记录卡片背景柔化，与深色背景更协调</div>
+          </div>
           <div style="margin-bottom:16px;">
             <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v2.6 · 2026-06-30 17:01</div>
             <div>· 更新日志改为独立页面</div>
@@ -4140,13 +4144,13 @@ function renderHome() {
   }
 
   const TASK_COLORS = [
-    {main:'#e8a87c', bg:'#fdf4ed'},  // 暖橙
-    {main:'#8fa67a', bg:'#f1f6ec'},  // 灰绿
-    {main:'#9ab3c4', bg:'#edf3f7'},  // 雾蓝
-    {main:'#c4956a', bg:'#fdf6f0'},  // 暖棕
-    {main:'#b8a0c8', bg:'#f5f0f7'},  // 藤紫
-    {main:'#d4a07a', bg:'#fdf5ef'},  // 杏色
-    {main:'#7dbba3', bg:'#edf5f1'},  // 抹茶绿
+    {main:'#e8a87c', bg:'#fdf4ed', bgDark:'rgba(232,168,124,0.15)'},  // 暖橙
+    {main:'#8fa67a', bg:'#f1f6ec', bgDark:'rgba(143,166,122,0.15)'},  // 灰绿
+    {main:'#9ab3c4', bg:'#edf3f7', bgDark:'rgba(154,179,196,0.15)'},  // 雾蓝
+    {main:'#c4956a', bg:'#fdf6f0', bgDark:'rgba(196,149,106,0.15)'},  // 暖棕
+    {main:'#b8a0c8', bg:'#f5f0f7', bgDark:'rgba(184,160,200,0.15)'},  // 藤紫
+    {main:'#d4a07a', bg:'#fdf5ef', bgDark:'rgba(212,160,122,0.15)'},  // 杏色
+    {main:'#7dbba3', bg:'#edf5f1', bgDark:'rgba(125,187,163,0.15)'},  // 抹茶绿
   ];
 
   const today = todayStr();
@@ -4157,11 +4161,12 @@ function renderHome() {
       return formatDate(ts) === today;
     }).length;
     const colors = TASK_COLORS[idx % TASK_COLORS.length];
+    const isDark = getTheme() === 'dark';
     const card = document.createElement('div');
     card.className = 'task-card' + (editModeActive ? ' edit-mode' : '');
     card.setAttribute('data-task-id', task.id);
     card.setAttribute('draggable', editModeActive ? 'true' : 'false');
-    card.style.background = colors.bg;
+    card.style.background = isDark ? (colors.bgDark || colors.bg) : colors.bg;
     card.style.borderLeft = `4px solid ${colors.main}`;
     card.innerHTML = `
       <div class="drag-handle">⠿</div>
