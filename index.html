@@ -2321,6 +2321,12 @@
               <div>· 修正"手动同步到云端"按钮文案：Supabase → GitHub Gist</div>
             </div>
             <div style="margin-bottom:12px;">
+              <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v2.4 · 2026-06-30 16:40</div>
+              <div>· 切换为本地为主方案：启动不再自动读云端，数据永不丢失</div>
+              <div>· 新增"从云端恢复"按钮（设置页），手动拉取云端数据</div>
+              <div>· 写入时仍同步备份到 Supabase</div>
+            </div>
+            <div style="margin-bottom:12px;">
               <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v2.3 · 2026-06-30 16:18</div>
               <div>· 修复更新日志 HTML 标签缺失导致的页面结构异常</div>
             </div>
@@ -2443,6 +2449,13 @@
           <div class="settings-item-left">
             <div class="settings-item-label">☁️ 手动同步到云端</div>
             <div class="settings-item-desc" id="sync-status-desc">全量数据备份到 GitHub Gist，电脑也能看</div>
+          </div>
+          <span style="color:var(--text3);font-size:14px">›</span>
+        </div>
+        <div class="settings-item" onclick="restoreFromCloud()" style="cursor:pointer">
+          <div class="settings-item-left">
+            <div class="settings-item-label">↩️ 从云端恢复</div>
+            <div class="settings-item-desc">从 Supabase 拉取数据覆盖本地（谨慎操作）</div>
           </div>
           <span style="color:var(--text3);font-size:14px">›</span>
         </div>
@@ -2879,111 +2892,10 @@ async function testCloudConnection() {
   }
 }
 
-async function syncLocalToCloud() {
-  const unsyncedTasks = tasksCache.filter(t => t.id && t.id.startsWith('local_'));
-  if (unsyncedTasks.length === 0) {
-    showToast('所有数据已同步');
-    return;
-  }
-
-  for (const task of unsyncedTasks) {
-    try {
-      // 在云端创建任务
-      const result = await apiFetch('tasks', 'POST', { name: task.name });
-      const cloudTask = Array.isArray(result) ? result[0] : result;
-      task.id = cloudTask.id;
-
-      // 推送未同步的记录
-      if (task.records && task.records.length > 0) {
-        for (const rec of task.records) {
-          if (rec.id && rec.id.startsWith('local_')) {
-            try {
-              const recResult = await apiFetch('records', 'POST', {
-                task_id: task.id,
-                text: rec.text || '',
-                images: rec.images || []
-              });
-              const cloudRec = Array.isArray(recResult) ? recResult[0] : recResult;
-              rec.id = cloudRec.id;
-            } catch(e) {
-              console.error('Sync record error:', e);
-            }
-          }
-        }
-      }
-    } catch(e) {
-      console.error('Sync task error:', e);
-    }
-  }
-
-  saveToLocal();
-  showToast('未同步数据已上传到云端');
-}
-
 let tasksCache = [];
 
-async function loadData() {
-  cloudAvailable = await testCloudConnection();
-
-  // 始终先加载本地数据（完整字段，不会丢失）
-  const localData = loadLocalData();
-  const localTasks = localData.tasks || [];
-
-  if (cloudAvailable) {
-    try {
-      // 加载云端数据
-      const cloudTasks = await apiFetch('tasks', 'GET', null, 'select=*&order=created_at.asc');
-      for (const t of cloudTasks) {
-        const records = await apiFetch('records', 'GET', null,
-          'task_id=eq.' + t.id + '&order=created_at.asc');
-        t.records = records || [];
-      }
-
-      // 双向合并：云端任务优先，保留本地未同步的任务和记录
-      const merged = [];
-      const cloudByName = {};
-      for (const ct of cloudTasks) {
-        cloudByName[ct.name] = ct;
-        merged.push(ct);
-      }
-      const cloudNames = new Set(cloudTasks.map(t => t.name));
-
-      for (const lt of localTasks) {
-        if (!cloudNames.has(lt.name)) {
-          // 本地独有的任务（从未同步到云端）
-          merged.push(lt);
-        } else if (lt.records && lt.records.length > 0) {
-          // 同名任务：把本地未同步的记录合并到云端任务中
-          const ct = cloudByName[lt.name];
-          const existing = new Set(
-            (ct.records || []).map(r => r.created_at + '|' + (r.text || ''))
-          );
-          for (const lr of lt.records) {
-            const key = lr.created_at + '|' + (lr.text || '');
-            if (!existing.has(key)) {
-              ct.records.push(lr);
-              existing.add(key);
-            }
-          }
-          ct.records.sort((a, b) =>
-            (a.created_at || '').localeCompare(b.created_at || '')
-          );
-        }
-      }
-
-      tasksCache = merged;
-      storageMode = 'cloud';
-      saveToLocal();   // ← 用 saveToLocal() 保留全部字段，不会再丢字段
-      updateSyncBadge('cloud');
-      return;
-    } catch(e) {
-      console.error('Cloud load failed, fallback to local:', e);
-    }
-  }
-
-  storageMode = 'local';
-  tasksCache = localTasks;
-  updateSyncBadge('local');
+function loadData() {
+  // 本地为主：不自动从云端读取。数据在 init() 中通过 loadLocalData() 加载。
 }
 
 async function createTaskDB(name) {
@@ -2994,7 +2906,6 @@ async function createTaskDB(name) {
     try {
       const result = await apiFetch('tasks', 'POST', { name });
       const cloudTask = Array.isArray(result) ? result[0] : result;
-      task.id = cloudTask.id;
     } catch(e) {
       console.error('Cloud create task failed:', e);
     }
@@ -3041,7 +2952,6 @@ async function createRecordDB(taskId, text, images) {
         task_id: taskId, text: text || '', images: images || []
       });
       const cloudRecord = Array.isArray(result) ? result[0] : result;
-      record.id = cloudRecord.id;
     } catch(e) {
       console.error('Cloud create record failed:', e);
     }
@@ -6695,6 +6605,32 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+
+async function restoreFromCloud() {
+  if (!confirm('将从 Supabase 获取云端数据覆盖本地，确认？本地未同步的数据可能会丢失！')) return;
+  const statusEl = document.getElementById('sync-status-desc');
+  if (statusEl) statusEl.textContent = '正在从云端恢复...';
+  try {
+    const cloudOk = await testCloudConnection();
+    if (!cloudOk) {
+      showToast('❌ 无法连接云端');
+      return;
+    }
+    const cloudTasks = await apiFetch('tasks', 'GET', null, 'select=*&order=created_at.asc');
+    for (const t of cloudTasks) {
+      t.records = await apiFetch('records', 'GET', null, 'task_id=eq.' + t.id + '&order=created_at.asc') || [];
+    }
+    tasksCache = cloudTasks;
+    saveToLocal();
+    renderHome();
+    if (statusEl) statusEl.textContent = '✅ 已从云端恢复 ' + cloudTasks.length + ' 个任务';
+    showToast('✅ 已从云端恢复');
+  } catch(e) {
+    console.error('Restore failed:', e);
+    showToast('❌ 恢复失败：' + e.message);
+  }
+}
+
 (async function init() {
   // Apply saved settings
   applyTheme(getTheme());
@@ -6718,51 +6654,7 @@ if ('serviceWorker' in navigator) {
   renderHome();
   updateSyncBadge('local');
 
-  // Try to load from GitHub Gist cloud
-  try {
-    const gistId = localStorage.getItem(GIST_ID_KEY);
-    const rawUrl = localStorage.getItem('wellness_cloud_url');
-    
-    if (gistId && rawUrl) {
-      const res = await fetch(rawUrl + '?t=' + Date.now());
-      if (res.ok) {
-        const cloudData = await res.json();
-        if (cloudData && cloudData.tasks && cloudData.tasks.length > 0) {
-          tasksCache = cloudData.tasks;
-          saveToLocal();
-          renderHome();
-          updateSyncBadge('cloud');
-          console.log('Loaded from GitHub Gist cloud');
-        }
-      }
-    } else {
-      // Try to auto-detect gist from user's gists
-      const gistsRes = await fetch('https://api.github.com/users/yaohao-0711/gists');
-      if (gistsRes.ok) {
-        const gists = await gistsRes.json();
-        const wellnessGist = gists.find(g => g.description && g.description.includes('Wellness Hub'));
-        if (wellnessGist) {
-          localStorage.setItem(GIST_ID_KEY, wellnessGist.id);
-          const rawUrl = `https://gist.githubusercontent.com/yaohao-0711/${wellnessGist.id}/raw/wellness-data.json`;
-          localStorage.setItem('wellness_cloud_url', rawUrl);
-          
-          const dataRes = await fetch(rawUrl + '?t=' + Date.now());
-          if (dataRes.ok) {
-            const cloudData = await dataRes.json();
-            if (cloudData && cloudData.tasks && cloudData.tasks.length > 0) {
-              tasksCache = cloudData.tasks;
-              saveToLocal();
-              renderHome();
-              updateSyncBadge('cloud');
-              console.log('Auto-loaded from GitHub Gist cloud');
-            }
-          }
-        }
-      }
-    }
-  } catch(e) {
-    console.log('Cloud load failed, using local:', e);
-  }
+
 
   // ====== 任务合并：LUCK时刻 + 连接时刻 → 社交时刻 ======
   (function tryMerge() {
