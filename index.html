@@ -2290,98 +2290,15 @@
         <div class="settings-item">
           <div class="settings-item-left">
             <div class="settings-item-label">🏠 心理小屋</div>
-            <div class="settings-item-desc">v2.5 · 你的心灵栖息地</div>
+            <div class="settings-item-desc">v2.6 · 你的心灵栖息地</div>
           </div>
         </div>
-        <div class="settings-item" onclick="toggleChangelog()" style="cursor:pointer">
+        <div class="settings-item" onclick="setView('view-changelog')" style="cursor:pointer">
           <div class="settings-item-left">
             <div class="settings-item-label">📋 更新日志</div>
             <div class="settings-item-desc">查看版本历史</div>
           </div>
-          <span style="color:var(--text3);font-size:14px" id="changelog-arrow">›</span>
-        </div>
-        <div id="changelog-content" style="display:none;padding:0 16px 16px;">
-          <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
-            <div style="margin-bottom:12px;">
-              <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v2.0 · 2026-06-27</div>
-              <div>· 星空主题大改版：宇宙深空配色 + 闪烁星星 + 流星动画</div>
-              <div>· 毛玻璃卡片：所有卡片加半透明背景 + 模糊效果</div>
-              <div>· 按钮渐变光晕：紫色渐变 + 紫色阴影</div>
-              <div>· 空状态插画：浮动星球SVG</div>
-              <div>· 首页标题渐变文字</div>
-            </div>
-            <div style="margin-bottom:12px;">
-              <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v2.1 · 2026-06-30 16:00</div>
-              <div>· 双向合并同步：云端和本地数据不再互相覆盖</div>
-              <div>· 修复数据丢失 Bug：离线写入的数据启动时不再被云端覆盖</div>
-              <div>· 增量同步：未同步的数据才会推送到云端，减少重复</div>
-            </div>
-            <div style="margin-bottom:12px;">
-              <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v2.2 · 2026-06-30 16:11</div>
-              <div>· 修正"手动同步到云端"按钮文案：Supabase → GitHub Gist</div>
-            </div>
-            <div style="margin-bottom:12px;">
-              <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v2.3 · 2026-06-30 16:18</div>
-              <div>· 修复更新日志 HTML 标签缺失导致的页面结构异常</div>
-            </div>
-            <div style="margin-bottom:12px;">
-              <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v2.4 · 2026-06-30 16:40</div>
-              <div>· 切换为本地为主方案：启动不再自动读云端，数据永不丢失</div>
-              <div>· 新增"从云端恢复"按钮（设置页），手动拉取云端数据</div>
-              <div>· 写入时仍同步备份到 Supabase</div>
-            </div>
-            <div style="margin-bottom:12px;">
-              <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v2.5 · 2026-06-30 16:55</div>
-              <div>· 更新日志按版本号重新排序</div>
-              <div>· 设置页版本显示更新为当前版本</div>
-            </div>
-            <div style="margin-bottom:12px;">
-              <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v1.5 · 2026-06-27</div>
-              <div>· 给未来的自己写信：写下此刻想法，3个月/半年/1年后送达</div>
-            </div>
-            <div style="margin-bottom:12px;">
-              <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v1.4 · 2026-06-27</div>
-              <div>· 启动画面：SVG logo + 品牌名渐入动画</div>
-              <div>· 页面转场动画：子页面从右侧滑入，模拟iOS推入效果</div>
-              <div>· 记录卡片左滑操作：露出编辑+删除按钮</div>
-              <div>· 下拉刷新：记录页下拉同步云端数据</div>
-              <div>· Tab状态保持：切换Tab后滚动位置不变</div>
-              <div>· 引力曲线优化：改为3天紧凑显示</div>
-              <div>· 触觉反馈增强：Tab切换/页面转场/下拉刷新不同强度震动</div>
-              <div>· 键盘适配：输入框聚焦自动滚动到可视区域</div>
-            </div>
-            <div style="margin-bottom:12px;">
-              <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v1.3 · 2026-06-26</div>
-              <div>· 全新设计系统：现代灰白 + 紫色强调色</div>
-              <div>· 成就系统：12个勋章（铜/银/金/钻石四级）</div>
-              <div>· 页面过渡动画：子页面滑入、tab 切换淡入</div>
-              <div>· 震动反馈：打卡/删除/待办完成时触觉反馈（可在设置关闭）</div>
-            </div>
-            <div style="margin-bottom:12px;">
-              <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v1.2 · 2026-06-26</div>
-              <div>· 引力曲线升级为文字时间线，展示最近7天期待内容</div>
-              <div>· 引力轨迹详情页新增"本周回顾"折叠卡片</div>
-              <div>· 记录页新增搜索和排序功能</div>
-              <div>· 日历页新增打卡标记，点击日期查看当天记录</div>
-              <div>· 待办支持截止日期，临期橙色/过期红色提醒</div>
-            </div>
-            <div style="margin-bottom:12px;">
-              <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v1.1 · 2026-06-26</div>
-              <div>· 新增个性化设置：自定义欢迎语、自定义语录、欢迎弹窗开关</div>
-              <div>· 新增更新日志</div>
-            </div>
-            <div>
-              <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v1.0 · 2026-06</div>
-              <div>· 心理小屋首次发布</div>
-              <div>· 记录页：文字+图片+语音记录</div>
-              <div>· 待办页：带照片、筛选、详情编辑</div>
-              <div>· 日历页：月历+纪念&倒数日</div>
-              <div>· 万有引力：每日期待/引力轨迹</div>
-              <div>· 个人档案：心理困惑/待探究</div>
-              <div>· Supabase 云端同步</div>
-              <div>· PWA 支持</div>
-            </div>
-          </div>
+          <span style="color:var(--text3);font-size:14px">›</span>
         </div>
 
         <div class="settings-item" onclick="toggleGuide()" style="cursor:pointer">
@@ -2550,6 +2467,107 @@
       <button class="btn btn-ghost" onclick="resetSubtitle()">恢复默认</button>
       <button class="btn btn-ghost" onclick="document.getElementById('modal-subtitle').classList.remove('open')">取消</button>
       <button class="btn btn-primary" onclick="saveSubtitle()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== CHANGELOG PAGE ===================== -->
+<div id="view-changelog" class="view">
+  <div class="topbar">
+    <button class="back-btn" onclick="switchTab('me')">‹</button>
+    <h1>更新日志</h1>
+  </div>
+  <div class="scroll-area">
+    <div class="settings-page">
+      <div class="settings-section">版本历史</div>
+      <div class="settings-card" style="padding:16px;">
+        <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
+          <div style="margin-bottom:16px;">
+            <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v2.6 · 2026-06-30 17:01</div>
+            <div>· 更新日志改为独立页面</div>
+            <div>· 版本历史按时间倒序排列，最新版本显示在最上方</div>
+          </div>
+          <div style="margin-bottom:16px;">
+            <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v2.5 · 2026-06-30 16:55</div>
+            <div>· 更新日志按版本号重新排序</div>
+            <div>· 设置页版本显示更新为当前版本</div>
+          </div>
+          <div style="margin-bottom:16px;">
+            <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v2.4 · 2026-06-30 16:40</div>
+            <div>· 切换为本地为主方案：启动不再自动读云端，数据永不丢失</div>
+            <div>· 新增"从云端恢复"按钮（设置页），手动拉取云端数据</div>
+            <div>· 写入时仍同步备份到 Supabase</div>
+          </div>
+          <div style="margin-bottom:16px;">
+            <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v2.3 · 2026-06-30 16:18</div>
+            <div>· 修复更新日志 HTML 标签缺失导致的页面结构异常</div>
+          </div>
+          <div style="margin-bottom:16px;">
+            <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v2.2 · 2026-06-30 16:11</div>
+            <div>· 修正"手动同步到云端"按钮文案：Supabase → GitHub Gist</div>
+          </div>
+          <div style="margin-bottom:16px;">
+            <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v2.1 · 2026-06-30 16:00</div>
+            <div>· 双向合并同步：云端和本地数据不再互相覆盖</div>
+            <div>· 修复数据丢失 Bug：离线写入的数据启动时不再被云端覆盖</div>
+            <div>· 增量同步：未同步的数据才会推送到云端，减少重复</div>
+          </div>
+          <div style="margin-bottom:16px;">
+            <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v2.0 · 2026-06-27</div>
+            <div>· 星空主题大改版：宇宙深空配色 + 闪烁星星 + 流星动画</div>
+            <div>· 毛玻璃卡片：所有卡片加半透明背景 + 模糊效果</div>
+            <div>· 按钮渐变光晕：紫色渐变 + 紫色阴影</div>
+            <div>· 空状态插画：浮动星球SVG</div>
+            <div>· 首页标题渐变文字</div>
+          </div>
+          <div style="margin-bottom:16px;">
+            <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v1.5 · 2026-06-27</div>
+            <div>· 给未来的自己写信：写下此刻想法，3个月/半年/1年后送达</div>
+          </div>
+          <div style="margin-bottom:16px;">
+            <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v1.4 · 2026-06-27</div>
+            <div>· 启动画面：SVG logo + 品牌名渐入动画</div>
+            <div>· 页面转场动画：子页面从右侧滑入，模拟iOS推入效果</div>
+            <div>· 记录卡片左滑操作：露出编辑+删除按钮</div>
+            <div>· 下拉刷新：记录页下拉同步云端数据</div>
+            <div>· Tab状态保持：切换Tab后滚动位置不变</div>
+            <div>· 引力曲线优化：改为3天紧凑显示</div>
+            <div>· 触觉反馈增强：Tab切换/页面转场/下拉刷新不同强度震动</div>
+            <div>· 键盘适配：输入框聚焦自动滚动到可视区域</div>
+          </div>
+          <div style="margin-bottom:16px;">
+            <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v1.3 · 2026-06-26</div>
+            <div>· 全新设计系统：现代灰白 + 紫色强调色</div>
+            <div>· 成就系统：12个勋章（铜/银/金/钻石四级）</div>
+            <div>· 页面过渡动画：子页面滑入、tab 切换淡入</div>
+            <div>· 震动反馈：打卡/删除/待办完成时触觉反馈（可在设置关闭）</div>
+          </div>
+          <div style="margin-bottom:16px;">
+            <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v1.2 · 2026-06-26</div>
+            <div>· 引力曲线升级为文字时间线，展示最近7天期待内容</div>
+            <div>· 引力轨迹详情页新增"本周回顾"折叠卡片</div>
+            <div>· 记录页新增搜索和排序功能</div>
+            <div>· 日历页新增打卡标记，点击日期查看当天记录</div>
+            <div>· 待办支持截止日期，临期橙色/过期红色提醒</div>
+          </div>
+          <div style="margin-bottom:16px;">
+            <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v1.1 · 2026-06-26</div>
+            <div>· 新增个性化设置：自定义欢迎语、自定义语录、欢迎弹窗开关</div>
+            <div>· 新增更新日志</div>
+          </div>
+          <div>
+            <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v1.0 · 2026-06</div>
+            <div>· 心理小屋首次发布</div>
+            <div>· 记录页：文字+图片+语音记录</div>
+            <div>· 待办页：带照片、筛选、详情编辑</div>
+            <div>· 日历页：月历+纪念&倒数日</div>
+            <div>· 万有引力：每日期待/引力轨迹</div>
+            <div>· 个人档案：心理困惑/待探究</div>
+            <div>· Supabase 云端同步</div>
+            <div>· PWA 支持</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -4015,7 +4033,7 @@ function setView(id) {
   }
   // Hide tab bar when entering sub-views
   const tabBar = document.getElementById('tab-bar');
-  const subViews = ['view-detail', 'view-heatmap', 'view-anniversary', 'view-anni-detail', 'view-todo-detail', 'view-settings', 'view-avatar-lightbox', 'view-profile-item', 'view-custom-quotes'];
+  const subViews = ['view-detail', 'view-heatmap', 'view-anniversary', 'view-anni-detail', 'view-todo-detail', 'view-settings', 'view-changelog', 'view-avatar-lightbox', 'view-profile-item', 'view-custom-quotes'];
   if (subViews.includes(id)) {
     tabBar.classList.add('hidden');
   } else {
@@ -5848,18 +5866,6 @@ function renderAchievements() {
 }
 
 // ===== SETTINGS: Changelog Toggle =====
-function toggleChangelog() {
-  const content = document.getElementById('changelog-content');
-  const arrow = document.getElementById('changelog-arrow');
-  if (content.style.display === 'none') {
-    content.style.display = 'block';
-    arrow.textContent = '⌄';
-  } else {
-    content.style.display = 'none';
-    arrow.textContent = '›';
-  }
-}
-
 function toggleGuide() {
   const content = document.getElementById('guide-content');
   const arrow = document.getElementById('guide-arrow');
