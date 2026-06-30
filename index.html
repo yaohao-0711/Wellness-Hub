@@ -2304,7 +2304,7 @@
         <div class="settings-item">
           <div class="settings-item-left">
             <div class="settings-item-label">🏠 心理小屋</div>
-            <div class="settings-item-desc">v3.2 · 你的心灵栖息地</div>
+            <div class="settings-item-desc">v3.3 · 你的心灵栖息地</div>
           </div>
         </div>
         <div class="settings-item" onclick="setView('view-changelog')" style="cursor:pointer">
@@ -2444,6 +2444,11 @@
       <div class="settings-section">版本历史</div>
       <div class="settings-card" style="padding:16px;">
         <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
+          <div style="margin-bottom:16px;">
+            <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v3.3 · 2026-06-30 22:29</div>
+            <div>· 记录页搜索框添加🔍搜索图标，更醒目</div>
+            <div>· 纪念日预览显示"X天后/今天/X天前"替代纯数字</div>
+          </div>
           <div style="margin-bottom:16px;">
             <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v3.2 · 2026-06-30 22:25</div>
             <div>· 记录页顶部UI优化："编辑"改为图标，移除标题区"+"按钮</div>
@@ -2619,6 +2624,7 @@
     <span class="spinner" style="display:none;"></span>
   </div>
   <div class="record-search-bar" id="record-search-bar" style="display:none;">
+    <span style="font-size:15px;opacity:0.5;">🔍</span>
     <input type="text" id="record-search-input" placeholder="搜索记录内容…" oninput="onRecordSearchInput()"  autocomplete="off" />
     <button onclick="clearRecordSearch()">✕</button>
   </div>
@@ -4974,7 +4980,7 @@ function renderAnniPreview() {
     el.className = 'anni-preview-item';
     el.innerHTML = `
       <span class="anni-preview-name">${escapeHtml(item.name)}</span>
-      <span class="anni-preview-days">${Math.abs(days)}</span>
+      <span class="anni-preview-days">${days < 0 ? Math.abs(days) + '天前' : (days === 0 ? '今天' : Math.abs(days) + '天后')}</span>
     `;
     listEl.appendChild(el);
   });
