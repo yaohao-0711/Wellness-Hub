@@ -253,31 +253,35 @@
       text-align: center; width: 100%;
     }
     .home-header-text { text-align: center; flex: 1; }
-    .home-header .add-task-btn {
-      position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
-    }
     .edit-mode-btn {
-      position: absolute; left: 20px; top: 50%; transform: translateY(-50%);
-      background: transparent; border: 1.5px solid var(--accent);
-      color: var(--accent); border-radius: 100px;
-      padding: 4px 14px; font-size: 13px; font-weight: 600;
+      position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+      background: transparent; border: none;
+      color: var(--text3); font-size: 20px;
       cursor: pointer; font-family: inherit;
       transition: all var(--transition-fast);
-    }
-    .edit-mode-btn:active { transform: translateY(-50%) scale(0.95); }
-    .edit-mode-btn.active {
-      background: var(--accent); color: #fff;
-    }
-    .add-task-btn {
-      background: linear-gradient(135deg, #8b7aff, #6c5ce7);
-      color: #fff; border: none; border-radius: 50%;
-      width: 36px; height: 36px; font-size: 20px; cursor: pointer;
+      padding: 8px; line-height: 1;
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 16px rgba(139,122,255,0.3);
-      transition: all var(--transition-spring);
-      flex-shrink: 0;
     }
-    .add-task-btn:active { transform: translateY(-50%) scale(0.9); }
+    .edit-mode-btn:active { transform: translateY(-50%) scale(0.9); }
+    .edit-mode-btn.active {
+      color: var(--accent);
+    }
+    .fab {
+      position: fixed;
+      bottom: 76px; right: 20px;
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #8b7aff, #6c5ce7);
+      color: #fff; border: none;
+      font-size: 24px; font-weight: 300;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 20px rgba(139,122,255,0.4);
+      transition: all var(--transition-spring);
+      z-index: 120;
+      font-family: inherit;
+    }
+    .fab:active { transform: scale(0.9); }
 
     /* Task cards — Cosmic glass effect */
     .tasks-grid {
@@ -1308,22 +1312,6 @@
       border-color: rgba(139,122,255,0.5);
       box-shadow: 0 0 0 3px rgba(139,122,255,0.1);
     }
-    .todo-fab {
-      position: fixed;
-      bottom: 76px; right: 20px;
-      width: 48px; height: 48px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #8b7aff, #6c5ce7);
-      color: #fff; border: none;
-      font-size: 24px; font-weight: 300;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 20px rgba(139,122,255,0.4);
-      transition: all var(--transition-spring);
-      z-index: 120;
-      font-family: inherit;
-    }
-    .todo-fab:active { transform: scale(0.9); }
     .todo-list { display: flex; flex-direction: column; gap: 1px; }
     .todo-item {
       background: var(--surface);
@@ -2059,10 +2047,10 @@
       <div class="greeting">心理小屋</div>
       <div class="date-label" id="home-date"></div>
     </div>
-    <button class="edit-mode-btn" id="edit-mode-btn" onclick="toggleEditMode()" title="编辑排序">编辑</button>
-    <button class="add-task-btn" onclick="openNewTaskModal()" title="新建任务" id="add-task-btn">+</button>
+    <button class="edit-mode-btn" id="edit-mode-btn" onclick="toggleEditMode()" title="编辑排序">⠿</button>
   </div>
   <div class="tasks-grid" id="tasks-grid"></div>
+  <button class="fab" onclick="openNewTaskModal()" title="新建任务" id="record-fab">+</button>
 
   <!-- 万有引力 -->
   <div class="gravity-section" id="gravity-section">
@@ -2144,7 +2132,7 @@
     </div>
     <div id="todo-list" class="todo-list"></div>
   </div>
-  <button class="todo-fab" onclick="openTodoModal()">+</button>
+  <button class="fab" onclick="openTodoModal()">+</button>
 </div>
 
 <!-- ===================== TODO CREATE MODAL ===================== -->
@@ -2316,7 +2304,7 @@
         <div class="settings-item">
           <div class="settings-item-left">
             <div class="settings-item-label">🏠 心理小屋</div>
-            <div class="settings-item-desc">v3.1 · 你的心灵栖息地</div>
+            <div class="settings-item-desc">v3.2 · 你的心灵栖息地</div>
           </div>
         </div>
         <div class="settings-item" onclick="setView('view-changelog')" style="cursor:pointer">
@@ -2456,6 +2444,11 @@
       <div class="settings-section">版本历史</div>
       <div class="settings-card" style="padding:16px;">
         <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
+          <div style="margin-bottom:16px;">
+            <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v3.2 · 2026-06-30 22:25</div>
+            <div>· 记录页顶部UI优化："编辑"改为图标，移除标题区"+"按钮</div>
+            <div>· 新建任务改为 FAB 浮动按钮，与待办页统一</div>
+          </div>
           <div style="margin-bottom:16px;">
             <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v3.1 · 2026-06-30 22:21</div>
             <div>· 移除 iOS 键盘上方自动填充工具栏（钥匙/钱包/联系人图标）</div>
@@ -4299,18 +4292,18 @@ function toggleEditMode() {
   editModeActive = !editModeActive;
   const btn = document.getElementById('edit-mode-btn');
   const bar = document.getElementById('edit-mode-bar');
-  const addBtn = document.getElementById('add-task-btn');
+  const fab = document.getElementById('record-fab');
 
   if (editModeActive) {
-    btn.textContent = '完成';
+    btn.textContent = '✓';
     btn.classList.add('active');
     bar.classList.add('show');
-    addBtn.style.display = 'none';
+    fab.style.display = 'none';
   } else {
-    btn.textContent = '编辑';
+    btn.textContent = '⠿';
     btn.classList.remove('active');
     bar.classList.remove('show');
-    addBtn.style.display = 'flex';
+    fab.style.display = 'flex';
   }
   renderHome();
 }
