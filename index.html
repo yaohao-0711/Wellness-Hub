@@ -2311,6 +2311,12 @@
               <div>· 首页标题渐变文字</div>
             </div>
             <div style="margin-bottom:12px;">
+              <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v2.1 · 2026-06-30</div>
+              <div>· 双向合并同步：云端和本地数据不再互相覆盖</div>
+              <div>· 修复数据丢失 Bug：离线写入的数据启动时不再被云端覆盖</div>
+              <div>· 增量同步：未同步的数据才会推送到云端，减少重复</div>
+            </div>
+            <div style="margin-bottom:12px;">
               <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v1.5 · 2026-06-27</div>
               <div>· 给未来的自己写信：写下此刻想法，3个月/半年/1年后送达</div>
             </div>
@@ -2866,63 +2872,109 @@ async function testCloudConnection() {
 }
 
 async function syncLocalToCloud() {
-  const localData = loadLocalData();
-  if (localData.tasks.length === 0) return;
-  for (const task of localData.tasks) {
+  const unsyncedTasks = tasksCache.filter(t => t.id && t.id.startsWith('local_'));
+  if (unsyncedTasks.length === 0) {
+    showToast('所有数据已同步');
+    return;
+  }
+
+  for (const task of unsyncedTasks) {
     try {
-      const existing = await apiFetch('tasks', 'GET', null,
-        'name=eq.' + encodeURIComponent(task.name));
-      let cloudTask;
-      if (existing && existing.length > 0) {
-        cloudTask = existing[0];
-      } else {
-        const result = await apiFetch('tasks', 'POST', { name: task.name });
-        cloudTask = Array.isArray(result) ? result[0] : result;
-      }
+      // 在云端创建任务
+      const result = await apiFetch('tasks', 'POST', { name: task.name });
+      const cloudTask = Array.isArray(result) ? result[0] : result;
+      task.id = cloudTask.id;
+
+      // 推送未同步的记录
       if (task.records && task.records.length > 0) {
         for (const rec of task.records) {
-          try {
-            await apiFetch('records', 'POST', {
-              task_id: cloudTask.id,
-              text: rec.text || '',
-              images: rec.images || []
-            });
-          } catch(e) { /* skip duplicate */ }
+          if (rec.id && rec.id.startsWith('local_')) {
+            try {
+              const recResult = await apiFetch('records', 'POST', {
+                task_id: task.id,
+                text: rec.text || '',
+                images: rec.images || []
+              });
+              const cloudRec = Array.isArray(recResult) ? recResult[0] : recResult;
+              rec.id = cloudRec.id;
+            } catch(e) {
+              console.error('Sync record error:', e);
+            }
+          }
         }
       }
     } catch(e) {
       console.error('Sync task error:', e);
     }
   }
+
+  saveToLocal();
+  showToast('未同步数据已上传到云端');
 }
 
 let tasksCache = [];
 
 async function loadData() {
   cloudAvailable = await testCloudConnection();
+
+  // 始终先加载本地数据（完整字段，不会丢失）
+  const localData = loadLocalData();
+  const localTasks = localData.tasks || [];
+
   if (cloudAvailable) {
-    storageMode = 'cloud';
     try {
-      const tasks = await apiFetch('tasks', 'GET', null, 'select=*&order=created_at.asc');
-      for (const t of tasks) {
+      // 加载云端数据
+      const cloudTasks = await apiFetch('tasks', 'GET', null, 'select=*&order=created_at.asc');
+      for (const t of cloudTasks) {
         const records = await apiFetch('records', 'GET', null,
           'task_id=eq.' + t.id + '&order=created_at.asc');
         t.records = records || [];
       }
-      tasksCache = tasks;
-      saveLocalData({ tasks: tasksCache.map(t => ({
-        ...t,
-        records: (t.records || []).map(r => ({ text: r.text, images: r.images, created_at: r.created_at }))
-      }))});
+
+      // 双向合并：云端任务优先，保留本地未同步的任务和记录
+      const merged = [];
+      const cloudByName = {};
+      for (const ct of cloudTasks) {
+        cloudByName[ct.name] = ct;
+        merged.push(ct);
+      }
+      const cloudNames = new Set(cloudTasks.map(t => t.name));
+
+      for (const lt of localTasks) {
+        if (!cloudNames.has(lt.name)) {
+          // 本地独有的任务（从未同步到云端）
+          merged.push(lt);
+        } else if (lt.records && lt.records.length > 0) {
+          // 同名任务：把本地未同步的记录合并到云端任务中
+          const ct = cloudByName[lt.name];
+          const existing = new Set(
+            (ct.records || []).map(r => r.created_at + '|' + (r.text || ''))
+          );
+          for (const lr of lt.records) {
+            const key = lr.created_at + '|' + (lr.text || '');
+            if (!existing.has(key)) {
+              ct.records.push(lr);
+              existing.add(key);
+            }
+          }
+          ct.records.sort((a, b) =>
+            (a.created_at || '').localeCompare(b.created_at || '')
+          );
+        }
+      }
+
+      tasksCache = merged;
+      storageMode = 'cloud';
+      saveToLocal();   // ← 用 saveToLocal() 保留全部字段，不会再丢字段
       updateSyncBadge('cloud');
       return;
     } catch(e) {
       console.error('Cloud load failed, fallback to local:', e);
     }
   }
+
   storageMode = 'local';
-  const localData = loadLocalData();
-  tasksCache = localData.tasks || [];
+  tasksCache = localTasks;
   updateSyncBadge('local');
 }
 
