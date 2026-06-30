@@ -2290,7 +2290,7 @@
         <div class="settings-item">
           <div class="settings-item-left">
             <div class="settings-item-label">🏠 心理小屋</div>
-            <div class="settings-item-desc">v2.7 · 你的心灵栖息地</div>
+            <div class="settings-item-desc">v2.8 · 你的心灵栖息地</div>
           </div>
         </div>
         <div class="settings-item" onclick="setView('view-changelog')" style="cursor:pointer">
@@ -2301,64 +2301,12 @@
           <span style="color:var(--text3);font-size:14px">›</span>
         </div>
 
-        <div class="settings-item" onclick="toggleGuide()" style="cursor:pointer">
+        <div class="settings-item" onclick="setView('view-guide')" style="cursor:pointer">
           <div class="settings-item-left">
             <div class="settings-item-label">📖 使用指南</div>
             <div class="settings-item-desc">了解心理小屋的功能与使用技巧</div>
           </div>
-          <span style="color:var(--text3);font-size:14px" id="guide-arrow">›</span>
-        </div>
-        <div id="guide-content" style="display:none;padding:0 16px 16px;">
-          <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
-            <div style="margin-bottom:16px;">
-              <div style="font-weight:600;color:var(--accent);margin-bottom:8px;">🏠 什么是心理小屋？</div>
-              <div>心理小屋是一款私密的心理健康记录工具。它帮你记录每天的心情、想法和成长，是你的心灵栖息地。</div>
-            </div>
-            <div style="margin-bottom:16px;">
-              <div style="font-weight:600;color:var(--accent);margin-bottom:8px;">📝 记录页</div>
-              <div>• 创建不同的练习主题（如情绪日记、感恩记录等）</div>
-              <div>• 每个主题下可以添加文字、图片、语音记录</div>
-              <div>• 支持搜索和排序，方便回顾</div>
-              <div>• 热力图展示你的记录频率</div>
-            </div>
-            <div style="margin-bottom:16px;">
-              <div style="font-weight:600;color:var(--accent);margin-bottom:8px;">🪐 万有引力</div>
-              <div>• 每晚写下对明天的期待</div>
-              <div>• 积累形成你的"引力轨迹"</div>
-              <div>• 回顾过去7天的期待，感受成长</div>
-            </div>
-            <div style="margin-bottom:16px;">
-              <div style="font-weight:600;color:var(--accent);margin-bottom:8px;">✅ 待办页</div>
-              <div>• 管理日常任务和心理练习</div>
-              <div>• 支持截止日期和照片附件</div>
-              <div>• 完成后自动归档</div>
-            </div>
-            <div style="margin-bottom:16px;">
-              <div style="font-weight:600;color:var(--accent);margin-bottom:8px;">📅 日历页</div>
-              <div>• 月历视图，一目了然看到记录日</div>
-              <div>• 纪念日和倒数日功能</div>
-              <div>• 点击日期查看当天记录</div>
-            </div>
-            <div style="margin-bottom:16px;">
-              <div style="font-weight:600;color:var(--accent);margin-bottom:8px;">🧑 个人中心</div>
-              <div>• 心理困惑和待探究主题</div>
-              <div>• 成就系统，激励持续记录</div>
-              <div>• 个性化设置（深色模式、自定义语录等）</div>
-            </div>
-            <div style="margin-bottom:16px;">
-              <div style="font-weight:600;color:var(--accent);margin-bottom:8px;">💡 使用技巧</div>
-              <div>• 每天固定时间记录，养成习惯</div>
-              <div>• 不必追求完美，真实记录最重要</div>
-              <div>• 定期回顾，你会发现自己的成长</div>
-              <div>• 使用万有引力培养对未来的期待感</div>
-            </div>
-            <div>
-              <div style="font-weight:600;color:var(--accent);margin-bottom:8px;">🔒 隐私说明</div>
-              <div>• 所有数据存储在本地浏览器中</div>
-              <div>• 可选开启云端同步（Supabase）</div>
-              <div>• 你的记录只有你自己能看到</div>
-            </div>
-          </div>
+          <span style="color:var(--text3);font-size:14px">›</span>
         </div>
         <div class="settings-item" onclick="document.getElementById('export-data-overlay').classList.add('open')" style="cursor:pointer">
           <div class="settings-item-left">
@@ -2483,6 +2431,10 @@
       <div class="settings-card" style="padding:16px;">
         <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
           <div style="margin-bottom:16px;">
+            <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v2.8 · 2026-06-30 17:19</div>
+            <div>· 使用指南改为独立页面，可自定义编辑内容</div>
+          </div>
+          <div style="margin-bottom:16px;">
             <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v2.7 · 2026-06-30 17:11</div>
             <div>· 暗色模式下记录卡片背景柔化，与深色背景更协调</div>
           </div>
@@ -2570,6 +2522,26 @@
             <div>· Supabase 云端同步</div>
             <div>· PWA 支持</div>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== GUIDE PAGE ===================== -->
+<div id="view-guide" class="view">
+  <div class="topbar">
+    <button class="back-btn" onclick="switchTab('me')">‹</button>
+    <h1>使用指南</h1>
+  </div>
+  <div class="scroll-area">
+    <div class="settings-page">
+      <div class="settings-section">✍️ 你可以在这里编辑自己的使用指南</div>
+      <div class="settings-card" style="padding:16px;">
+        <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;text-align:center;padding:40px 0;">
+          <div style="font-size:48px;margin-bottom:16px;opacity:0.3;">📝</div>
+          <div>这里空着，等你来写。</div>
+          <div style="margin-top:8px;font-size:12px;color:var(--text3);">未来的你会感谢今天写下的这些文字。</div>
         </div>
       </div>
     </div>
@@ -4037,7 +4009,7 @@ function setView(id) {
   }
   // Hide tab bar when entering sub-views
   const tabBar = document.getElementById('tab-bar');
-  const subViews = ['view-detail', 'view-heatmap', 'view-anniversary', 'view-anni-detail', 'view-todo-detail', 'view-settings', 'view-changelog', 'view-avatar-lightbox', 'view-profile-item', 'view-custom-quotes'];
+  const subViews = ['view-detail', 'view-heatmap', 'view-anniversary', 'view-anni-detail', 'view-todo-detail', 'view-settings', 'view-changelog', 'view-guide', 'view-avatar-lightbox', 'view-profile-item', 'view-custom-quotes'];
   if (subViews.includes(id)) {
     tabBar.classList.add('hidden');
   } else {
@@ -5871,18 +5843,6 @@ function renderAchievements() {
 }
 
 // ===== SETTINGS: Changelog Toggle =====
-function toggleGuide() {
-  const content = document.getElementById('guide-content');
-  const arrow = document.getElementById('guide-arrow');
-  if (content.style.display === 'none') {
-    content.style.display = 'block';
-    arrow.textContent = '⌄';
-  } else {
-    content.style.display = 'none';
-    arrow.textContent = '›';
-  }
-}
-
 function exportAllData() {
   // Update category counts
   const d = loadLocalData();
