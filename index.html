@@ -1628,7 +1628,7 @@
     .me-page { padding:20px 20px 80px; }
     .me-topbar {
       display:flex; align-items:center; justify-content:space-between;
-      margin-bottom:24px;
+      margin-bottom:12px;
     }
     .me-avatar-wrap {
       display:flex; align-items:center; gap:14px;
@@ -2181,14 +2181,11 @@
 <!-- ===================== TAB 4: 我 ===================== -->
 <div id="view-tab-me" class="tab-view">
   <div class="me-page">
-    <div class="me-topbar">
+    <div class="me-topbar" style="margin-bottom:12px;">
       <div class="me-avatar-wrap">
         <img class="me-avatar" id="me-avatar-img" src="" alt="头像" onclick="openAvatarLightbox()" />
         <div class="me-name" id="me-name" onclick="openNameModal()">访客</div>
       </div>
-    </div>
-
-    <div style="display:flex; justify-content:flex-end; margin-bottom:12px; padding:0 4px;">
       <button style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text3);padding:4px;line-height:1;" onclick="openSettings()" title="设置">⚙️</button>
     </div>
 
