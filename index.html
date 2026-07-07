@@ -2124,7 +2124,7 @@
     <div class="anni-form-row">
       <label>内容</label>
       <input class="input-field" id="todo-new-text" type="text" placeholder="输入待办事项…" maxlength="60"
-        onkeydown="if(event.key==='Enter')createTodo()"  autocomplete="one-time-code" />
+        onkeydown="if(event.key==='Enter')createTodo()" readonly />
     </div>
     <div class="anni-form-row">
       <label>截止日期（可选）</label>
@@ -2281,7 +2281,7 @@
         <div class="settings-item">
           <div class="settings-item-left">
             <div class="settings-item-label">🏠 心理小屋</div>
-            <div class="settings-item-desc">v3.7 · 你的心灵栖息地</div>
+            <div class="settings-item-desc">v3.8 · 你的心灵栖息地</div>
           </div>
         </div>
         <div class="settings-item" onclick="setView('view-changelog')" style="cursor:pointer">
@@ -2421,6 +2421,10 @@
       <div class="settings-section">版本历史</div>
       <div class="settings-card" style="padding:16px;">
         <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
+          <div style="margin-bottom:16px;">
+            <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v3.8 · 2026-07-07 13:12</div>
+            <div>· 彻底修复 iOS 键盘自动填充栏：readonly + focusin 解除方案</div>
+          </div>
           <div style="margin-bottom:16px;">
             <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">v3.7 · 2026-07-04 14:37</div>
             <div>· 色彩系统温柔化——薰衣草紫替代科技紫，深空底色更温暖</div>
@@ -5132,7 +5136,11 @@ function openTodoModal() {
   const preview = document.getElementById('todo-photo-preview');
   preview.src = ''; preview.classList.remove('show');
   document.getElementById('modal-todo').classList.add('open');
-  setTimeout(() => document.getElementById('todo-new-text').focus(), 100);
+  setTimeout(() => {
+    const input = document.getElementById('todo-new-text');
+    input.removeAttribute('readonly');
+    input.focus();
+  }, 100);
 }
 function closeTodoModal() {
   document.getElementById('modal-todo').classList.remove('open');
@@ -5282,7 +5290,7 @@ function renderTodoDetailView(item, isEdit) {
         </label>
         ${editingTodoPhoto ? `<button class="btn btn-ghost" style="margin-left:8px;font-size:12px;padding:6px 10px;" onclick="editingTodoPhoto=null;renderTodoDetailView(loadTodos().find(t=>t.id===editingTodoId),true)">移除照片</button>` : ''}
       </div>
-      <textarea class="todo-edit-textarea" id="todo-edit-text" autocomplete="one-time-code">${escapeHtml(item.text)}</textarea>
+      <textarea class="todo-edit-textarea" id="todo-edit-text" readonly>${escapeHtml(item.text)}</textarea>
       ${deadlineEditHtml}
       <div style="margin-top:16px;display:flex;gap:10px;">
         <button class="btn btn-primary" onclick="saveTodoEdit()">保存</button>
@@ -6717,6 +6725,14 @@ async function restoreFromCloud() {
       if (fn) eval(fn);
     }
   }, { passive: true });
+
+  // ====== iOS 自动填充栏彻底屏蔽：readonly → focus 时解除 ======
+  document.addEventListener('focusin', e => {
+    const el = e.target;
+    if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') && el.hasAttribute('readonly')) {
+      el.removeAttribute('readonly');
+    }
+  });
 
   // ====== 显示社交时刻合并完成提示 ======
   if (!tasksCache.find(t => t.name === 'LUCK时刻') && !tasksCache.find(t => t.name === '连接时刻')) {
